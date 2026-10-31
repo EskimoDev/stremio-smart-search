@@ -12,6 +12,8 @@ SSS matches against a local, prebuilt index, avoiding an internet round trip to 
 
 ## Windows
 
+The Windows x64 preview has user-confirmed compatibility with standard Stremio, dx.bi and Stremio Enhanced. Installation and removal were also tested on a Windows PC. This confirmation covers the tested desktop clients; Windows ARM64 and additional OS/client releases still need their own verification.
+
 The installer is per-user and requests no administrator privileges. It creates:
 
 - **Stremio + Smart Search**: starts the helper and opens the registered Stremio app, or first-run setup if no catalogue is ready.

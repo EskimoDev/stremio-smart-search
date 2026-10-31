@@ -2,7 +2,7 @@
 
 A standalone, local search addon for Stremio. **Stremio Smart Search (SSS)** gives you fast local title matching, including misspellings, joined words and abbreviations such as **HOTD**, **LOTR** and **TDK**. Works through standard movie and series search catalogs; no changes to Stremio or dx.bi are required.
 
-**Preview under development.** Windows is being tested locally. macOS and Linux build targets and CI are included, but device support is not established merely by cross-compiling. No release is published yet.
+**Preview under development.** Windows x64 has been user-tested with standard Stremio, dx.bi and Stremio Enhanced. Automated checks run on Windows, macOS and Linux; other hardware and complete desktop installation flows still need device testing. No release is published yet.
 
 ## How it works
 
@@ -18,7 +18,7 @@ Preview package targets. Use **Windows x64** for most Intel/AMD PCs, or **macOS 
 
 | Platform | Primary package | Alternative | Verification |
 |---|---|---|---|
-| Windows x64 | Installer `.exe` | Portable ZIP | Tested on Windows in development |
+| Windows x64 | Installer `.exe` | Portable ZIP | Installer tested; Stremio, dx.bi and Enhanced user-tested |
 | Windows ARM64 | Installer `.exe` | Portable ZIP | Build target; device testing needed |
 | macOS Apple Silicon | `.dmg` | App ZIP | Build target; device testing needed |
 | macOS Intel | `.dmg` | App ZIP | Build target; device testing needed |
