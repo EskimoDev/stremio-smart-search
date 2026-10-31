@@ -17,16 +17,21 @@
   }
   function render(status) {
     lastStatus = status;
-    $('connection').textContent = status.building ? 'Preparing catalogue' : status.ready ? 'Ready · running locally' : 'Setup needed';
+    $('connection').textContent = status.building ? 'Preparing catalogue' : status.ready ? 'Ready · running locally' : 'Catalogue needed';
     $('connection').classList.toggle('ready', status.ready);
+    $('connection').classList.toggle('building', status.building);
     $('build').disabled = status.building;
     $('build').textContent = status.building ? 'Preparing…' : status.ready ? 'Refresh catalogue' : 'Prepare catalogue';
     $('progress').hidden = !status.building;
     $('stage').textContent = `${status.stage}${status.bytes ? ` · ${(status.bytes / 1024 / 1024).toFixed(1)} MB downloaded` : ''}`;
-    $('catalog-info').textContent = status.ready ? `${status.movies.toLocaleString()} movies · ${status.series.toLocaleString()} series · updated ${new Date(status.builtAt).toLocaleDateString()}` : '';
+    $('catalog-stats').hidden = !status.ready;
+    $('movie-count').textContent = status.movies.toLocaleString();
+    $('series-count').textContent = status.series.toLocaleString();
+    $('catalog-info').textContent = status.ready ? `Updated ${new Date(status.builtAt).toLocaleDateString()}` : 'Download IMDb title data to enable setup. A few hundred MB; allow several minutes.';
     for (const button of installButtons) {
       const client = clients.find(client => client.id === button.dataset.client);
       button.disabled = !status.ready || !client?.available;
+      $(`client-status-${button.dataset.client}`).textContent = !client ? 'Detection unavailable · use the link below' : !client.available ? 'Not detected · use the link below' : !status.ready ? 'Detected · prepare catalogue first' : 'Detected on this computer';
     }
     $('web-install').classList.toggle('disabled', !status.ready);
     $('web-install').setAttribute('aria-disabled', String(!status.ready));
@@ -48,7 +53,7 @@
     refresh();
   });
   $('copy').addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText($('manifest').value); tell('Addon link copied. Paste it into Stremio’s addon search.'); }
+    try { await navigator.clipboard.writeText($('manifest').value); tell('Addon link copied. Paste it into your app’s Add addon dialog.'); }
     catch { $('manifest').focus(); $('manifest').select(); tell('Select and copy the addon link above.'); }
   });
   for (const button of installButtons) button.addEventListener('click', async () => {
@@ -73,7 +78,7 @@
   api('clients').then(result => {
     clients = result.clients;
     const missing = clients.filter(client => !client.available).map(client => client.name);
-    $('install-help').textContent = missing.length ? `Not detected: ${missing.join(', ')}. Use the web option or copy the link if your app is portable.` : 'Stremio, dx.bi and Stremio Enhanced are available. Choose where to install.';
+    $('install-help').textContent = missing.length ? 'If your app is portable or not detected, use the addon link below.' : '';
     if (lastStatus) render(lastStatus);
   }).catch(() => { $('install-help').textContent = 'Use the web option or copy the link if your app is not detected.'; });
   refresh();

@@ -1,18 +1,123 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stremio Smart Search</title><link rel="icon" href="/icon.svg"><link rel="stylesheet" href="/style.css"></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Stremio Smart Search</title>
+  <link rel="icon" href="/icon.svg">
+  <link rel="stylesheet" href="/style.css">
+</head>
 <body>
-<header><a class="brand" href="/"><img src="/icon.svg" width="34" height="34" alt=""><span>Smart Search <small>FOR STREMIO</small></span></a><span id="connection" class="badge">Connecting</span></header>
-<main>
-<section class="intro"><p class="eyebrow">A LITTLE MORE FORGIVING.</p><h1>Find the title.<br>Even with a typo.</h1><p class="lede">Fast local matches for misspellings, abbreviations and half-remembered titles. Your title index is on your computer, so matching has no remote search server to wait for. Watch through your usual Stremio addons.</p><div class="pills"><span>Fast local matching</span><span>No AI subscription</span><span>No account needed</span></div></section>
-<section class="setup" aria-labelledby="setup-title"><div class="section-head"><h2 id="setup-title">Make yourself at home</h2><span>ONE-TIME SETUP</span></div>
-<article class="step"><div class="number">1</div><div class="step-body"><h3>Prepare your title catalogue</h3><p>Download title data directly from IMDb and build a compact local index. The first download can be a few hundred MB and take several minutes.</p><p class="fine">IMDb data is for personal, non-commercial use. <a href="https://developer.imdb.com/non-commercial-datasets/" target="_blank" rel="noreferrer">About the title data ↗</a></p><button id="build">Prepare catalogue</button><div id="progress" class="progress" hidden><span class="spinner"></span><span id="stage">Starting…</span></div><p id="catalog-info" class="fine" aria-live="polite"></p></div></article>
-<article class="step"><div class="number">2</div><div class="step-body"><h3>Choose your Stremio app</h3><p>Choose an app below to copy the correct local addon link and open it. In that app, go to <strong>Addons → Add addon</strong>, paste the link and choose <strong>Install</strong>.</p><div class="actions"><button id="install-stremio" data-client="stremio" disabled>Add to Stremio</button><button id="install-dxbi" data-client="dxbi" disabled>Add to dx.bi</button><button id="install-enhanced" data-client="enhanced" disabled>Add to Stremio Enhanced</button></div><p id="install-help" class="fine" aria-live="polite">Checking installed apps…</p><div class="actions"><a id="web-install" class="button secondary disabled" aria-disabled="true" target="_blank" rel="noreferrer">Install through Stremio Web ↗</a><button id="copy" class="secondary">Copy addon link</button></div><p class="fine">The web option opens the install prompt. Use the same Stremio account as your desktop app to sync the addon. Your browser may ask permission for Stremio Web to connect to this computer.</p><label class="fine" for="manifest">Local addon link (keep the http:// and port number):</label><input id="manifest" readonly spellcheck="false" aria-label="Local addon manifest address"></div></article>
-<article class="step"><div class="number">3</div><div class="step-body"><h3>Put Smart Search first (recommended)</h3><p>Move <strong>Stremio Smart Search</strong> to the top of your addon order so its search results are easy to find. In dx.bi: <strong>Addons → Order & backup → move to the top → Save order</strong>. Other clients may use different reorder controls.</p><p class="fine">Moving only Smart Search keeps the other addons in their same relative order. It supplies search rows only, so your stream providers keep their existing order. Account addon order may sync to your other devices.</p><p>Try <strong>HOTD</strong>, <strong>interstelar</strong> or <strong>LOTR</strong>. Use the “Stremio + Smart Search” shortcut next time to start both together.</p><button id="launch" disabled>Open Stremio</button></div></article>
-</section>
-<aside class="notes"><div><h3>Local means local</h3><p>The search engine receives no stream links, account passwords or watch history. It does not send search terms to an AI service. Posters and playback still use online providers.</p></div><div><h3>Keep the helper running</h3><p>This page can be closed. Smart Search keeps working quietly in the background. A local addon link belongs to this computer; it does not install the helper on a TV or phone.</p></div></aside>
-<p id="message" role="status" aria-live="polite"></p>
-</main>
-<footer><span id="version">Stremio Smart Search</span><span>Independent community project · <button id="quit" class="text-button">Quit helper</button></span></footer>
-<!--BOOTSTRAP--><script src="/app.js" defer></script>
-</body></html>
+  <header class="page-header">
+    <a class="brand" href="/" aria-label="Stremio Smart Search home">
+      <svg viewBox="0 0 64 64" width="32" height="32" aria-hidden="true"><rect width="64" height="64" rx="17" fill="#182e32"/><circle cx="28" cy="28" r="13" fill="none" stroke="#8ce1c6" stroke-width="5"/><path d="m38 38 12 12" stroke="#8ce1c6" stroke-width="6" stroke-linecap="round"/><path d="m23 28 4 4 8-9" fill="none" stroke="#eafbf5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Smart Search <span class="brand-note">for Stremio</span></span>
+    </a>
+    <a class="source-link" href="https://github.com/EskimoDev/stremio-smart-search" target="_blank" rel="noreferrer">Project on GitHub <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main class="utility">
+    <aside class="catalogue" aria-labelledby="catalogue-title">
+      <div>
+        <p class="section-label">On this computer</p>
+        <h2 id="catalogue-title">Title catalogue</h2>
+        <p id="connection" class="connection" role="status">Connecting…</p>
+        <dl id="catalog-stats" class="catalog-stats" hidden>
+          <div><dt>Movies</dt><dd id="movie-count">—</dd></div>
+          <div><dt>Series</dt><dd id="series-count">—</dd></div>
+        </dl>
+        <p id="catalog-info" class="catalog-info" aria-live="polite">Checking your catalogue…</p>
+        <button id="build" class="catalogue-button" disabled>Prepare catalogue</button>
+        <div id="progress" class="progress" hidden>
+          <span class="spinner" aria-hidden="true"></span><span id="stage">Starting…</span>
+        </div>
+        <details class="download-help">
+          <summary>About the title data</summary>
+          <p>The first download from IMDb can be a few hundred MB and take several minutes. Smart Search then builds a compact local index.</p>
+          <p>IMDb data is for personal, non-commercial use. <a href="https://developer.imdb.com/non-commercial-datasets/" target="_blank" rel="noreferrer">Data terms <span aria-hidden="true">↗</span></a></p>
+        </details>
+      </div>
+
+      <div class="helper-notes">
+        <svg class="local-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+        <h3>You can close this page</h3>
+        <p>The helper keeps running in the background. Next time, use the <strong>Stremio + Smart Search</strong> shortcut to start both.</p>
+        <details>
+          <summary>How search works</summary>
+          <p>Titles are matched in memory on this computer, so there is no remote search server to wait for. Posters and playback still use your online providers.</p>
+          <p>No AI service, account passwords or watch history are used. This local link works on this computer; a TV or phone needs its own reachable helper.</p>
+        </details>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <div class="workspace-header">
+        <p class="section-label">Setup</p>
+        <h1>Connect to Stremio</h1>
+        <p>Search with typos, abbreviations and partial titles.</p>
+      </div>
+
+      <section class="setup-section" aria-labelledby="choose-title">
+        <div class="step-heading"><span class="step-number" aria-hidden="true">01</span><h2 id="choose-title">Choose your app</h2></div>
+        <p>Each button copies the addon link and opens that app.</p>
+        <div class="app-list">
+          <button id="install-stremio" class="app-option" data-client="stremio" aria-label="Copy link and open Stremio" aria-describedby="client-status-stremio" disabled>
+            <span class="app-mark" aria-hidden="true">S</span>
+            <span class="app-description"><span class="app-name">Stremio</span><span id="client-status-stremio" class="app-status">Checking…</span></span>
+            <span class="app-action">Copy & open <span aria-hidden="true">↗</span></span>
+          </button>
+          <button id="install-dxbi" class="app-option" data-client="dxbi" aria-label="Copy link and open dx.bi" aria-describedby="client-status-dxbi" disabled>
+            <span class="app-mark app-mark-dxbi" aria-hidden="true">dx.</span>
+            <span class="app-description"><span class="app-name">dx.bi</span><span id="client-status-dxbi" class="app-status">Checking…</span></span>
+            <span class="app-action">Copy & open <span aria-hidden="true">↗</span></span>
+          </button>
+          <button id="install-enhanced" class="app-option" data-client="enhanced" aria-label="Copy link and open Stremio Enhanced" aria-describedby="client-status-enhanced" disabled>
+            <span class="app-mark" aria-hidden="true">SE</span>
+            <span class="app-description"><span class="app-name">Stremio Enhanced</span><span id="client-status-enhanced" class="app-status">Checking…</span></span>
+            <span class="app-action">Copy & open <span aria-hidden="true">↗</span></span>
+          </button>
+        </div>
+        <p id="install-help" class="fine" aria-live="polite">Checking installed apps…</p>
+      </section>
+
+      <section class="setup-section" aria-labelledby="paste-title">
+        <div class="step-heading"><span class="step-number" aria-hidden="true">02</span><h2 id="paste-title">Paste the addon link</h2></div>
+        <p>In your app: <strong>Addons → Add addon → paste → Install</strong>.</p>
+        <label for="manifest" class="sr-only">Local addon manifest address</label>
+        <div class="link-field">
+          <input id="manifest" readonly spellcheck="false" aria-label="Local addon manifest address">
+          <button id="copy" class="copy-button">Copy link</button>
+        </div>
+        <p class="fine link-hint">Keep <code>http://</code> and the port number in the address.</p>
+        <details class="web-help">
+          <summary>Using Stremio Web or a portable app?</summary>
+          <p>For a portable app, copy the link above and paste it in manually. On Stremio Web, use the button below.</p>
+          <a id="web-install" class="button secondary disabled" aria-disabled="true" target="_blank" rel="noreferrer">Install through Stremio Web <span aria-hidden="true">↗</span></a>
+          <p class="fine">Use the same Stremio account to sync the addon to your desktop app. Your browser may ask permission to connect to this computer.</p>
+        </details>
+      </section>
+
+      <section class="setup-section order-section" aria-labelledby="order-title">
+        <div class="step-heading"><span class="step-number" aria-hidden="true">03</span><h2 id="order-title">Move Smart Search to the top</h2></div>
+        <p>Recommended, so its search results appear first. In dx.bi: <strong>Addons → Order & backup → move to top → Save order</strong>.</p>
+        <details>
+          <summary>What about my other addons?</summary>
+          <p>Move only Stremio Smart Search. The others keep their relative order, including your stream providers: this addon supplies search rows only. Your account's addon order may sync to other devices. Reorder controls vary between clients.</p>
+        </details>
+      </section>
+
+      <div class="try-search">
+        <div><h3>Ready to try it?</h3><p>Search for <code>HOTD</code>, <code>interstelar</code> or <code>LOTR</code>.</p></div>
+        <button id="launch" disabled>Open Stremio</button>
+      </div>
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+    </div>
+  </main>
+
+  <footer class="page-footer">
+    <span id="version">Stremio Smart Search</span>
+    <span>Independent community project <span class="footer-divider" aria-hidden="true">/</span> <button id="quit" class="text-button">Quit helper</button></span>
+  </footer>
+  <!--BOOTSTRAP--><script src="/app.js" defer></script>
+</body>
+</html>
