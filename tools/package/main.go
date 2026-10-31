@@ -37,6 +37,13 @@ func put(path, text string, mode fs.FileMode) error {
 	}
 	return os.WriteFile(path, []byte(text), mode)
 }
+
+// Windows does not preserve POSIX executable bits on staged files. Apply package
+// permissions by role so cross-built app bundles and .deb archives remain runnable.
+func executablePath(path string) bool {
+	base := filepath.Base(path)
+	return base == "stremio-smart-search" || strings.HasSuffix(base, ".exe") || strings.Contains(filepath.ToSlash(path), "/Contents/MacOS/")
+}
 func archiveZip(root, path string) error {
 	f, err := os.Create(path)
 	if err != nil {
@@ -61,6 +68,11 @@ func archiveZip(root, path string) error {
 		relative, _ := filepath.Rel(root, name)
 		h.Name = filepath.ToSlash(relative)
 		h.Method = zip.Deflate
+		if executablePath(name) {
+			h.SetMode(0755)
+		} else {
+			h.SetMode(0644)
+		}
 		w, err := z.CreateHeader(h)
 		if err != nil {
 			return err
@@ -102,6 +114,10 @@ func tarGzip(root string) ([]byte, error) {
 			return err
 		}
 		h.Name = filepath.ToSlash(relative)
+		h.Mode = 0644
+		if d.IsDir() || executablePath(name) {
+			h.Mode = 0755
+		}
 		h.Uid = 0
 		h.Gid = 0
 		h.Uname = "root"
