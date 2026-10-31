@@ -4,13 +4,13 @@ Unicode true
   !define VERSION "0.1.0-preview.1"
 !endif
 !ifndef ARCH
-  !define ARCH "amd64"
+  !define ARCH "x64"
 !endif
 !ifndef BINARY
   !error "Pass /DBINARY=the compiled executable"
 !endif
 !ifndef OUTPUT
-  !define OUTPUT "..\dist\stremio-smart-search-${VERSION}-windows-${ARCH}-setup.exe"
+  !define OUTPUT "..\dist\StremioSmartSearch-${VERSION}-Windows-${ARCH}-Setup.exe"
 !endif
 Name "Stremio Smart Search"
 OutFile "${OUTPUT}"

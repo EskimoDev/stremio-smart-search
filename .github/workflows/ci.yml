@@ -37,8 +37,8 @@ jobs:
         with:
           name: preview-${{ runner.os }}
           path: |
-            dist/*-portable.zip
-            dist/*-darwin-*.zip
+            dist/*-Portable.zip
+            dist/*-macOS-*.zip
             dist/*.tar.gz
             dist/*.deb
           if-no-files-found: error

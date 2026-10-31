@@ -227,13 +227,21 @@ func run() error {
 	if err := copyFile("docs/INSTALLATION.md", filepath.Join(portable, "INSTALLATION.md"), 0644); err != nil {
 		return err
 	}
-	base := fmt.Sprintf("stremio-smart-search-%s-%s-%s", *version, *osName, *arch)
+	platformName := map[string]string{"windows": "Windows", "darwin": "macOS", "linux": "Linux"}[*osName]
+	architecture := map[string]string{"amd64": "x64", "arm64": "ARM64"}[*arch]
+	if *osName == "darwin" {
+		architecture = map[string]string{"amd64": "Intel", "arm64": "AppleSilicon"}[*arch]
+	}
+	if platformName == "" || architecture == "" {
+		return fmt.Errorf("unsupported package platform")
+	}
+	base := fmt.Sprintf("StremioSmartSearch-%s-%s-%s", *version, platformName, architecture)
 	switch *osName {
 	case "windows":
 		if err := copyFile(*binary, filepath.Join(portable, "StremioSmartSearch.exe"), 0755); err != nil {
 			return err
 		}
-		return archiveZip(portable, filepath.Join(*out, base+"-portable.zip"))
+		return archiveZip(portable, filepath.Join(*out, base+"-Portable.zip"))
 	case "darwin":
 		if err := appBundle(portable, *binary, "Stremio Smart Search", "SmartSearch", "io.github.EskimoDev.StremioSmartSearch", *version); err != nil {
 			return err

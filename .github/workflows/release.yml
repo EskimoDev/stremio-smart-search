@@ -44,7 +44,8 @@ jobs:
             }
             if ($target -eq 'windows') {
               $binary = Join-Path $PWD "dist/smart-search-windows-$arch.exe"
-              $output = Join-Path $PWD "dist/stremio-smart-search-$version-windows-$arch-setup.exe"
+              $packageArch = if ($arch -eq 'amd64') { 'x64' } else { 'ARM64' }
+              $output = Join-Path $PWD "dist/StremioSmartSearch-$version-Windows-$packageArch-Setup.exe"
               & "${env:ProgramFiles(x86)}/NSIS/makensis.exe" "/DVERSION=$version" "/DARCH=$arch" "/DBINARY=$binary" "/DOUTPUT=$output" scripts/windows-installer.nsi
               if ($LASTEXITCODE -ne 0) { throw 'Windows installer build failed' }
             }
@@ -55,10 +56,11 @@ jobs:
                 if ($LASTEXITCODE -ne 0) { throw 'Ad-hoc app signing failed' }
               }
               New-Item -ItemType SymbolicLink -Path (Join-Path $stage 'Applications') -Target /Applications | Out-Null
-              $zip = Join-Path $PWD "dist/stremio-smart-search-$version-darwin-$arch.zip"
+              $packageArch = if ($arch -eq 'amd64') { 'Intel' } else { 'AppleSilicon' }
+              $zip = Join-Path $PWD "dist/StremioSmartSearch-$version-macOS-$packageArch.zip"
               ditto -c -k --sequesterRsrc $stage $zip
               if ($LASTEXITCODE -ne 0) { throw 'macOS app archive failed' }
-              hdiutil create -volname 'Stremio Smart Search' -srcfolder $stage -ov -format UDZO "dist/stremio-smart-search-$version-darwin-$arch.dmg"
+              hdiutil create -volname 'Stremio Smart Search' -srcfolder $stage -ov -format UDZO "dist/StremioSmartSearch-$version-macOS-$packageArch.dmg"
               if ($LASTEXITCODE -ne 0) { throw 'Disk image build failed' }
             }
           }
@@ -66,9 +68,9 @@ jobs:
         with:
           name: release-${{ runner.os }}
           path: |
-            dist/*-setup.exe
-            dist/*-portable.zip
-            dist/*-darwin-*.zip
+            dist/*-Setup.exe
+            dist/*-Portable.zip
+            dist/*-macOS-*.zip
             dist/*.dmg
             dist/*.tar.gz
             dist/*.deb

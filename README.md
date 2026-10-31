@@ -12,7 +12,7 @@ Standard Stremio addons do not execute downloaded code inside Stremio. This proj
 
 ## Installation
 
-Planned preview downloads:
+Preview package targets. Use **Windows x64** for most Intel/AMD PCs, or **macOS Apple Silicon** for M-series Macs. ARM64 Windows downloads are for ARM-based PCs, not ordinary Intel/AMD machines.
 
 | Platform | Primary package | Alternative | Verification |
 |---|---|---|---|
