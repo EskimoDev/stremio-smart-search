@@ -1,0 +1,44 @@
+name: Check addon
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.x'
+          cache: false
+      - run: go test ./...
+      - run: go vet ./...
+      - if: runner.os == 'Linux'
+        run: go test -race ./...
+      - name: Package both CPU architectures
+        shell: pwsh
+        run: |
+          $target = switch ('${{ runner.os }}') { Windows { 'windows' } macOS { 'darwin' } Linux { 'linux' } }
+          foreach ($arch in @('amd64', 'arm64')) {
+            ./scripts/build.ps1 -TargetOS $target -TargetArch $arch
+            if ($arch -eq (go env GOARCH)) {
+              $suffix = if ($target -eq 'windows') { '.exe' } else { '' }
+              ./scripts/smoke.ps1 -Binary "dist/smart-search-$target-$arch$suffix"
+            }
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: preview-${{ runner.os }}
+          path: |
+            dist/*-portable.zip
+            dist/*-darwin-*.zip
+            dist/*.tar.gz
+            dist/*.deb
+          if-no-files-found: error

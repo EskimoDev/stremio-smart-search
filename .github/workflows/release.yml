@@ -1,0 +1,97 @@
+name: Prepare release downloads
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Preview version
+        default: 0.1.0-preview.1
+        required: true
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      REQUESTED_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.x'
+          cache: false
+      - run: go test ./...
+      - run: go vet ./...
+      - name: Install Windows installer builder
+        if: runner.os == 'Windows'
+        run: choco install nsis --no-progress -y
+      - name: Build native packages
+        shell: pwsh
+        run: |
+          $version = $env:REQUESTED_VERSION
+          if (-not $version) { $version = $env:GITHUB_REF_NAME.TrimStart('v') }
+          $target = switch ('${{ runner.os }}') { Windows { 'windows' } macOS { 'darwin' } Linux { 'linux' } }
+          foreach ($arch in @('amd64', 'arm64')) {
+            ./scripts/build.ps1 -TargetOS $target -TargetArch $arch -Version $version
+            if ($arch -eq (go env GOARCH)) {
+              $suffix = if ($target -eq 'windows') { '.exe' } else { '' }
+              ./scripts/smoke.ps1 -Binary "dist/smart-search-$target-$arch$suffix"
+            }
+            if ($target -eq 'windows') {
+              $binary = Join-Path $PWD "dist/smart-search-windows-$arch.exe"
+              $output = Join-Path $PWD "dist/stremio-smart-search-$version-windows-$arch-setup.exe"
+              & "${env:ProgramFiles(x86)}/NSIS/makensis.exe" "/DVERSION=$version" "/DARCH=$arch" "/DBINARY=$binary" "/DOUTPUT=$output" scripts/windows-installer.nsi
+              if ($LASTEXITCODE -ne 0) { throw 'Windows installer build failed' }
+            }
+            if ($target -eq 'darwin') {
+              $stage = Join-Path $PWD "dist/macos-$arch"
+              foreach ($bundle in @('Stremio Smart Search.app', 'Stremio + Smart Search.app')) {
+                codesign --force --deep --sign - (Join-Path $stage $bundle)
+                if ($LASTEXITCODE -ne 0) { throw 'Ad-hoc app signing failed' }
+              }
+              New-Item -ItemType SymbolicLink -Path (Join-Path $stage 'Applications') -Target /Applications | Out-Null
+              $zip = Join-Path $PWD "dist/stremio-smart-search-$version-darwin-$arch.zip"
+              ditto -c -k --sequesterRsrc $stage $zip
+              if ($LASTEXITCODE -ne 0) { throw 'macOS app archive failed' }
+              hdiutil create -volname 'Stremio Smart Search' -srcfolder $stage -ov -format UDZO "dist/stremio-smart-search-$version-darwin-$arch.dmg"
+              if ($LASTEXITCODE -ne 0) { throw 'Disk image build failed' }
+            }
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ runner.os }}
+          path: |
+            dist/*-setup.exe
+            dist/*-portable.zip
+            dist/*-darwin-*.zip
+            dist/*.dmg
+            dist/*.tar.gz
+            dist/*.deb
+          if-no-files-found: error
+  draft:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REQUESTED_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Create checksums and a draft prerelease
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${REQUESTED_VERSION:-${GITHUB_REF_NAME#v}}"
+          cd artifacts
+          sha256sum ./* > SHA256SUMS.txt
+          gh release create "v$version" ./* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --draft --prerelease --title "Smart Search $version" --notes "Preview downloads. Read the installation guide for platform verification and unsigned-app prompts. Downloads include the runtime; no programming tools or API keys are required. Title data is prepared locally on first setup."

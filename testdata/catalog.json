@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "builtAt": "2026-10-31T00:00:00Z",
+  "source": "Small hand-written test fixture; not a distributed production catalogue",
+  "titles": [
+    {"id":"tt11198330","name":"House of the Dragon","type":"series","year":2022,"votes":500000,"rating":8.3},
+    {"id":"tt1685401","name":"Highschool of the Dead","type":"series","year":2010,"votes":22000},
+    {"id":"tt1172994","name":"The House of the Devil","type":"movie","year":2009,"votes":55000},
+    {"id":"tt0317676","name":"House of the Dead","type":"movie","year":2003,"votes":42000},
+    {"id":"tt0944947","name":"Game of Thrones","type":"series","year":2011,"votes":2500000},
+    {"id":"tt0816692","name":"Interstellar","type":"movie","year":2014,"votes":2400000,"rating":8.7},
+    {"id":"tt0120737","name":"The Lord of the Rings: The Fellowship of the Ring","type":"movie","year":2001,"votes":2200000},
+    {"id":"tt0167261","name":"The Lord of the Rings: The Two Towers","type":"movie","year":2002,"votes":1900000},
+    {"id":"tt0167260","name":"The Lord of the Rings: The Return of the King","type":"movie","year":2003,"votes":2100000},
+    {"id":"tt0468569","name":"The Dark Knight","type":"movie","year":2008,"votes":3000000},
+    {"id":"tt0145487","name":"Spider-Man","type":"movie","year":2002,"votes":900000},
+    {"id":"tt1049413","name":"Up","type":"movie","year":2009,"votes":1200000},
+    {"id":"tt1396484","name":"It","type":"movie","year":2017,"votes":650000},
+    {"id":"tt0099864","name":"It","type":"series","year":1990,"votes":150000},
+    {"id":"tt0078748","name":"Alien","type":"movie","year":1979,"votes":1000000},
+    {"id":"tt0211915","name":"Amélie","original":"Le fabuleux destin d'Amélie Poulain","type":"movie","year":2001,"votes":800000},
+    {"id":"tt4574334","name":"Stranger Things","type":"series","year":2016,"votes":1600000},
+    {"id":"tt0133093","name":"The Matrix","type":"movie","year":1999,"votes":2200000},
+    {"id":"tt9999901","name":"A/B & 100%","type":"movie","year":2025,"votes":1000}
+  ]
+}

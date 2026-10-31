@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stremio Smart Search</title><link rel="icon" href="/icon.svg"><link rel="stylesheet" href="/style.css"></head>
+<body>
+<header><a class="brand" href="/"><img src="/icon.svg" width="34" height="34" alt=""><span>Smart Search <small>FOR STREMIO</small></span></a><span id="connection" class="badge">Connecting</span></header>
+<main>
+<section class="intro"><p class="eyebrow">A LITTLE MORE FORGIVING.</p><h1>Find the title.<br>Even with a typo.</h1><p class="lede">Misspellings, abbreviations and half-remembered titles. Search locally, then watch through your usual Stremio addons.</p><div class="pills"><span>No AI subscription</span><span>No account needed</span><span>Runs on your computer</span></div></section>
+<section class="setup" aria-labelledby="setup-title"><div class="section-head"><h2 id="setup-title">Make yourself at home</h2><span>ONE-TIME SETUP</span></div>
+<article class="step"><div class="number">1</div><div class="step-body"><h3>Prepare your title catalogue</h3><p>Download title data directly from IMDb and build a compact local index. The first download can be a few hundred MB and take several minutes.</p><p class="fine">IMDb data is for personal, non-commercial use. <a href="https://developer.imdb.com/non-commercial-datasets/" target="_blank" rel="noreferrer">About the title data ↗</a></p><button id="build">Prepare catalogue</button><div id="progress" class="progress" hidden><span class="spinner"></span><span id="stage">Starting…</span></div><p id="catalog-info" class="fine" aria-live="polite"></p></div></article>
+<article class="step"><div class="number">2</div><div class="step-body"><h3>Add Smart Search to Stremio</h3><p>Open the install prompt and confirm it in Stremio. This adds new movie and series search rows alongside your existing addons.</p><div class="actions"><a id="install" class="button disabled" aria-disabled="true">Add to Stremio ↗</a><button id="copy" class="secondary">Copy addon link</button></div><label class="fine" for="manifest">If the button does not open Stremio, paste this into its addon search:</label><input id="manifest" readonly spellcheck="false" aria-label="Local addon manifest address"></div></article>
+<article class="step"><div class="number">3</div><div class="step-body"><h3>You’re ready to search</h3><p>Try <strong>HOTD</strong>, <strong>interstelar</strong> or <strong>LOTR</strong> in Stremio. Use the “Stremio + Smart Search” shortcut next time to start both together.</p><button id="launch" disabled>Open Stremio</button></div></article>
+</section>
+<aside class="notes"><div><h3>Local means local</h3><p>The search engine receives no stream links, account passwords or watch history. It does not send search terms to an AI service. Posters and playback still use online providers.</p></div><div><h3>Keep the helper running</h3><p>This page can be closed. Smart Search keeps working quietly in the background. A local addon link belongs to this computer; it does not install the helper on a TV or phone.</p></div></aside>
+<p id="message" role="status" aria-live="polite"></p>
+</main>
+<footer><span id="version">Stremio Smart Search</span><span>Independent community project · <button id="quit" class="text-button">Quit helper</button></span></footer>
+<!--BOOTSTRAP--><script src="/app.js" defer></script>
+</body></html>
