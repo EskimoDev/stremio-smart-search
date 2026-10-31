@@ -27,10 +27,12 @@ After installation:
 
 1. Open **Stremio Smart Search**. Its settings page opens in your browser.
 2. Choose **Prepare catalogue**. The first setup downloads IMDb title data directly to this device, streams it into a compact index and discards the raw data. Expect a few hundred MB of network transfer; allow several minutes.
-3. Choose **Add to Stremio** and confirm the addon in Stremio. If the button does not work, copy the displayed link into Stremio's addon search.
+3. Choose **Add to Stremio**, **Add to dx.bi** or **Add to Stremio Enhanced**. The button copies the correct HTTP link and opens that app. Open **Addons → Add addon**, paste the link and choose **Install**. Alternatively, **Install through Stremio Web** opens the web install prompt; use the same account as your desktop client to sync it.
 4. Search normally. Look for the **Smart Search** movie and series rows.
 
 Next time, use **Stremio + Smart Search** to open both. Windows setup optionally enables start at sign-in so the helper is available when you open Stremio through other shortcuts. Closing the browser settings page does not stop the helper. Use **Quit helper** in settings to stop it.
+
+The launcher remembers the app chosen in setup. App-specific buttons launch installed executables directly; the helper does not change protocol associations. Generic `stremio://` addon links are deliberately avoided because Stremio rewrites them to HTTPS, which is unsuitable for this local HTTP service. Keep the full `http://127.0.0.1:11479/manifest.json` address when installing manually. Some browsers require local-network permission for the web install option.
 
 Portable users can run the included executable directly for setup. Pass `--launch` to launch Stremio, or `--no-browser` to run in the background without opening settings. No Node.js, Python, Docker or API keys are needed for the desktop app.
 
@@ -67,6 +69,7 @@ Requires Go 1.24 or newer. There are no third-party runtime dependencies.
 ```sh
 go test ./...
 go vet ./...
+node scripts/ui-test.mjs
 go run ./cmd/smart-search
 ```
 
@@ -82,6 +85,6 @@ Useful options:
 --version                 Print version
 ```
 
-See [architecture](docs/ARCHITECTURE.md), [contribution guide](CONTRIBUTING.md) and the build scripts under `scripts/`. Tests use a small handwritten fixture, never a user's catalogue or viewing history. The optional real-catalogue benchmark reads a local path supplied explicitly by the developer.
+Node.js is only used for the optional setup-page development tests, not by the shipped app. See [architecture](docs/ARCHITECTURE.md), [contribution guide](CONTRIBUTING.md) and the build scripts under `scripts/`. Tests use a small handwritten fixture, never a user's catalogue or viewing history. The optional real-catalogue benchmark reads a local path supplied explicitly by the developer.
 
 This is an independent community project, not an official Stremio product. It does not host or distribute video.

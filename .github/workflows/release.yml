@@ -4,7 +4,7 @@ on:
     inputs:
       version:
         description: Preview version
-        default: 0.1.0-preview.1
+        default: 0.1.0-preview.2
         required: true
   push:
     tags: ['v*']
@@ -27,6 +27,7 @@ jobs:
           cache: false
       - run: go test ./...
       - run: go vet ./...
+      - run: node scripts/ui-test.mjs
       - name: Install Windows installer builder
         if: runner.os == 'Windows'
         run: choco install nsis --no-progress -y
@@ -60,8 +61,12 @@ jobs:
               $zip = Join-Path $PWD "dist/StremioSmartSearch-$version-macOS-$packageArch.zip"
               ditto -c -k --sequesterRsrc $stage $zip
               if ($LASTEXITCODE -ne 0) { throw 'macOS app archive failed' }
-              hdiutil create -volname 'Stremio Smart Search' -srcfolder $stage -ov -format UDZO "dist/StremioSmartSearch-$version-macOS-$packageArch.dmg"
-              if ($LASTEXITCODE -ne 0) { throw 'Disk image build failed' }
+              for ($attempt = 0; $attempt -lt 3; $attempt++) {
+                hdiutil create -volname "Smart Search $packageArch" -srcfolder $stage -ov -format UDZO "dist/StremioSmartSearch-$version-macOS-$packageArch.dmg"
+                if ($LASTEXITCODE -eq 0) { break }
+                if ($attempt -eq 2) { throw 'Disk image build failed' }
+                Start-Sleep -Seconds 2
+              }
             }
           }
       - uses: actions/upload-artifact@v4

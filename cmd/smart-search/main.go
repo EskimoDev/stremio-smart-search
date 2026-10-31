@@ -68,7 +68,10 @@ func run() error {
 	req.Header.Set("X-Smart-Search-Key", a.Token)
 	if response, e := client.Do(req); e == nil {
 		valid := response.StatusCode == 200
-		var existing struct{ Ready bool }
+		var existing struct {
+			Ready           bool
+			PreferredClient string
+		}
 		if valid {
 			valid = json.NewDecoder(response.Body).Decode(&existing) == nil
 		}
@@ -85,7 +88,10 @@ func run() error {
 				return nil
 			}
 			if *launch && existing.Ready {
-				return app.OpenURL("stremio:///")
+				if err := app.OpenClient(existing.PreferredClient); err == nil {
+					return nil
+				}
+				return app.OpenURL(baseURL)
 			}
 			if !*noBrowser {
 				return app.OpenURL(baseURL)
@@ -117,7 +123,9 @@ func run() error {
 	}()
 	if !*noBrowser {
 		if *launch && a.Status().Ready {
-			_ = app.OpenURL("stremio:///")
+			if err := app.OpenClient(a.Status().PreferredClient); err != nil {
+				_ = app.OpenURL(baseURL)
+			}
 		} else {
 			_ = app.OpenURL(baseURL)
 		}

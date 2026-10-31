@@ -193,7 +193,7 @@ func run() error {
 	osName := flag.String("os", "", "Target OS")
 	arch := flag.String("arch", "", "Target architecture")
 	binary := flag.String("binary", "", "Compiled binary path")
-	version := flag.String("version", "0.1.0-preview.1", "Release version")
+	version := flag.String("version", "0.1.0-preview.2", "Release version")
 	out := flag.String("out", "dist", "Artifact folder")
 	flag.Parse()
 	if *osName == "" || *arch == "" || *binary == "" {

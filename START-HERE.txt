@@ -2,7 +2,9 @@ STREMIO SMART SEARCH — PREVIEW
 
 1. Open Stremio Smart Search. A local setup page opens in your browser.
 2. Click Prepare catalogue. The first download can be a few hundred MB.
-3. Click Add to Stremio and confirm the install prompt there.
+3. Choose Stremio, dx.bi or Stremio Enhanced. The link is copied and the app opens.
+   Open Addons > Add addon in that app, paste the link and choose Install.
+   Or use Install through Stremio Web with the same account as your desktop app.
 4. Search as usual. Try HOTD, interstelar or LOTR.
 
 Next time, use the Stremio + Smart Search shortcut to start both together.

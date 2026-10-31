@@ -7,6 +7,7 @@ import (
 	"embed"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/EskimoDev/stremio-smart-search/internal/catalog"
 	"github.com/EskimoDev/stremio-smart-search/internal/search"
@@ -30,28 +31,31 @@ const Product = "Stremio Smart Search"
 const DefaultPort = "11479"
 
 type Status struct {
-	Product  string    `json:"product"`
-	Version  string    `json:"version"`
-	Ready    bool      `json:"ready"`
-	Building bool      `json:"building"`
-	Stage    string    `json:"stage"`
-	Bytes    int64     `json:"bytes"`
-	Movies   int       `json:"movies"`
-	Series   int       `json:"series"`
-	BuiltAt  time.Time `json:"builtAt"`
-	Error    string    `json:"error,omitempty"`
-	Manifest string    `json:"manifest"`
+	Product         string    `json:"product"`
+	Version         string    `json:"version"`
+	Ready           bool      `json:"ready"`
+	Building        bool      `json:"building"`
+	Stage           string    `json:"stage"`
+	Bytes           int64     `json:"bytes"`
+	Movies          int       `json:"movies"`
+	Series          int       `json:"series"`
+	BuiltAt         time.Time `json:"builtAt"`
+	Error           string    `json:"error,omitempty"`
+	Manifest        string    `json:"manifest"`
+	WebInstall      string    `json:"webInstall"`
+	PreferredClient string    `json:"preferredClient"`
 }
 type App struct {
-	ctx         context.Context
-	dataDir     string
-	Token       string
-	BaseURL     string
-	mu          sync.Mutex
-	status      Status
-	engine      atomic.Pointer[search.Engine]
-	searchSlots chan struct{}
-	Quit        func()
+	ctx          context.Context
+	dataDir      string
+	Token        string
+	BaseURL      string
+	mu           sync.Mutex
+	status       Status
+	engine       atomic.Pointer[search.Engine]
+	searchSlots  chan struct{}
+	Quit         func()
+	LaunchClient func(string) error
 }
 
 func New(ctx context.Context, dataDir, baseURL, version string) (*App, error) {
@@ -64,7 +68,8 @@ func New(ctx context.Context, dataDir, baseURL, version string) (*App, error) {
 		return nil, err
 	}
 	a := &App{ctx: ctx, dataDir: dataDir, Token: string(token), BaseURL: baseURL, searchSlots: make(chan struct{}, 2)}
-	a.status = Status{Product: Product, Version: version, Stage: "Set up your local catalogue", Manifest: baseURL + "/manifest.json"}
+	a.LaunchClient = OpenClient
+	a.status = Status{Product: Product, Version: version, Stage: "Set up your local catalogue", Manifest: baseURL + "/manifest.json", WebInstall: "https://web.stremio.com/#/addons?addon=" + url.QueryEscape(baseURL+"/manifest.json"), PreferredClient: loadClientPreference(dataDir)}
 	return a, nil
 }
 
@@ -261,6 +266,37 @@ func (a *App) Handler() http.Handler {
 			switch {
 			case r.URL.Path == "/api/status" && r.Method == http.MethodGet:
 				writeJSON(w, 200, a.Status())
+			case r.URL.Path == "/api/clients" && r.Method == http.MethodGet:
+				writeJSON(w, 200, map[string]any{"clients": InstalledClients()})
+			case r.URL.Path == "/api/install" && r.Method == http.MethodPost:
+				var selection struct {
+					Client string `json:"client"`
+				}
+				decoder := json.NewDecoder(r.Body)
+				decoder.DisallowUnknownFields()
+				if decoder.Decode(&selection) != nil || !validClient(selection.Client) {
+					writeJSON(w, 400, map[string]string{"error": "Choose Stremio, dx.bi or Stremio Enhanced."})
+					return
+				}
+				if !a.Status().Ready {
+					writeJSON(w, 409, map[string]string{"error": "Prepare the local catalogue first."})
+					return
+				}
+				if err := a.LaunchClient(selection.Client); err != nil {
+					code := 500
+					message := "Could not open the selected app. Copy the addon link and open it manually."
+					if errors.Is(err, ErrClientNotFound) {
+						code = 404
+						message = clientNames[selection.Client] + " was not found. Copy the addon link and open the app manually."
+					}
+					writeJSON(w, code, map[string]string{"error": message})
+					return
+				}
+				if err := a.rememberClient(selection.Client); err != nil {
+					writeJSON(w, 500, map[string]string{"error": "The app opened, but its selection could not be saved."})
+					return
+				}
+				writeJSON(w, 200, map[string]string{"client": selection.Client, "name": clientNames[selection.Client], "manifest": a.Status().Manifest})
 			case r.URL.Path == "/api/build" && r.Method == http.MethodPost:
 				if !a.startBuild() {
 					writeJSON(w, 409, map[string]string{"error": "A catalogue update is already running."})
@@ -268,7 +304,7 @@ func (a *App) Handler() http.Handler {
 				}
 				writeJSON(w, 202, a.Status())
 			case r.URL.Path == "/api/launch" && r.Method == http.MethodPost:
-				if err := OpenURL("stremio:///"); err != nil {
+				if err := a.LaunchClient(a.Status().PreferredClient); err != nil {
 					writeJSON(w, 500, map[string]string{"error": "Could not open Stremio. Open it normally, then add the copied addon link."})
 					return
 				}
