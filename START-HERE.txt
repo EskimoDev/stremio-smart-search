@@ -7,6 +7,18 @@ STREMIO SMART SEARCH — PREVIEW
    Or use Install through Stremio Web with the same account as your desktop app.
 4. Search as usual. Try HOTD, interstelar or LOTR.
 
+RECOMMENDED: PUT SMART SEARCH FIRST
+Move Stremio Smart Search to the top of your addon order to see its results first.
+In dx.bi: Addons > Order & backup > move Smart Search to the top > Save order.
+Other clients may use different reorder controls. Moving only Smart Search
+keeps the other addons in their same relative order and leaves their stream
+providers unchanged. Account addon order may sync to your other devices.
+
+WHY IT CAN FEEL FAST
+Matching uses a local title index in your computer's memory, so it does not
+wait for a remote search server or AI response. Artwork and playback still
+use online providers, and total loading times depend on your setup.
+
 Next time, use the Stremio + Smart Search shortcut to start both together.
 Portable users: run the executable with --launch to open Stremio too.
 

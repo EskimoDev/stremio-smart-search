@@ -2,6 +2,14 @@
 
 No package should be described as device-tested until it has actually been run on that platform. The release workflow compiles and tests on Windows, macOS and Linux runners; ARM64 binaries also require device testing.
 
+## Recommended search row order
+
+After installing the addon, move **Stremio Smart Search** to the top of your addon order. In dx.bi, use **Addons → Order & backup**, move SSS to the top, then **Save order**. Controls vary by client; see [the ordering guide](../README.md#put-smart-search-first-recommended).
+
+Move only SSS and keep other addons in their existing relative order. Its manifest provides search-only catalogues and no stream, metadata or subtitle resource, so this does not reprioritize your playback providers or add Home/Discover rows. The order is stored with your Stremio account and may sync to other clients. The helper does not change it automatically.
+
+SSS matches against a local, prebuilt index, avoiding an internet round trip to a search server. This can reduce search waiting; posters, metadata, streams and the client UI still have their own loading time.
+
 ## Windows
 
 The installer is per-user and requests no administrator privileges. It creates:

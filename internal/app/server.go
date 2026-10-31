@@ -349,7 +349,7 @@ func (a *App) manifest(w http.ResponseWriter) {
 		catalogs = append(catalogs, map[string]any{"id": "smart-search", "type": kind, "name": "Smart Search", "extra": []any{map[string]any{"name": "search", "isRequired": true}}})
 	}
 	w.Header().Set("Cache-Control", "public, max-age=300")
-	writeJSON(w, 200, map[string]any{"id": "community.eskimodev.smartsearch", "version": strings.TrimPrefix(a.Status().Version, "v"), "name": Product, "description": "Local typo-tolerant title search and abbreviations. Requires the Smart Search companion on this computer.", "resources": []string{"catalog"}, "types": []string{"movie", "series"}, "catalogs": catalogs, "behaviorHints": map[string]bool{"adult": false, "p2p": false}})
+	writeJSON(w, 200, map[string]any{"id": "community.eskimodev.smartsearch", "version": strings.TrimPrefix(a.Status().Version, "v"), "name": Product, "description": "Fast local title matching with typo and abbreviation support. Recommended: move Smart Search to the top of your addon order. Requires the Smart Search companion on this computer.", "resources": []string{"catalog"}, "types": []string{"movie", "series"}, "catalogs": catalogs, "behaviorHints": map[string]bool{"adult": false, "p2p": false}})
 }
 func (a *App) catalog(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(strings.TrimPrefix(r.URL.EscapedPath(), "/catalog/"), "/")

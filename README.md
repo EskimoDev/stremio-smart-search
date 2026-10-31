@@ -1,12 +1,14 @@
 # Stremio Smart Search
 
-A standalone, local search addon for Stremio. Find titles with misspellings, joined words and abbreviations such as **HOTD**, **LOTR** and **TDK**. Works through standard movie and series search catalogs; no changes to Stremio or dx.bi are required.
+A standalone, local search addon for Stremio. **Stremio Smart Search (SSS)** gives you fast local title matching, including misspellings, joined words and abbreviations such as **HOTD**, **LOTR** and **TDK**. Works through standard movie and series search catalogs; no changes to Stremio or dx.bi are required.
 
 **Preview under development.** Windows is being tested locally. macOS and Linux build targets and CI are included, but device support is not established merely by cross-compiling. No release is published yet.
 
 ## How it works
 
 The companion runs on your computer and provides a normal Stremio addon address. Searches use a local title index, without AI calls or a hosted search backend. Your other addons continue to provide their own results, metadata and playback.
+
+**Why it can feel faster:** once the catalogue is prepared, matching runs against an index in your computer's memory. SSS does not wait for a remote search server or an AI response to find matches. This avoids an internet round trip for its matching work and can make its results appear sooner than remote search providers. Artwork, metadata and playback still use online providers, so complete page-load times vary. See the local catalogue's coverage below.
 
 Standard Stremio addons do not execute downloaded code inside Stremio. This project includes the local companion needed to run the matching engine. The “Stremio + Smart Search” launcher starts the helper and opens your registered Stremio application. The helper stays available in the background until you quit it; it does not continuously monitor your processes or watching activity.
 
@@ -37,6 +39,22 @@ The launcher remembers the app chosen in setup. App-specific buttons launch inst
 Portable users can run the included executable directly for setup. Pass `--launch` to launch Stremio, or `--no-browser` to run in the background without opening settings. No Node.js, Python, Docker or API keys are needed for the desktop app.
 
 See [installation details](docs/INSTALLATION.md) for platform-specific packaging and current limitations.
+
+## Put Smart Search first (recommended)
+
+Move **Stremio Smart Search** to the top of your addon order so its movie and series results are easier to find at the top of search. Row placement is controlled by the Stremio client and your addon order; SSS cannot give itself priority through its manifest.
+
+In **dx.bi**:
+
+1. Open **Addons → Order & backup**, beside **Add addon**.
+2. Move **Stremio Smart Search** to the top using the drag handle or up arrows.
+3. Choose **Save order**, then run your search again.
+
+If that control is hidden, enable **Addon order & backup** in dx.bi settings. Saving with that tool requires signing into Stremio. Other clients can have different reorder controls.
+
+Moving **only SSS** keeps the other addons in their existing relative order. SSS supplies search-only catalogues: it does not supply streams, metadata or subtitles, or add Home/Discover rows. Your existing playback providers continue working in their previous order. The order is a Stremio account setting and may sync to your other clients.
+
+The companion leaves this choice to you; it does not sign into your account or reorder addons automatically.
 
 ## Scope and title coverage
 
