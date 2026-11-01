@@ -18,6 +18,8 @@ InstallDir "$LOCALAPPDATA\Programs\StremioSmartSearch"
 RequestExecutionLevel user
 SetCompressor /SOLID lzma
 !define MUI_ABORTWARNING
+!define MUI_ICON "..\assets\icon.ico"
+!define MUI_UNICON "..\assets\icon.ico"
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\LICENSE"
 !insertmacro MUI_PAGE_COMPONENTS
@@ -48,6 +50,7 @@ Section "Smart Search and Stremio launcher" Main
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\StremioSmartSearch" "DisplayName" "Stremio Smart Search"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\StremioSmartSearch" "DisplayVersion" "${VERSION}"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\StremioSmartSearch" "DisplayIcon" '"$INSTDIR\StremioSmartSearch.exe"'
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\StremioSmartSearch" "Publisher" "EskimoDev"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\StremioSmartSearch" "UninstallString" '"$INSTDIR\Uninstall.exe"'
 SectionEnd

@@ -193,8 +193,11 @@ func appBundle(root, binary, name, executable, identifier, version string) error
 	if err := copyFile(binary, filepath.Join(dir, "MacOS", executable), 0755); err != nil {
 		return err
 	}
+	if err := copyFile("assets/icon.icns", filepath.Join(dir, "Resources", "AppIcon.icns"), 0644); err != nil {
+		return err
+	}
 	short := strings.SplitN(version, "-", 2)[0]
-	plist := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>CFBundleName</key><string>%s</string><key>CFBundleDisplayName</key><string>%s</string><key>CFBundleExecutable</key><string>%s</string><key>CFBundleIdentifier</key><string>%s</string><key>CFBundlePackageType</key><string>APPL</string><key>CFBundleShortVersionString</key><string>%s</string><key>CFBundleVersion</key><string>%s</string><key>LSMinimumSystemVersion</key><string>11.0</string><key>LSUIElement</key><true/></dict></plist>`, name, name, executable, identifier, short, short)
+	plist := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>CFBundleName</key><string>%s</string><key>CFBundleDisplayName</key><string>%s</string><key>CFBundleExecutable</key><string>%s</string><key>CFBundleIdentifier</key><string>%s</string><key>CFBundleIconFile</key><string>AppIcon</string><key>CFBundlePackageType</key><string>APPL</string><key>CFBundleShortVersionString</key><string>%s</string><key>CFBundleVersion</key><string>%s</string><key>LSMinimumSystemVersion</key><string>11.0</string><key>LSUIElement</key><true/></dict></plist>`, name, name, executable, identifier, short, short)
 	return put(filepath.Join(dir, "Info.plist"), plist, 0644)
 }
 func run() error {
