@@ -126,6 +126,19 @@ Portable builds use the same settings folder as installed builds unless you pass
 
 **A title is missing or the wrong one comes first.** Check your catalogue size and alternative-title language. See [coverage and ranking](CATALOGUE.md) and [known search gaps](SEARCH-QUALITY.md#remaining-weaknesses). Normal results from your other addons remain available.
 
+### Addon logo after an update
+
+**Unreleased:** the addon-logo change is newer than the tagged preview.4 build. These steps apply after installing a helper build that includes it.
+
+The helper serves the logo at `/addon-logo.png` on the same address as its manifest; no external image host or settings-page visit is required. The addon ID and manifest address stay the same, so an existing installation can fetch the new manifest at its original URL. The helper must be running for the logo to load.
+
+Stremio clients can retain the installed manifest, including its old or missing logo. A helper update or client restart does not guarantee that this saved copy is replaced. After updating the helper:
+
+1. Open Smart Search's addon details. If your client offers **Update** or **Upgrade**, use that to refresh the existing addon.
+2. If no update option is offered and the logo is still missing, remove **only Stremio Smart Search**, then add it again using the same full HTTP manifest link copied from the helper's settings page. Your downloaded catalogue and helper settings are retained; put SSS back in your preferred addon position if needed.
+
+The manifest and image have a five-minute HTTP cache lifetime. This is separate from the client's saved installed-addon metadata. Client testing is recorded in [platform testing](PLATFORM-TESTING.md).
+
 ## Uninstalling
 
 1. Before uninstalling, open the **Storage** card in settings and note the catalogue folder if you also want to delete downloaded data.

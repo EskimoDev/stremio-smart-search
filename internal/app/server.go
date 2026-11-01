@@ -374,7 +374,7 @@ func (a *App) Handler() http.Handler {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Referrer-Policy", "no-referrer")
 		w.Header().Set("X-Frame-Options", "DENY")
-		public := r.URL.Path == "/manifest.json" || strings.HasPrefix(r.URL.Path, "/catalog/")
+		public := r.URL.Path == "/manifest.json" || r.URL.Path == "/addon-logo.png" || strings.HasPrefix(r.URL.Path, "/catalog/")
 		if public {
 			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.Header().Set("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS")
@@ -387,7 +387,12 @@ func (a *App) Handler() http.Handler {
 				return
 			}
 			if r.URL.Path == "/manifest.json" {
-				a.manifest(w)
+				a.manifest(w, r)
+				return
+			}
+			if r.URL.Path == "/addon-logo.png" {
+				w.Header().Set("Cache-Control", "public, max-age=300")
+				files.ServeHTTP(w, r)
 				return
 			}
 			a.catalog(w, r)
@@ -612,13 +617,18 @@ func (a *App) Handler() http.Handler {
 		}
 	})
 }
-func (a *App) manifest(w http.ResponseWriter) {
+func (a *App) manifest(w http.ResponseWriter, r *http.Request) {
+	// Use the origin reached by the client, including custom ports and IPv6 hosts.
+	logo := url.URL{Scheme: "http", Host: r.Host, Path: "/addon-logo.png"}
+	if r.TLS != nil {
+		logo.Scheme = "https"
+	}
 	catalogs := []any{}
 	for _, kind := range []string{"movie", "series"} {
 		catalogs = append(catalogs, map[string]any{"id": "smart-search", "type": kind, "name": "Smart Search", "extra": []any{map[string]any{"name": "search", "isRequired": true}}})
 	}
 	w.Header().Set("Cache-Control", "public, max-age=300")
-	writeJSON(w, 200, map[string]any{"id": "community.eskimodev.smartsearch", "version": strings.TrimPrefix(a.Status().Version, "v"), "name": Product, "description": "Fast local title matching with typo and abbreviation support. Recommended: move Smart Search to the top of your addon order. Requires the Smart Search companion on this computer.", "resources": []string{"catalog"}, "types": []string{"movie", "series"}, "catalogs": catalogs, "behaviorHints": map[string]bool{"adult": false, "p2p": false, "configurable": true}})
+	writeJSON(w, 200, map[string]any{"id": "community.eskimodev.smartsearch", "version": strings.TrimPrefix(a.Status().Version, "v"), "name": Product, "logo": logo.String(), "description": "Fast local title matching with typo and abbreviation support. Recommended: move Smart Search to the top of your addon order. Requires the Smart Search companion on this computer.", "resources": []string{"catalog"}, "types": []string{"movie", "series"}, "catalogs": catalogs, "behaviorHints": map[string]bool{"adult": false, "p2p": false, "configurable": true}})
 }
 func (a *App) catalog(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(strings.TrimPrefix(r.URL.EscapedPath(), "/catalog/"), "/")
