@@ -12,7 +12,7 @@
     if (data) { options.headers['Content-Type'] = 'application/json'; options.body = JSON.stringify(data); }
     const response = await fetch(`/api/${path}`, options);
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'The helper could not complete that request.');
+    if (!response.ok) { const error = new Error(result.error || 'The helper could not complete that request.'); error.status = response.status; throw error; }
     return result;
   }
   const option = (value, text) => { const node = document.createElement('option'); node.value = value; node.textContent = text; return node; };
@@ -85,9 +85,58 @@
     $('version').textContent = `${status.product} · ${status.version}`;
     if (status.error) tell(`${status.error}${status.ready ? ' Your previous catalogue is still available.' : ' You can try preparing the catalogue again.'}`);
   }
+  const platform = navigator.userAgentData?.platform || navigator.platform || '';
+  const folderLabel = /^win/i.test(platform) ? 'Show in Explorer' : /mac/i.test(platform) ? 'Show in Finder' : 'Open folder';
+  $('open-folder').textContent = folderLabel;
+  const size = bytes => bytes >= 1024 ** 4 ? `${(bytes / 1024 ** 4).toFixed(2)} TB` : bytes >= 1024 ** 3 ? `${(bytes / 1024 ** 3).toFixed(bytes >= 100 * 1024 ** 3 ? 0 : 1)} GB` : bytes >= 1024 ** 2 ? `${(bytes / 1024 ** 2).toFixed(1)} MB` : bytes >= 1024 ? `${Math.round(bytes / 1024)} KB` : `${bytes} B`;
+  async function refreshStorage() {
+    try {
+      const storage = await api('storage');
+      const segments = { catalogue: storage.catalogue, backup: storage.backup, other: storage.other };
+      for (const [name, bytes] of Object.entries(segments)) {
+        $(`seg-${name}`).style.width = storage.total ? `${(bytes / storage.total * 100).toFixed(2)}%` : '0%';
+        $(`seg-${name}`).style.minWidth = bytes ? '3px' : '0';
+        $(`seg-${name}`).title = `${name === 'backup' ? 'Previous catalogue' : name === 'other' ? 'Settings' : 'Catalogue'}: ${size(bytes)}`;
+      }
+      $('storage-total').textContent = size(storage.total);
+      $('storage-bar').setAttribute('aria-label', `Smart Search uses ${size(storage.total)}: catalogue ${size(storage.catalogue)}, previous catalogue ${size(storage.backup)}, settings ${size(storage.other)}`);
+      $('storage-catalogue').textContent = storage.catalogue ? size(storage.catalogue) : 'None yet';
+      $('storage-backup-row').hidden = !storage.backup;
+      $('storage-backup').textContent = size(storage.backup);
+      $('storage-other').textContent = size(storage.other);
+      $('storage-disk').textContent = storage.diskSize ? `${size(storage.diskFree)} of ${size(storage.diskSize)}` : 'Unknown';
+      $('storage-memory').textContent = size(storage.memory);
+      $('storage-path').textContent = storage.path;
+      $('storage-path').title = storage.custom ? 'Custom location' : 'Default location';
+      $('change-folder').disabled = storage.moving;
+      $('reset-folder').hidden = $('reset-sep').hidden = !storage.custom;
+      lastStorage = storage;
+      $('open-folder').disabled = !storage.canOpen;
+    } catch { $('storage-path').textContent = 'Storage details unavailable'; }
+  }
+  let storageFor, lastStorage, resetMode = false;
+  function openMovePanel(path, info, reset = false) {
+    resetMode = reset;
+    $('move-panel').hidden = false;
+    $('move-path').value = path;
+    $('move-path').disabled = reset;
+    $('move-confirm').disabled = false;
+    $('move-confirm').textContent = reset ? 'Move back' : 'Move catalogue';
+    $('move-info').textContent = info;
+    if (!reset && !path) $('move-path').focus();
+  }
+  const moveSummary = () => {
+    const bytes = (lastStorage?.catalogue || 0) + (lastStorage?.backup || 0);
+    return `${bytes ? `Moves ${size(bytes)} of catalogue files` : 'Future catalogues are saved'} into a “Stremio Smart Search” folder there. Settings stay where they are, and search keeps working while it moves.`;
+  };
   async function refresh() {
     if (stopped) return;
-    try { const status = await api('status'); render(status); timer = setTimeout(refresh, status.building ? 1000 : 10000); }
+    try {
+      const status = await api('status'); render(status); timer = setTimeout(refresh, status.building ? 1000 : 10000);
+      // Sizes only change when a catalogue is saved, so skip the walk on ordinary polls.
+      const key = status.building ? null : `${status.ready}|${status.builtAt}`;
+      if (key && key !== storageFor) { storageFor = key; refreshStorage(); }
+    }
     catch { $('connection').textContent = 'Helper is not running'; tell('Open Smart Search again to reconnect.'); }
   }
   $('build').addEventListener('click', async () => {
@@ -125,6 +174,40 @@
   });
   $('launch').addEventListener('click', async () => {
     try { await api('launch', 'POST'); tell(`Opening ${clientNames[lastStatus?.preferredClient] || 'your default Stremio app'}.`); } catch (error) { tell(error.message); }
+  });
+  $('open-folder').addEventListener('click', async () => {
+    try { await api('storage/open', 'POST'); $('storage-info').textContent = 'Opened the data folder.'; }
+    catch (error) { $('storage-info').textContent = error.message; }
+  });
+  $('change-folder').addEventListener('click', async () => {
+    $('storage-info').textContent = '';
+    if (lastStorage && !lastStorage.canChoose) { openMovePanel('', moveSummary()); return; }
+    const button = $('change-folder');
+    button.disabled = true; button.textContent = 'Choose a folder in the window that opened…';
+    try {
+      const result = await api('storage/choose', 'POST');
+      if (!result.cancelled) openMovePanel(result.path, moveSummary());
+    } catch (error) { openMovePanel('', error.message); }
+    finally { button.disabled = false; button.textContent = 'Change location…'; }
+  });
+  $('reset-folder').addEventListener('click', () => {
+    $('storage-info').textContent = '';
+    openMovePanel(lastStorage?.defaultPath || '', 'Moves the catalogue back to the default folder next to your settings.', true);
+  });
+  $('move-cancel').addEventListener('click', () => { $('move-panel').hidden = true; });
+  $('move-confirm').addEventListener('click', async () => {
+    const path = resetMode ? '' : $('move-path').value.trim();
+    if (!resetMode && !path) { $('move-info').textContent = 'Enter or choose a folder first.'; return; }
+    $('move-confirm').disabled = true; $('move-confirm').textContent = 'Moving…';
+    try {
+      const result = await api('storage/move', 'POST', { path });
+      $('move-panel').hidden = true;
+      $('storage-info').textContent = `Catalogue moved to ${result.path}`;
+      refreshStorage();
+    } catch (error) {
+      $('move-info').textContent = error.message;
+      $('move-confirm').disabled = false; $('move-confirm').textContent = resetMode ? 'Move back' : 'Move catalogue';
+    }
   });
   $('quit').addEventListener('click', async () => {
     stopped = true; clearTimeout(timer);

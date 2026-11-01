@@ -60,6 +60,9 @@ type Status struct {
 type App struct {
 	ctx             context.Context
 	dataDir         string
+	catalogDir      string // guarded by mu; see storage.go
+	moving          bool   // guarded by mu
+	picking         atomic.Bool
 	Token           string
 	BaseURL         string
 	mu              sync.Mutex
@@ -68,6 +71,8 @@ type App struct {
 	searchSlots     chan struct{}
 	Quit            func()
 	LaunchClient    func(string) error
+	OpenFolder      func(string) error
+	ChooseFolder    func(start string) (string, error)
 	DownloadCatalog func(context.Context, catalog.Profile, catalog.Progress) (*catalog.Catalog, error)
 	// DownloadAliases adds alternative titles to a freshly built catalogue. It
 	// is only called when the build selected a language.
@@ -85,6 +90,9 @@ func New(ctx context.Context, dataDir, baseURL, version string) (*App, error) {
 	}
 	a := &App{ctx: ctx, dataDir: dataDir, Token: string(token), BaseURL: baseURL, searchSlots: make(chan struct{}, 2)}
 	a.LaunchClient = OpenClient
+	a.OpenFolder = OpenFolder
+	a.ChooseFolder = ChooseFolderNative
+	a.catalogDir = loadCatalogDir(dataDir)
 	a.DownloadCatalog = catalog.DownloadIMDbProfile
 	a.DownloadAliases = catalog.DownloadIMDbAliases
 	a.status = Status{Product: Product, Version: version, Profile: catalog.DefaultProfile, Profiles: catalog.Profiles(), Languages: catalog.Languages(), Stage: "Set up your local catalogue", Manifest: baseURL + "/manifest.json", WebInstall: "https://web.stremio.com/#/addons?addon=" + url.QueryEscape(baseURL+"/manifest.json"), PreferredClient: loadClientPreference(dataDir)}
@@ -173,7 +181,7 @@ func (a *App) Load(path string) error {
 	return nil
 }
 func (a *App) Restore() error {
-	path := filepath.Join(a.dataDir, "catalog.json.gz")
+	path := a.catalogPath()
 	err := a.Load(path)
 	if err != nil {
 		if backupErr := a.Load(path + ".previous"); backupErr == nil {
@@ -184,7 +192,7 @@ func (a *App) Restore() error {
 }
 func (a *App) startBuild(profile catalog.Profile, aliases catalog.AliasOptions) bool {
 	a.mu.Lock()
-	if a.status.Building {
+	if a.status.Building || a.moving {
 		a.mu.Unlock()
 		return false
 	}
@@ -209,7 +217,7 @@ func (a *App) startBuild(profile catalog.Profile, aliases catalog.AliasOptions) 
 			err = a.DownloadAliases(ctx, c, aliases, progress)
 		}
 		if err == nil {
-			err = catalog.Save(filepath.Join(a.dataDir, "catalog.json.gz"), c)
+			err = catalog.Save(a.catalogPath(), c)
 		}
 		if err == nil {
 			a.mu.Lock()
@@ -384,6 +392,63 @@ func (a *App) Handler() http.Handler {
 					return
 				}
 				writeJSON(w, 202, a.Status())
+			case r.URL.Path == "/api/storage" && r.Method == http.MethodGet:
+				writeJSON(w, 200, a.Storage())
+			case r.URL.Path == "/api/storage/open" && r.Method == http.MethodPost:
+				// admin() has already limited this to loopback requests from the
+				// settings page, so a LAN client can never open windows here.
+				if a.OpenFolder == nil || a.OpenFolder(a.Storage().Path) != nil {
+					writeJSON(w, 500, map[string]string{"error": "Could not open the folder. Copy the path and open it manually."})
+					return
+				}
+				writeJSON(w, 200, map[string]bool{"ok": true})
+			case r.URL.Path == "/api/storage/choose" && r.Method == http.MethodPost:
+				// The picker waits on the person at this computer, well past the
+				// server's normal write timeout.
+				_ = http.NewResponseController(w).SetWriteDeadline(time.Now().Add(6 * time.Minute))
+				if a.ChooseFolder == nil {
+					writeJSON(w, 501, map[string]string{"error": "No folder picker is available. Type the folder path instead."})
+					return
+				}
+				if !a.picking.CompareAndSwap(false, true) {
+					writeJSON(w, 409, map[string]string{"error": "A folder picker is already open on this computer."})
+					return
+				}
+				path, err := a.ChooseFolder(a.CatalogDir())
+				a.picking.Store(false)
+				switch {
+				case errors.Is(err, ErrPickerMissing):
+					writeJSON(w, 501, map[string]string{"error": "No folder picker is available. Type the folder path instead."})
+				case err != nil:
+					writeJSON(w, 500, map[string]string{"error": "The folder picker could not open. Type the folder path instead."})
+				default:
+					writeJSON(w, 200, map[string]any{"path": path, "cancelled": path == ""})
+				}
+			case r.URL.Path == "/api/storage/move" && r.Method == http.MethodPost:
+				var request struct {
+					Path string `json:"path"`
+				}
+				decoder := json.NewDecoder(r.Body)
+				decoder.DisallowUnknownFields()
+				if decoder.Decode(&request) != nil {
+					writeJSON(w, 400, map[string]string{"error": "Choose a folder for the catalogue."})
+					return
+				}
+				// Copying a large catalogue to a slow drive can take a while.
+				_ = http.NewResponseController(w).SetWriteDeadline(time.Now().Add(10 * time.Minute))
+				dest, err := a.MoveCatalog(request.Path)
+				switch {
+				case errors.Is(err, ErrMoveBusy):
+					writeJSON(w, 409, map[string]string{"error": "Wait for the catalogue update to finish, then try again."})
+				case errors.Is(err, errNotAbsolutePath):
+					writeJSON(w, 400, map[string]string{"error": "Enter a full folder path, such as D:\\Media."})
+				case errors.Is(err, errNotEnoughSpace):
+					writeJSON(w, 507, map[string]string{"error": "There isn't enough free space on that drive."})
+				case err != nil:
+					writeJSON(w, 500, map[string]string{"error": "Could not move the catalogue there (" + err.Error() + "). It is still in its previous folder."})
+				default:
+					writeJSON(w, 200, map[string]string{"path": dest})
+				}
 			case r.URL.Path == "/api/launch" && r.Method == http.MethodPost:
 				if err := a.LaunchClient(a.Status().PreferredClient); err != nil {
 					writeJSON(w, 500, map[string]string{"error": "Could not open Stremio. Open it normally, then add the copied addon link."})
