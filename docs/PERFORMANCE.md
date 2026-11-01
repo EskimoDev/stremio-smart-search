@@ -132,11 +132,11 @@ exclude the download.
 
 | Size | French titles kept | Stored catalogue | RAM after startup | Median request | 95th percentile | 99th percentile |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Compact, off | | 1.34 MB | 70 MiB | 0.36 ms | 0.65 ms | 1.1–1.4 ms |
+| Compact, off | none | 1.34 MB | 70 MiB | 0.36 ms | 0.65 ms | 1.1–1.4 ms |
 | Compact, French | 25,394 | 1.68 MB | 78–80 MiB | 0.37 ms | 0.66–0.74 ms | 1.2 ms |
-| Standard, off | | 4.93 MB | 197–200 MiB | 0.71–0.77 ms | 1.57–1.78 ms | 2.8–3.2 ms |
+| Standard, off | none | 4.93 MB | 197–200 MiB | 0.71–0.77 ms | 1.57–1.78 ms | 2.8–3.2 ms |
 | Standard, French | 55,722 | 5.70 MB | 217–231 MiB | 0.71–0.78 ms | 1.45–1.69 ms | 2.7–3.5 ms |
-| Expanded, off | | 10.29 MB | 299–301 MiB | 1.5–1.6 ms | 11–15 ms | 19–24 ms |
+| Expanded, off | none | 10.29 MB | 299–301 MiB | 1.5–1.6 ms | 11–15 ms | 19–24 ms |
 | Expanded, French | 75,501 | 11.38 MB | 306–309 MiB | 2.3–2.5 ms | 8–14 ms | 12–30 ms |
 
 | Size | First preparation, off → French | Live refresh, off → French | Peak RAM during refresh, off → French |

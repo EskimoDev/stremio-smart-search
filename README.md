@@ -61,7 +61,7 @@ Needs Windows 10 or newer, macOS 11 or newer, or 64-bit Linux. Full results are 
 1. **Open Stremio Smart Search.** Its settings page opens in your browser.
 2. **Prepare the catalogue.** Pick a size (Standard is the default) and choose **Prepare catalogue**. It downloads IMDb title data straight to your computer, a few hundred MB, and takes a few minutes the first time.
 3. **Add it to your app.** Choose **Stremio**, **dx.bi** or **Stremio Enhanced**. The link is copied and the app opens. Go to **Addons → Add addon**, paste and choose **Install**.
-4. **Search as usual.** Try `HOTD`, `interstelar` or `LOTR` and look for the Smart Search rows.
+4. **Search as usual.** Try `HOTD`, `strangerthings` or `LOTR` and look for the Smart Search rows.
 
 Next time, open **Stremio + Smart Search** to start both together. You can close the settings page; the helper keeps running until you choose **Quit helper**.
 

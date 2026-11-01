@@ -6,7 +6,7 @@ STREMIO SMART SEARCH — PREVIEW
 3. Choose Stremio, dx.bi or Stremio Enhanced. The link is copied and the app opens.
    Open Addons > Add addon in that app, paste the link and choose Install.
    Or use Install through Stremio Web with the same account as your desktop app.
-4. Search as usual. Try HOTD, interstelar or LOTR.
+4. Search as usual. Try HOTD, strangerthings or LOTR.
 
 RECOMMENDED: PUT SMART SEARCH FIRST
 Move Stremio Smart Search to the top of your addon order to see its results first.
