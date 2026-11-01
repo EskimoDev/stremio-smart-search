@@ -1,0 +1,1589 @@
+{
+  "measured": "2026-10-31 / 2026-11-01 UTC",
+  "hardware": {
+    "platform": "Windows x64",
+    "cpu": "AMD Ryzen 5 5600X",
+    "ramGiB": 32
+  },
+  "runtime": {
+    "go": "go1.27.3",
+    "executionThreads": 2,
+    "goSoftMemoryMiB": 256
+  },
+  "method": {
+    "startupRuns": 3,
+    "requestsPerRun": 750,
+    "workload": "15 fixed queries repeated 50 times; real loopback HTTP with JSON decoded; excludes artwork/playback",
+    "fileCache": "warm",
+    "forcedGC": false,
+    "workingSet": "after a 3-second post-startup idle window",
+    "steadyIdle": "10-second quiet sample after searches and 3 seconds settling",
+    "prepare": "one cached-source parse/save run per profile; excludes network transfer",
+    "refresh": "one live refresh per profile with old index answering canned HOTD requests; source streams read from local cache",
+    "cpu": "Windows process CPU counters; request CPU includes the benchmark HTTP client",
+    "timer": "QueryPerformanceCounter for HTTP samples",
+    "scope": "Canned benchmark queries and hardware/resource counters only; no accounts, local paths, viewing history or user searches"
+  },
+  "datasets": [
+    {
+      "name": "title.ratings.tsv.gz",
+      "url": "https://datasets.imdbws.com/title.ratings.tsv.gz",
+      "compressedBytes": 8728190,
+      "sha256": "cc4a16aa98128ead1e6e81f0fe46745dbf46e4afd0361e22b3459e8462725aed"
+    },
+    {
+      "name": "title.basics.tsv.gz",
+      "url": "https://datasets.imdbws.com/title.basics.tsv.gz",
+      "compressedBytes": 229492964,
+      "sha256": "6efb178740175f3e8321793b21519ab8183d5af97c78a096bd1ee9939428cd97"
+    }
+  ],
+  "profiles": [
+    {
+      "id": "compact",
+      "prepare": {
+        "phase": "prepare",
+        "profile": "compact",
+        "movies": 25000,
+        "series": 25000,
+        "minVotes": 250,
+        "catalogBytes": 1343305,
+        "wallMS": 7945.401,
+        "cpuSeconds": 8.328125,
+        "rssBytes": 0,
+        "privateBytes": 0,
+        "heapBytes": 0,
+        "peakRSSBytes": 119689216
+      },
+      "startup": [
+        {
+          "phase": "measure",
+          "profile": "compact",
+          "movies": 25000,
+          "series": 25000,
+          "minVotes": 250,
+          "catalogBytes": 1343305,
+          "wallMS": 455.426,
+          "cpuSeconds": 0.390625,
+          "rssBytes": 110100480,
+          "privateBytes": 105226240,
+          "heapBytes": 43520512,
+          "peakRSSBytes": 128462848,
+          "idleSeconds": 3.0004362,
+          "requests": 750,
+          "requestCPUMS": 0.3958333333333333,
+          "p50MS": 0.3221000023186207,
+          "p95MS": 0.6211000010371208,
+          "p99MS": 1.0949000008404255,
+          "maxMS": 1.9782999977469444,
+          "cases": [
+            {
+              "query": "HOTD",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "house of dragom",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "interstelar",
+              "kind": "movie",
+              "expected": "tt0816692",
+              "firstID": "tt0816692",
+              "passed": true
+            },
+            {
+              "query": "LOTR",
+              "kind": "movie",
+              "firstID": "tt0120737",
+              "passed": true
+            },
+            {
+              "query": "spiderman",
+              "kind": "movie",
+              "firstID": "tt0145487",
+              "passed": true
+            },
+            {
+              "query": "man",
+              "kind": "movie",
+              "firstID": "tt0074901",
+              "passed": true
+            },
+            {
+              "query": "the",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "love",
+              "kind": "movie",
+              "firstID": "tt3774694",
+              "passed": true
+            },
+            {
+              "query": "harry poter",
+              "kind": "movie",
+              "firstID": "tt1201607",
+              "passed": true
+            },
+            {
+              "query": "breaing bad",
+              "kind": "series",
+              "expected": "tt0903747",
+              "firstID": "tt0903747",
+              "passed": true
+            },
+            {
+              "query": "game thrones",
+              "kind": "series",
+              "expected": "tt0944947",
+              "firstID": "tt0944947",
+              "passed": true
+            },
+            {
+              "query": "dune part two",
+              "kind": "movie",
+              "firstID": "tt15239678",
+              "passed": true
+            },
+            {
+              "query": "Amélie",
+              "kind": "movie",
+              "firstID": "tt0211915",
+              "passed": true
+            },
+            {
+              "query": "千と千尋",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "qzxqvvnonexistent",
+              "kind": "movie",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "phase": "measure",
+          "profile": "compact",
+          "movies": 25000,
+          "series": 25000,
+          "minVotes": 250,
+          "catalogBytes": 1343305,
+          "wallMS": 448.586,
+          "cpuSeconds": 0.515625,
+          "rssBytes": 66777088,
+          "privateBytes": 104054784,
+          "heapBytes": 44248624,
+          "peakRSSBytes": 87093248,
+          "idleSeconds": 3.0004793,
+          "requests": 750,
+          "requestCPUMS": 0.5,
+          "p50MS": 0.3368999995291233,
+          "p95MS": 0.6700000017881393,
+          "p99MS": 1.1779000014066696,
+          "maxMS": 2.0296999998390675,
+          "cases": [
+            {
+              "query": "HOTD",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "house of dragom",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "interstelar",
+              "kind": "movie",
+              "expected": "tt0816692",
+              "firstID": "tt0816692",
+              "passed": true
+            },
+            {
+              "query": "LOTR",
+              "kind": "movie",
+              "firstID": "tt0120737",
+              "passed": true
+            },
+            {
+              "query": "spiderman",
+              "kind": "movie",
+              "firstID": "tt0145487",
+              "passed": true
+            },
+            {
+              "query": "man",
+              "kind": "movie",
+              "firstID": "tt0074901",
+              "passed": true
+            },
+            {
+              "query": "the",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "love",
+              "kind": "movie",
+              "firstID": "tt3774694",
+              "passed": true
+            },
+            {
+              "query": "harry poter",
+              "kind": "movie",
+              "firstID": "tt1201607",
+              "passed": true
+            },
+            {
+              "query": "breaing bad",
+              "kind": "series",
+              "expected": "tt0903747",
+              "firstID": "tt0903747",
+              "passed": true
+            },
+            {
+              "query": "game thrones",
+              "kind": "series",
+              "expected": "tt0944947",
+              "firstID": "tt0944947",
+              "passed": true
+            },
+            {
+              "query": "dune part two",
+              "kind": "movie",
+              "firstID": "tt15239678",
+              "passed": true
+            },
+            {
+              "query": "Amélie",
+              "kind": "movie",
+              "firstID": "tt0211915",
+              "passed": true
+            },
+            {
+              "query": "千と千尋",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "qzxqvvnonexistent",
+              "kind": "movie",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "phase": "measure",
+          "profile": "compact",
+          "movies": 25000,
+          "series": 25000,
+          "minVotes": 250,
+          "catalogBytes": 1343305,
+          "wallMS": 420.112,
+          "cpuSeconds": 0.453125,
+          "rssBytes": 68075520,
+          "privateBytes": 105525248,
+          "heapBytes": 42892592,
+          "peakRSSBytes": 86917120,
+          "idleSeconds": 3.0001719,
+          "requests": 750,
+          "requestCPUMS": 0.5,
+          "p50MS": 0.3277999982237816,
+          "p95MS": 0.6174999997019768,
+          "p99MS": 1.2036999985575676,
+          "maxMS": 2.4109999984502792,
+          "cases": [
+            {
+              "query": "HOTD",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "house of dragom",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "interstelar",
+              "kind": "movie",
+              "expected": "tt0816692",
+              "firstID": "tt0816692",
+              "passed": true
+            },
+            {
+              "query": "LOTR",
+              "kind": "movie",
+              "firstID": "tt0120737",
+              "passed": true
+            },
+            {
+              "query": "spiderman",
+              "kind": "movie",
+              "firstID": "tt0145487",
+              "passed": true
+            },
+            {
+              "query": "man",
+              "kind": "movie",
+              "firstID": "tt0074901",
+              "passed": true
+            },
+            {
+              "query": "the",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "love",
+              "kind": "movie",
+              "firstID": "tt3774694",
+              "passed": true
+            },
+            {
+              "query": "harry poter",
+              "kind": "movie",
+              "firstID": "tt1201607",
+              "passed": true
+            },
+            {
+              "query": "breaing bad",
+              "kind": "series",
+              "expected": "tt0903747",
+              "firstID": "tt0903747",
+              "passed": true
+            },
+            {
+              "query": "game thrones",
+              "kind": "series",
+              "expected": "tt0944947",
+              "firstID": "tt0944947",
+              "passed": true
+            },
+            {
+              "query": "dune part two",
+              "kind": "movie",
+              "firstID": "tt15239678",
+              "passed": true
+            },
+            {
+              "query": "Amélie",
+              "kind": "movie",
+              "firstID": "tt0211915",
+              "passed": true
+            },
+            {
+              "query": "千と千尋",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "qzxqvvnonexistent",
+              "kind": "movie",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "refresh": {
+        "refreshSearches": 83,
+        "phase": "refresh",
+        "profile": "compact",
+        "movies": 25000,
+        "series": 25000,
+        "minVotes": 250,
+        "catalogBytes": 1343305,
+        "wallMS": 8539.93,
+        "cpuSeconds": 9.859375,
+        "rssBytes": 0,
+        "privateBytes": 0,
+        "heapBytes": 0,
+        "peakRSSBytes": 169418752,
+        "p50MS": 0
+      },
+      "quiet": {
+        "steadyIdleSeconds": 10.0001946,
+        "steadyIdleCPUSeconds": 0,
+        "phase": "measure",
+        "profile": "compact",
+        "movies": 25000,
+        "series": 25000,
+        "minVotes": 250,
+        "catalogBytes": 1343305,
+        "wallMS": 618.484,
+        "cpuSeconds": 0.5625,
+        "rssBytes": 113233920,
+        "privateBytes": 108257280,
+        "heapBytes": 43011072,
+        "peakRSSBytes": 132222976,
+        "idleSeconds": 3.0001075,
+        "requests": 750,
+        "requestCPUMS": 0.4791666666666667,
+        "p50MS": 0.3555000014603138,
+        "p95MS": 1.1127000004053116,
+        "p99MS": 3.5989000014960766,
+        "maxMS": 10.539000000804663,
+        "cases": [
+          {
+            "query": "HOTD",
+            "kind": "series",
+            "expected": "tt11198330",
+            "firstID": "tt11198330",
+            "passed": true
+          },
+          {
+            "query": "house of dragom",
+            "kind": "series",
+            "expected": "tt11198330",
+            "firstID": "tt11198330",
+            "passed": true
+          },
+          {
+            "query": "interstelar",
+            "kind": "movie",
+            "expected": "tt0816692",
+            "firstID": "tt0816692",
+            "passed": true
+          },
+          {
+            "query": "LOTR",
+            "kind": "movie",
+            "firstID": "tt0120737",
+            "passed": true
+          },
+          {
+            "query": "spiderman",
+            "kind": "movie",
+            "firstID": "tt0145487",
+            "passed": true
+          },
+          {
+            "query": "man",
+            "kind": "movie",
+            "firstID": "tt0074901",
+            "passed": true
+          },
+          {
+            "query": "the",
+            "kind": "movie",
+            "passed": true
+          },
+          {
+            "query": "love",
+            "kind": "movie",
+            "firstID": "tt3774694",
+            "passed": true
+          },
+          {
+            "query": "harry poter",
+            "kind": "movie",
+            "firstID": "tt1201607",
+            "passed": true
+          },
+          {
+            "query": "breaing bad",
+            "kind": "series",
+            "expected": "tt0903747",
+            "firstID": "tt0903747",
+            "passed": true
+          },
+          {
+            "query": "game thrones",
+            "kind": "series",
+            "expected": "tt0944947",
+            "firstID": "tt0944947",
+            "passed": true
+          },
+          {
+            "query": "dune part two",
+            "kind": "movie",
+            "firstID": "tt15239678",
+            "passed": true
+          },
+          {
+            "query": "Amélie",
+            "kind": "movie",
+            "firstID": "tt0211915",
+            "passed": true
+          },
+          {
+            "query": "千と千尋",
+            "kind": "movie",
+            "passed": true
+          },
+          {
+            "query": "qzxqvvnonexistent",
+            "kind": "movie",
+            "passed": true
+          }
+        ]
+      },
+      "summary": {
+        "movies": 25000,
+        "series": 25000,
+        "titles": 50000,
+        "workingSetMiB": 64.921875,
+        "workingSetRangeMiB": [
+          105,
+          63.68359375,
+          64.921875
+        ],
+        "startupSeconds": 0.44858600000000004,
+        "p50MS": 0.3277999982237816,
+        "p95MS": 0.6211000010371208,
+        "p99MS": 1.1779000014066696,
+        "requestCPUMS": 0.5,
+        "catalogMiB": 1.2810754776000977
+      }
+    },
+    {
+      "id": "standard",
+      "prepare": {
+        "phase": "prepare",
+        "profile": "standard",
+        "movies": 100000,
+        "series": 84588,
+        "minVotes": 25,
+        "catalogBytes": 4932652,
+        "wallMS": 9398.194,
+        "cpuSeconds": 9.8125,
+        "rssBytes": 0,
+        "privateBytes": 0,
+        "heapBytes": 0,
+        "peakRSSBytes": 203001856
+      },
+      "startup": [
+        {
+          "phase": "measure",
+          "profile": "standard",
+          "movies": 100000,
+          "series": 84588,
+          "minVotes": 25,
+          "catalogBytes": 4932652,
+          "wallMS": 1812.561,
+          "cpuSeconds": 1.875,
+          "rssBytes": 204783616,
+          "privateBytes": 242561024,
+          "heapBytes": 119076888,
+          "peakRSSBytes": 262275072,
+          "idleSeconds": 3.0008976,
+          "requests": 750,
+          "requestCPUMS": 1.1041666666666667,
+          "p50MS": 0.9160000011324883,
+          "p95MS": 2.165199998766184,
+          "p99MS": 3.1479000002145767,
+          "maxMS": 4.711200002580881,
+          "cases": [
+            {
+              "query": "HOTD",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "house of dragom",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "interstelar",
+              "kind": "movie",
+              "expected": "tt0816692",
+              "firstID": "tt4168808",
+              "passed": true
+            },
+            {
+              "query": "LOTR",
+              "kind": "movie",
+              "firstID": "tt0120737",
+              "passed": true
+            },
+            {
+              "query": "spiderman",
+              "kind": "movie",
+              "firstID": "tt0145487",
+              "passed": true
+            },
+            {
+              "query": "man",
+              "kind": "movie",
+              "firstID": "tt0074901",
+              "passed": true
+            },
+            {
+              "query": "the",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "love",
+              "kind": "movie",
+              "firstID": "tt3774694",
+              "passed": true
+            },
+            {
+              "query": "harry poter",
+              "kind": "movie",
+              "firstID": "tt1201607",
+              "passed": true
+            },
+            {
+              "query": "breaing bad",
+              "kind": "series",
+              "expected": "tt0903747",
+              "firstID": "tt0903747",
+              "passed": true
+            },
+            {
+              "query": "game thrones",
+              "kind": "series",
+              "expected": "tt0944947",
+              "firstID": "tt0944947",
+              "passed": true
+            },
+            {
+              "query": "dune part two",
+              "kind": "movie",
+              "firstID": "tt15239678",
+              "passed": true
+            },
+            {
+              "query": "Amélie",
+              "kind": "movie",
+              "firstID": "tt0211915",
+              "passed": true
+            },
+            {
+              "query": "千と千尋",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "qzxqvvnonexistent",
+              "kind": "movie",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "phase": "measure",
+          "profile": "standard",
+          "movies": 100000,
+          "series": 84588,
+          "minVotes": 25,
+          "catalogBytes": 4932652,
+          "wallMS": 1931.313,
+          "cpuSeconds": 1.9375,
+          "rssBytes": 207831040,
+          "privateBytes": 245534720,
+          "heapBytes": 124370752,
+          "peakRSSBytes": 256126976,
+          "idleSeconds": 3.0007153,
+          "requests": 750,
+          "requestCPUMS": 0.8333333333333334,
+          "p50MS": 0.6578999981284142,
+          "p95MS": 1.4635000005364418,
+          "p99MS": 2.3803999982774258,
+          "maxMS": 5.511199999600649,
+          "cases": [
+            {
+              "query": "HOTD",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "house of dragom",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "interstelar",
+              "kind": "movie",
+              "expected": "tt0816692",
+              "firstID": "tt4168808",
+              "passed": true
+            },
+            {
+              "query": "LOTR",
+              "kind": "movie",
+              "firstID": "tt0120737",
+              "passed": true
+            },
+            {
+              "query": "spiderman",
+              "kind": "movie",
+              "firstID": "tt0145487",
+              "passed": true
+            },
+            {
+              "query": "man",
+              "kind": "movie",
+              "firstID": "tt0074901",
+              "passed": true
+            },
+            {
+              "query": "the",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "love",
+              "kind": "movie",
+              "firstID": "tt3774694",
+              "passed": true
+            },
+            {
+              "query": "harry poter",
+              "kind": "movie",
+              "firstID": "tt1201607",
+              "passed": true
+            },
+            {
+              "query": "breaing bad",
+              "kind": "series",
+              "expected": "tt0903747",
+              "firstID": "tt0903747",
+              "passed": true
+            },
+            {
+              "query": "game thrones",
+              "kind": "series",
+              "expected": "tt0944947",
+              "firstID": "tt0944947",
+              "passed": true
+            },
+            {
+              "query": "dune part two",
+              "kind": "movie",
+              "firstID": "tt15239678",
+              "passed": true
+            },
+            {
+              "query": "Amélie",
+              "kind": "movie",
+              "firstID": "tt0211915",
+              "passed": true
+            },
+            {
+              "query": "千と千尋",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "qzxqvvnonexistent",
+              "kind": "movie",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "phase": "measure",
+          "profile": "standard",
+          "movies": 100000,
+          "series": 84588,
+          "minVotes": 25,
+          "catalogBytes": 4932652,
+          "wallMS": 1775.478,
+          "cpuSeconds": 1.890625,
+          "rssBytes": 205684736,
+          "privateBytes": 243154944,
+          "heapBytes": 121979840,
+          "peakRSSBytes": 258387968,
+          "idleSeconds": 3.0007664,
+          "requests": 750,
+          "requestCPUMS": 0.8541666666666666,
+          "p50MS": 0.6634999997913837,
+          "p95MS": 1.448599997907877,
+          "p99MS": 2.3889999985694885,
+          "maxMS": 5.75959999859333,
+          "cases": [
+            {
+              "query": "HOTD",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "house of dragom",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "interstelar",
+              "kind": "movie",
+              "expected": "tt0816692",
+              "firstID": "tt4168808",
+              "passed": true
+            },
+            {
+              "query": "LOTR",
+              "kind": "movie",
+              "firstID": "tt0120737",
+              "passed": true
+            },
+            {
+              "query": "spiderman",
+              "kind": "movie",
+              "firstID": "tt0145487",
+              "passed": true
+            },
+            {
+              "query": "man",
+              "kind": "movie",
+              "firstID": "tt0074901",
+              "passed": true
+            },
+            {
+              "query": "the",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "love",
+              "kind": "movie",
+              "firstID": "tt3774694",
+              "passed": true
+            },
+            {
+              "query": "harry poter",
+              "kind": "movie",
+              "firstID": "tt1201607",
+              "passed": true
+            },
+            {
+              "query": "breaing bad",
+              "kind": "series",
+              "expected": "tt0903747",
+              "firstID": "tt0903747",
+              "passed": true
+            },
+            {
+              "query": "game thrones",
+              "kind": "series",
+              "expected": "tt0944947",
+              "firstID": "tt0944947",
+              "passed": true
+            },
+            {
+              "query": "dune part two",
+              "kind": "movie",
+              "firstID": "tt15239678",
+              "passed": true
+            },
+            {
+              "query": "Amélie",
+              "kind": "movie",
+              "firstID": "tt0211915",
+              "passed": true
+            },
+            {
+              "query": "千と千尋",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "qzxqvvnonexistent",
+              "kind": "movie",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "refresh": {
+        "refreshSearches": 134,
+        "phase": "refresh",
+        "profile": "standard",
+        "movies": 100000,
+        "series": 84588,
+        "minVotes": 25,
+        "catalogBytes": 4932652,
+        "wallMS": 13962.018,
+        "cpuSeconds": 21.25,
+        "rssBytes": 0,
+        "privateBytes": 0,
+        "heapBytes": 0,
+        "peakRSSBytes": 292610048,
+        "p50MS": 0
+      },
+      "quiet": {
+        "steadyIdleSeconds": 10.0002322,
+        "steadyIdleCPUSeconds": 0,
+        "phase": "measure",
+        "profile": "standard",
+        "movies": 100000,
+        "series": 84588,
+        "minVotes": 25,
+        "catalogBytes": 4932652,
+        "wallMS": 2057.574,
+        "cpuSeconds": 2.0625,
+        "rssBytes": 207364096,
+        "privateBytes": 245190656,
+        "heapBytes": 128058224,
+        "peakRSSBytes": 248913920,
+        "idleSeconds": 3.0007169,
+        "requests": 750,
+        "requestCPUMS": 0.9166666666666666,
+        "p50MS": 0.6850000023841858,
+        "p95MS": 1.6841000020503998,
+        "p99MS": 2.6496999971568584,
+        "maxMS": 4.207999996840954,
+        "cases": [
+          {
+            "query": "HOTD",
+            "kind": "series",
+            "expected": "tt11198330",
+            "firstID": "tt11198330",
+            "passed": true
+          },
+          {
+            "query": "house of dragom",
+            "kind": "series",
+            "expected": "tt11198330",
+            "firstID": "tt11198330",
+            "passed": true
+          },
+          {
+            "query": "interstelar",
+            "kind": "movie",
+            "expected": "tt0816692",
+            "firstID": "tt4168808",
+            "passed": true
+          },
+          {
+            "query": "LOTR",
+            "kind": "movie",
+            "firstID": "tt0120737",
+            "passed": true
+          },
+          {
+            "query": "spiderman",
+            "kind": "movie",
+            "firstID": "tt0145487",
+            "passed": true
+          },
+          {
+            "query": "man",
+            "kind": "movie",
+            "firstID": "tt0074901",
+            "passed": true
+          },
+          {
+            "query": "the",
+            "kind": "movie",
+            "passed": true
+          },
+          {
+            "query": "love",
+            "kind": "movie",
+            "firstID": "tt3774694",
+            "passed": true
+          },
+          {
+            "query": "harry poter",
+            "kind": "movie",
+            "firstID": "tt1201607",
+            "passed": true
+          },
+          {
+            "query": "breaing bad",
+            "kind": "series",
+            "expected": "tt0903747",
+            "firstID": "tt0903747",
+            "passed": true
+          },
+          {
+            "query": "game thrones",
+            "kind": "series",
+            "expected": "tt0944947",
+            "firstID": "tt0944947",
+            "passed": true
+          },
+          {
+            "query": "dune part two",
+            "kind": "movie",
+            "firstID": "tt15239678",
+            "passed": true
+          },
+          {
+            "query": "Amélie",
+            "kind": "movie",
+            "firstID": "tt0211915",
+            "passed": true
+          },
+          {
+            "query": "千と千尋",
+            "kind": "movie",
+            "passed": true
+          },
+          {
+            "query": "qzxqvvnonexistent",
+            "kind": "movie",
+            "passed": true
+          }
+        ]
+      },
+      "summary": {
+        "movies": 100000,
+        "series": 84588,
+        "titles": 184588,
+        "workingSetMiB": 196.15625,
+        "workingSetRangeMiB": [
+          195.296875,
+          198.203125,
+          196.15625
+        ],
+        "startupSeconds": 1.8125609999999999,
+        "p50MS": 0.6634999997913837,
+        "p95MS": 1.4635000005364418,
+        "p99MS": 2.3889999985694885,
+        "requestCPUMS": 0.8541666666666666,
+        "catalogMiB": 4.704143524169922
+      }
+    },
+    {
+      "id": "expanded",
+      "prepare": {
+        "phase": "prepare",
+        "profile": "expanded",
+        "movies": 250000,
+        "series": 140449,
+        "minVotes": 5,
+        "catalogBytes": 10293636,
+        "wallMS": 10961.781,
+        "cpuSeconds": 11.328125,
+        "rssBytes": 0,
+        "privateBytes": 0,
+        "heapBytes": 0,
+        "peakRSSBytes": 277610496
+      },
+      "startup": [
+        {
+          "phase": "measure",
+          "profile": "expanded",
+          "movies": 250000,
+          "series": 140449,
+          "minVotes": 5,
+          "catalogBytes": 10293636,
+          "wallMS": 5868.49,
+          "cpuSeconds": 7.296875,
+          "rssBytes": 288940032,
+          "privateBytes": 326795264,
+          "heapBytes": 202581320,
+          "peakRSSBytes": 293224448,
+          "idleSeconds": 3.0000751,
+          "idleCPUSeconds": 0.125,
+          "requests": 750,
+          "requestCPUMS": 4.020833333333333,
+          "p50MS": 1.6081000007689,
+          "p95MS": 9.017700001597404,
+          "p99MS": 17.044199999421835,
+          "maxMS": 26.546900000423193,
+          "cases": [
+            {
+              "query": "HOTD",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "house of dragom",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "interstelar",
+              "kind": "movie",
+              "expected": "tt0816692",
+              "firstID": "tt4168808",
+              "passed": true
+            },
+            {
+              "query": "LOTR",
+              "kind": "movie",
+              "firstID": "tt0120737",
+              "passed": true
+            },
+            {
+              "query": "spiderman",
+              "kind": "movie",
+              "firstID": "tt0145487",
+              "passed": true
+            },
+            {
+              "query": "man",
+              "kind": "movie",
+              "firstID": "tt0074901",
+              "passed": true
+            },
+            {
+              "query": "the",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "love",
+              "kind": "movie",
+              "firstID": "tt3774694",
+              "passed": true
+            },
+            {
+              "query": "harry poter",
+              "kind": "movie",
+              "firstID": "tt1201607",
+              "passed": true
+            },
+            {
+              "query": "breaing bad",
+              "kind": "series",
+              "expected": "tt0903747",
+              "firstID": "tt0903747",
+              "passed": true
+            },
+            {
+              "query": "game thrones",
+              "kind": "series",
+              "expected": "tt0944947",
+              "firstID": "tt0944947",
+              "passed": true
+            },
+            {
+              "query": "dune part two",
+              "kind": "movie",
+              "firstID": "tt15239678",
+              "passed": true
+            },
+            {
+              "query": "Amélie",
+              "kind": "movie",
+              "firstID": "tt0211915",
+              "passed": true
+            },
+            {
+              "query": "千と千尋",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "qzxqvvnonexistent",
+              "kind": "movie",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "phase": "measure",
+          "profile": "expanded",
+          "movies": 250000,
+          "series": 140449,
+          "minVotes": 5,
+          "catalogBytes": 10293636,
+          "wallMS": 4213.808,
+          "cpuSeconds": 5,
+          "rssBytes": 292478976,
+          "privateBytes": 329826304,
+          "heapBytes": 202684056,
+          "peakRSSBytes": 296939520,
+          "idleSeconds": 3.0005208,
+          "idleCPUSeconds": 0.125,
+          "requests": 750,
+          "requestCPUMS": 4.020833333333333,
+          "p50MS": 1.3676999993622303,
+          "p95MS": 9.864199999719858,
+          "p99MS": 17.873199999332428,
+          "maxMS": 26.265500001609325,
+          "cases": [
+            {
+              "query": "HOTD",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "house of dragom",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "interstelar",
+              "kind": "movie",
+              "expected": "tt0816692",
+              "firstID": "tt4168808",
+              "passed": true
+            },
+            {
+              "query": "LOTR",
+              "kind": "movie",
+              "firstID": "tt0120737",
+              "passed": true
+            },
+            {
+              "query": "spiderman",
+              "kind": "movie",
+              "firstID": "tt0145487",
+              "passed": true
+            },
+            {
+              "query": "man",
+              "kind": "movie",
+              "firstID": "tt0074901",
+              "passed": true
+            },
+            {
+              "query": "the",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "love",
+              "kind": "movie",
+              "firstID": "tt3774694",
+              "passed": true
+            },
+            {
+              "query": "harry poter",
+              "kind": "movie",
+              "firstID": "tt1201607",
+              "passed": true
+            },
+            {
+              "query": "breaing bad",
+              "kind": "series",
+              "expected": "tt0903747",
+              "firstID": "tt0903747",
+              "passed": true
+            },
+            {
+              "query": "game thrones",
+              "kind": "series",
+              "expected": "tt0944947",
+              "firstID": "tt0944947",
+              "passed": true
+            },
+            {
+              "query": "dune part two",
+              "kind": "movie",
+              "firstID": "tt15239678",
+              "passed": true
+            },
+            {
+              "query": "Amélie",
+              "kind": "movie",
+              "firstID": "tt0211915",
+              "passed": true
+            },
+            {
+              "query": "千と千尋",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "qzxqvvnonexistent",
+              "kind": "movie",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "phase": "measure",
+          "profile": "expanded",
+          "movies": 250000,
+          "series": 140449,
+          "minVotes": 5,
+          "catalogBytes": 10293636,
+          "wallMS": 4453.155,
+          "cpuSeconds": 5.515625,
+          "rssBytes": 285032448,
+          "privateBytes": 322768896,
+          "heapBytes": 202527464,
+          "peakRSSBytes": 298926080,
+          "idleSeconds": 3.0004973,
+          "idleCPUSeconds": 0.109375,
+          "requests": 750,
+          "requestCPUMS": 4.229166666666667,
+          "p50MS": 1.4310000017285347,
+          "p95MS": 10.74380000308156,
+          "p99MS": 18.75179999694228,
+          "maxMS": 25.71049999818206,
+          "cases": [
+            {
+              "query": "HOTD",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "house of dragom",
+              "kind": "series",
+              "expected": "tt11198330",
+              "firstID": "tt11198330",
+              "passed": true
+            },
+            {
+              "query": "interstelar",
+              "kind": "movie",
+              "expected": "tt0816692",
+              "firstID": "tt4168808",
+              "passed": true
+            },
+            {
+              "query": "LOTR",
+              "kind": "movie",
+              "firstID": "tt0120737",
+              "passed": true
+            },
+            {
+              "query": "spiderman",
+              "kind": "movie",
+              "firstID": "tt0145487",
+              "passed": true
+            },
+            {
+              "query": "man",
+              "kind": "movie",
+              "firstID": "tt0074901",
+              "passed": true
+            },
+            {
+              "query": "the",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "love",
+              "kind": "movie",
+              "firstID": "tt3774694",
+              "passed": true
+            },
+            {
+              "query": "harry poter",
+              "kind": "movie",
+              "firstID": "tt1201607",
+              "passed": true
+            },
+            {
+              "query": "breaing bad",
+              "kind": "series",
+              "expected": "tt0903747",
+              "firstID": "tt0903747",
+              "passed": true
+            },
+            {
+              "query": "game thrones",
+              "kind": "series",
+              "expected": "tt0944947",
+              "firstID": "tt0944947",
+              "passed": true
+            },
+            {
+              "query": "dune part two",
+              "kind": "movie",
+              "firstID": "tt15239678",
+              "passed": true
+            },
+            {
+              "query": "Amélie",
+              "kind": "movie",
+              "firstID": "tt0211915",
+              "passed": true
+            },
+            {
+              "query": "千と千尋",
+              "kind": "movie",
+              "passed": true
+            },
+            {
+              "query": "qzxqvvnonexistent",
+              "kind": "movie",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "refresh": {
+        "refreshSearches": 287,
+        "phase": "refresh",
+        "profile": "expanded",
+        "movies": 250000,
+        "series": 140449,
+        "minVotes": 5,
+        "catalogBytes": 10293636,
+        "wallMS": 32843.959,
+        "cpuSeconds": 60.03125,
+        "rssBytes": 0,
+        "privateBytes": 0,
+        "heapBytes": 0,
+        "peakRSSBytes": 565551104,
+        "p50MS": 0
+      },
+      "quiet": {
+        "steadyIdleSeconds": 10.0002733,
+        "steadyIdleCPUSeconds": 0,
+        "phase": "measure",
+        "profile": "expanded",
+        "movies": 250000,
+        "series": 140449,
+        "minVotes": 5,
+        "catalogBytes": 10293636,
+        "wallMS": 5747.971,
+        "cpuSeconds": 6.25,
+        "rssBytes": 257867776,
+        "privateBytes": 295497728,
+        "heapBytes": 202581576,
+        "peakRSSBytes": 299843584,
+        "idleSeconds": 3.0003663,
+        "idleCPUSeconds": 0.125,
+        "requests": 750,
+        "requestCPUMS": 4.645833333333333,
+        "p50MS": 1.7092000022530556,
+        "p95MS": 12.544199999421835,
+        "p99MS": 21.96909999847412,
+        "maxMS": 75.36229999735951,
+        "cases": [
+          {
+            "query": "HOTD",
+            "kind": "series",
+            "expected": "tt11198330",
+            "firstID": "tt11198330",
+            "passed": true
+          },
+          {
+            "query": "house of dragom",
+            "kind": "series",
+            "expected": "tt11198330",
+            "firstID": "tt11198330",
+            "passed": true
+          },
+          {
+            "query": "interstelar",
+            "kind": "movie",
+            "expected": "tt0816692",
+            "firstID": "tt4168808",
+            "passed": true
+          },
+          {
+            "query": "LOTR",
+            "kind": "movie",
+            "firstID": "tt0120737",
+            "passed": true
+          },
+          {
+            "query": "spiderman",
+            "kind": "movie",
+            "firstID": "tt0145487",
+            "passed": true
+          },
+          {
+            "query": "man",
+            "kind": "movie",
+            "firstID": "tt0074901",
+            "passed": true
+          },
+          {
+            "query": "the",
+            "kind": "movie",
+            "passed": true
+          },
+          {
+            "query": "love",
+            "kind": "movie",
+            "firstID": "tt3774694",
+            "passed": true
+          },
+          {
+            "query": "harry poter",
+            "kind": "movie",
+            "firstID": "tt1201607",
+            "passed": true
+          },
+          {
+            "query": "breaing bad",
+            "kind": "series",
+            "expected": "tt0903747",
+            "firstID": "tt0903747",
+            "passed": true
+          },
+          {
+            "query": "game thrones",
+            "kind": "series",
+            "expected": "tt0944947",
+            "firstID": "tt0944947",
+            "passed": true
+          },
+          {
+            "query": "dune part two",
+            "kind": "movie",
+            "firstID": "tt15239678",
+            "passed": true
+          },
+          {
+            "query": "Amélie",
+            "kind": "movie",
+            "firstID": "tt0211915",
+            "passed": true
+          },
+          {
+            "query": "千と千尋",
+            "kind": "movie",
+            "passed": true
+          },
+          {
+            "query": "qzxqvvnonexistent",
+            "kind": "movie",
+            "passed": true
+          }
+        ]
+      },
+      "summary": {
+        "movies": 250000,
+        "series": 140449,
+        "titles": 390449,
+        "workingSetMiB": 275.5546875,
+        "workingSetRangeMiB": [
+          275.5546875,
+          278.9296875,
+          271.828125
+        ],
+        "startupSeconds": 4.453155,
+        "p50MS": 1.4310000017285347,
+        "p95MS": 9.864199999719858,
+        "p99MS": 17.873199999332428,
+        "requestCPUMS": 4.020833333333333,
+        "catalogMiB": 9.816776275634766
+      }
+    }
+  ]
+}

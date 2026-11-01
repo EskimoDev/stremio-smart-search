@@ -1,7 +1,8 @@
 STREMIO SMART SEARCH — PREVIEW
 
 1. Open Stremio Smart Search. A local setup page opens in your browser.
-2. Click Prepare catalogue. The first download can be a few hundred MB.
+2. Choose Catalogue size, then Prepare catalogue. Standard is the new-setup default.
+   The first download can be a few hundred MB, with the same source files for all sizes.
 3. Choose Stremio, dx.bi or Stremio Enhanced. The link is copied and the app opens.
    Open Addons > Add addon in that app, paste the link and choose Install.
    Or use Install through Stremio Web with the same account as your desktop app.
@@ -18,6 +19,15 @@ WHY IT CAN FEEL FAST
 Matching uses a local title index in your computer's memory, so it does not
 wait for a remote search server or AI response. Artwork and playback still
 use online providers, and total loading times depend on your setup.
+
+CATALOGUE SIZE
+Compact: up to 25,000 movies + 25,000 series, with at least 250 IMDb votes.
+Standard: up to 100,000 movies + 100,000 series, with at least 25 votes.
+Expanded: up to 250,000 movies + 250,000 series, with at least 5 votes.
+Actual counts depend on qualifying titles. Larger sizes use more memory.
+Compare measured usage: https://github.com/EskimoDev/stremio-smart-search/blob/main/docs/PERFORMANCE.md
+To change size, select it and click Apply size & rebuild. The existing catalogue
+keeps working while the replacement is prepared, and is kept if preparation fails.
 
 Next time, use the Stremio + Smart Search shortcut to start both together.
 Portable users: run the executable with --launch to open Stremio too.

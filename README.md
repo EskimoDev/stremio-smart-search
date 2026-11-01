@@ -28,8 +28,8 @@ Preview package targets. Use **Windows x64** for most Intel/AMD PCs, or **macOS 
 After installation:
 
 1. Open **Stremio Smart Search**. Its settings page opens in your browser.
-2. Choose **Prepare catalogue**. The first setup downloads IMDb title data directly to this device, streams it into a compact index and discards the raw data. Expect a few hundred MB of network transfer; allow several minutes.
-3. Choose **Add to Stremio**, **Add to dx.bi** or **Add to Stremio Enhanced**. The button copies the correct HTTP link and opens that app. Open **Addons → Add addon**, paste the link and choose **Install**. Alternatively, **Install through Stremio Web** opens the web install prompt; use the same account as your desktop client to sync it.
+2. Choose a **Catalogue size**, then **Prepare catalogue**. Standard is the default for new setups. The first setup downloads IMDb title data directly to this device, builds the local index and discards the raw data. Every size downloads the same source files; expect a few hundred MB and allow several minutes.
+3. Choose **Stremio**, **dx.bi** or **Stremio Enhanced** under **Choose your app**. The button copies the correct HTTP link and opens that app. Open **Addons → Add addon**, paste the link and choose **Install**. Alternatively, expand **Using Stremio Web or a portable app?** and choose **Install through Stremio Web**; use the same account as your desktop client to sync it.
 4. Search normally. Look for the **Smart Search** movie and series rows.
 
 Next time, use **Stremio + Smart Search** to open both. Windows setup optionally enables start at sign-in so the helper is available when you open Stremio through other shortcuts. Closing the browser settings page does not stop the helper. Use **Quit helper** in settings to stop it.
@@ -58,11 +58,21 @@ The companion leaves this choice to you; it does not sign into your account or r
 
 ## Scope and title coverage
 
-The default catalogue keeps up to 25,000 movies and 25,000 series, selected by IMDb vote counts. Titles need at least 250 votes; adult-marked titles and individual TV episodes are excluded. Primary and original titles are searchable. This is deliberately bounded and does not promise every title, regional spelling or subtitle alias in the world. Normal results from other addons remain available.
+Choose the catalogue size in setup:
+
+| Size | Movie ceiling | Series ceiling | Minimum IMDb votes |
+| --- | ---: | ---: | ---: |
+| Compact | 25,000 | 25,000 | 250 |
+| Standard (new-setup default) | 100,000 | 100,000 | 25 |
+| Expanded | 250,000 | 250,000 | 5 |
+
+These are ceilings, not promised counts. Titles are selected by vote count from qualifying movies, TV movies, series and miniseries. Adult-marked titles and individual episodes are excluded; titles without sufficient votes are excluded even with Expanded. Primary and original titles are searchable. This does not promise every title, regional spelling or alternate title. Normal results from other addons remain available.
+
+The measured snapshot contained **50,000 / 184,588 / 390,449 titles** respectively. See the [resource comparison and reproducible measurements](docs/PERFORMANCE.md) before choosing a larger option, particularly on a low-memory device.
 
 Exact titles are ranked first. Acronyms can have several legitimate meanings; popularity helps rank the alternatives. Typo matching has bounded edit distances and work limits. It does not generate fictional titles or use an LLM.
 
-Catalogue updates are manual from settings. They do not run during every startup or search. A failed refresh keeps the previous working catalogue.
+Catalogue updates are manual from settings. They do not run during every startup or search. To change size, select the option and choose **Apply size & rebuild**. The current index keeps serving during preparation; the new size is saved with the replacement catalogue only after success. A failed refresh keeps the previous working catalogue. Existing catalogues retain their Compact selection until you change it.
 
 ## Privacy and data
 
@@ -106,3 +116,7 @@ Useful options:
 Node.js is only used for the optional setup-page development tests, not by the shipped app. See [architecture](docs/ARCHITECTURE.md), [contribution guide](CONTRIBUTING.md) and the build scripts under `scripts/`. Tests use a small handwritten fixture, never a user's catalogue or viewing history. The optional real-catalogue benchmark reads a local path supplied explicitly by the developer.
 
 This is an independent community project, not an official Stremio product. It does not host or distribute video.
+
+## Design and bundled fonts
+
+The setup interface follows [LongCipher Design by Akagi201](https://designmd.ai/Akagi201/longcipher-design), published under CC0. Geist Sans and Geist Mono are bundled locally under the SIL Open Font License; see [third-party notices](THIRD-PARTY-NOTICES.txt). The setup page needs no remote font or UI-library downloads.

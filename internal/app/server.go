@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/EskimoDev/stremio-smart-search/internal/catalog"
 	"github.com/EskimoDev/stremio-smart-search/internal/search"
+	"io"
 	"io/fs"
 	"net"
 	"net/http"
@@ -31,31 +32,35 @@ const Product = "Stremio Smart Search"
 const DefaultPort = "11479"
 
 type Status struct {
-	Product         string    `json:"product"`
-	Version         string    `json:"version"`
-	Ready           bool      `json:"ready"`
-	Building        bool      `json:"building"`
-	Stage           string    `json:"stage"`
-	Bytes           int64     `json:"bytes"`
-	Movies          int       `json:"movies"`
-	Series          int       `json:"series"`
-	BuiltAt         time.Time `json:"builtAt"`
-	Error           string    `json:"error,omitempty"`
-	Manifest        string    `json:"manifest"`
-	WebInstall      string    `json:"webInstall"`
-	PreferredClient string    `json:"preferredClient"`
+	Product         string            `json:"product"`
+	Version         string            `json:"version"`
+	Profile         string            `json:"profile"`
+	BuildProfile    string            `json:"buildProfile,omitempty"`
+	Profiles        []catalog.Profile `json:"profiles"`
+	Ready           bool              `json:"ready"`
+	Building        bool              `json:"building"`
+	Stage           string            `json:"stage"`
+	Bytes           int64             `json:"bytes"`
+	Movies          int               `json:"movies"`
+	Series          int               `json:"series"`
+	BuiltAt         time.Time         `json:"builtAt"`
+	Error           string            `json:"error,omitempty"`
+	Manifest        string            `json:"manifest"`
+	WebInstall      string            `json:"webInstall"`
+	PreferredClient string            `json:"preferredClient"`
 }
 type App struct {
-	ctx          context.Context
-	dataDir      string
-	Token        string
-	BaseURL      string
-	mu           sync.Mutex
-	status       Status
-	engine       atomic.Pointer[search.Engine]
-	searchSlots  chan struct{}
-	Quit         func()
-	LaunchClient func(string) error
+	ctx             context.Context
+	dataDir         string
+	Token           string
+	BaseURL         string
+	mu              sync.Mutex
+	status          Status
+	engine          atomic.Pointer[search.Engine]
+	searchSlots     chan struct{}
+	Quit            func()
+	LaunchClient    func(string) error
+	DownloadCatalog func(context.Context, catalog.Profile, catalog.Progress) (*catalog.Catalog, error)
 }
 
 func New(ctx context.Context, dataDir, baseURL, version string) (*App, error) {
@@ -69,7 +74,8 @@ func New(ctx context.Context, dataDir, baseURL, version string) (*App, error) {
 	}
 	a := &App{ctx: ctx, dataDir: dataDir, Token: string(token), BaseURL: baseURL, searchSlots: make(chan struct{}, 2)}
 	a.LaunchClient = OpenClient
-	a.status = Status{Product: Product, Version: version, Stage: "Set up your local catalogue", Manifest: baseURL + "/manifest.json", WebInstall: "https://web.stremio.com/#/addons?addon=" + url.QueryEscape(baseURL+"/manifest.json"), PreferredClient: loadClientPreference(dataDir)}
+	a.DownloadCatalog = catalog.DownloadIMDbProfile
+	a.status = Status{Product: Product, Version: version, Profile: catalog.DefaultProfile, Profiles: catalog.Profiles(), Stage: "Set up your local catalogue", Manifest: baseURL + "/manifest.json", WebInstall: "https://web.stremio.com/#/addons?addon=" + url.QueryEscape(baseURL+"/manifest.json"), PreferredClient: loadClientPreference(dataDir)}
 	return a, nil
 }
 
@@ -118,6 +124,11 @@ func (a *App) setCatalog(c *catalog.Catalog) {
 	defer a.mu.Unlock()
 	a.status.Ready = true
 	a.status.Building = false
+	a.status.BuildProfile = ""
+	a.status.Profile = c.Profile
+	if a.status.Profile == "" {
+		a.status.Profile = "compact" // Catalogues made before selectable profiles.
+	}
 	a.status.Stage = "Ready to search"
 	a.status.Bytes = 0
 	a.status.BuiltAt = c.BuiltAt
@@ -150,13 +161,14 @@ func (a *App) Restore() error {
 	}
 	return err
 }
-func (a *App) startBuild() bool {
+func (a *App) startBuild(profile catalog.Profile) bool {
 	a.mu.Lock()
 	if a.status.Building {
 		a.mu.Unlock()
 		return false
 	}
 	a.status.Building = true
+	a.status.BuildProfile = profile.ID
 	a.status.Error = ""
 	a.status.Stage = "Connecting to IMDb"
 	a.status.Bytes = 0
@@ -164,7 +176,7 @@ func (a *App) startBuild() bool {
 	go func() {
 		ctx, cancel := context.WithTimeout(a.ctx, 45*time.Minute)
 		defer cancel()
-		c, err := catalog.DownloadIMDb(ctx, func(stage string, bytes int64) {
+		c, err := a.DownloadCatalog(ctx, profile, func(stage string, bytes int64) {
 			a.mu.Lock()
 			a.status.Stage = stage
 			a.status.Bytes = bytes
@@ -185,6 +197,7 @@ func (a *App) startBuild() bool {
 		}
 		a.mu.Lock()
 		a.status.Building = false
+		a.status.BuildProfile = ""
 		a.status.Stage = "Catalogue update did not finish"
 		a.status.Error = err.Error()
 		a.mu.Unlock()
@@ -298,7 +311,29 @@ func (a *App) Handler() http.Handler {
 				}
 				writeJSON(w, 200, map[string]string{"client": selection.Client, "name": clientNames[selection.Client], "manifest": a.Status().Manifest})
 			case r.URL.Path == "/api/build" && r.Method == http.MethodPost:
-				if !a.startBuild() {
+				selection := struct {
+					Profile string `json:"profile"`
+				}{Profile: a.Status().Profile}
+				decoder := json.NewDecoder(r.Body)
+				decoder.DisallowUnknownFields()
+				err := decoder.Decode(&selection)
+				if err != nil && err != io.EOF {
+					writeJSON(w, 400, map[string]string{"error": "Choose a catalogue size: Compact, Standard or Expanded."})
+					return
+				}
+				if err == nil {
+					var extra any
+					if decoder.Decode(&extra) != io.EOF {
+						writeJSON(w, 400, map[string]string{"error": "Send one catalogue size selection."})
+						return
+					}
+				}
+				profile, ok := catalog.ProfileByID(selection.Profile)
+				if !ok {
+					writeJSON(w, 400, map[string]string{"error": "Choose a catalogue size: Compact, Standard or Expanded."})
+					return
+				}
+				if !a.startBuild(profile) {
 					writeJSON(w, 409, map[string]string{"error": "A catalogue update is already running."})
 					return
 				}
@@ -336,7 +371,7 @@ func (a *App) Handler() http.Handler {
 			_, _ = w.Write([]byte(page))
 			return
 		}
-		if r.URL.Path != "/app.js" && r.URL.Path != "/style.css" && r.URL.Path != "/icon.svg" {
+		if r.URL.Path != "/app.js" && r.URL.Path != "/style.css" && r.URL.Path != "/icon.svg" && r.URL.Path != "/fonts/geist.woff2" && r.URL.Path != "/fonts/geist-mono.woff2" && r.URL.Path != "/fonts/OFL.txt" {
 			http.NotFound(w, r)
 			return
 		}

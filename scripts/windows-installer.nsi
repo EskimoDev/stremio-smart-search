@@ -1,7 +1,7 @@
 Unicode true
 !include "MUI2.nsh"
 !ifndef VERSION
-  !define VERSION "0.1.0-preview.2"
+  !define VERSION "0.1.0-preview.3"
 !endif
 !ifndef ARCH
   !define ARCH "x64"
@@ -38,6 +38,7 @@ Section "Smart Search and Stremio launcher" Main
   Sleep 500
   File /oname=StremioSmartSearch.exe "${BINARY}"
   File "..\LICENSE"
+  File "..\THIRD-PARTY-NOTICES.txt"
   File "..\DATA.md"
   File "..\START-HERE.txt"
   CreateDirectory "$SMPROGRAMS\Stremio Smart Search"
@@ -67,6 +68,7 @@ Section "Uninstall"
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "StremioSmartSearch"
   Delete "$INSTDIR\StremioSmartSearch.exe"
   Delete "$INSTDIR\LICENSE"
+  Delete "$INSTDIR\THIRD-PARTY-NOTICES.txt"
   Delete "$INSTDIR\DATA.md"
   Delete "$INSTDIR\START-HERE.txt"
   Delete "$INSTDIR\Uninstall.exe"

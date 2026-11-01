@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const MaxTitles = 50000
+const MaxTitles = 500000
 
 type Title struct {
 	ID       string  `json:"id"`
@@ -25,6 +25,7 @@ type Title struct {
 
 type Catalog struct {
 	Version int       `json:"version"`
+	Profile string    `json:"profile,omitempty"`
 	BuiltAt time.Time `json:"builtAt"`
 	Source  string    `json:"source"`
 	Titles  []Title   `json:"titles"`
@@ -33,6 +34,9 @@ type Catalog struct {
 func (c *Catalog) Validate() error {
 	if c.Version != 1 || len(c.Titles) == 0 || len(c.Titles) > MaxTitles {
 		return fmt.Errorf("unsupported or empty catalogue (maximum %d titles)", MaxTitles)
+	}
+	if _, ok := ProfileByID(c.Profile); c.Profile != "" && !ok {
+		return fmt.Errorf("unsupported catalogue profile")
 	}
 	seen := make(map[string]bool, len(c.Titles))
 	for _, t := range c.Titles {
@@ -71,7 +75,7 @@ func Load(path string) (*Catalog, error) {
 		reader = z
 	}
 	var c Catalog
-	if err := json.NewDecoder(io.LimitReader(reader, 32<<20)).Decode(&c); err != nil {
+	if err := json.NewDecoder(io.LimitReader(reader, 128<<20)).Decode(&c); err != nil {
 		return nil, fmt.Errorf("could not read catalogue: %w", err)
 	}
 	return &c, c.Validate()

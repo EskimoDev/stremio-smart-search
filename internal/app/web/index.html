@@ -3,9 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
   <title>Stremio Smart Search</title>
   <link rel="icon" href="/icon.svg">
   <link rel="stylesheet" href="/style.css">
+  <link rel="preload" href="/fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
 </head>
 <body>
   <header class="page-header">
@@ -19,7 +21,7 @@
   <main class="utility">
     <aside class="catalogue" aria-labelledby="catalogue-title">
       <div>
-        <p class="section-label">On this computer</p>
+        <p class="section-label">Catalogue</p>
         <h2 id="catalogue-title">Title catalogue</h2>
         <p id="connection" class="connection" role="status">Connecting…</p>
         <dl id="catalog-stats" class="catalog-stats" hidden>
@@ -27,6 +29,16 @@
           <div><dt>Series</dt><dd id="series-count">—</dd></div>
         </dl>
         <p id="catalog-info" class="catalog-info" aria-live="polite">Checking your catalogue…</p>
+        <div class="profile-settings">
+          <label for="catalog-profile">Catalogue size</label>
+          <select id="catalog-profile" aria-describedby="profile-info" disabled>
+            <option value="compact">Compact</option>
+            <option value="standard" selected>Standard</option>
+            <option value="expanded">Expanded</option>
+          </select>
+          <p id="profile-info" class="fine" aria-live="polite">Loading catalogue options…</p>
+          <a class="comparison-link" href="https://github.com/EskimoDev/stremio-smart-search/blob/main/docs/PERFORMANCE.md" target="_blank" rel="noreferrer">Compare memory & speed <span aria-hidden="true">↗</span></a>
+        </div>
         <button id="build" class="catalogue-button" disabled>Prepare catalogue</button>
         <div id="progress" class="progress" hidden>
           <span class="spinner" aria-hidden="true"></span><span id="stage">Starting…</span>
@@ -34,25 +46,16 @@
         <details class="download-help">
           <summary>About the title data</summary>
           <p>The first download from IMDb can be a few hundred MB and take several minutes. Smart Search then builds a compact local index.</p>
+          <p>All sizes download the same source files. Larger options retain more titles and use more memory. Changing size takes effect after a successful rebuild; your current catalogue stays available while it runs.</p>
           <p>IMDb data is for personal, non-commercial use. <a href="https://developer.imdb.com/non-commercial-datasets/" target="_blank" rel="noreferrer">Data terms <span aria-hidden="true">↗</span></a></p>
         </details>
       </div>
 
-      <div class="helper-notes">
-        <svg class="local-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
-        <h3>You can close this page</h3>
-        <p>The helper keeps running in the background. Next time, use the <strong>Stremio + Smart Search</strong> shortcut to start both.</p>
-        <details>
-          <summary>How search works</summary>
-          <p>Titles are matched in memory on this computer, so there is no remote search server to wait for. Posters and playback still use your online providers.</p>
-          <p>No AI service, account passwords or watch history are used. This local link works on this computer; a TV or phone needs its own reachable helper.</p>
-        </details>
-      </div>
     </aside>
 
     <div class="workspace">
       <div class="workspace-header">
-        <p class="section-label">Setup</p>
+        <p class="section-label">Local Stremio Addon</p>
         <h1>Connect to Stremio</h1>
         <p>Search with typos, abbreviations and partial titles.</p>
       </div>
@@ -112,11 +115,21 @@
       </div>
       <p id="message" class="message" role="status" aria-live="polite"></p>
     </div>
+    <aside class="helper-notes" aria-labelledby="helper-title">
+      <svg class="local-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+      <h3 id="helper-title">You can close this page</h3>
+      <p>The helper keeps running in the background. Next time, use the <strong>Stremio + Smart Search</strong> shortcut to start both.</p>
+      <details>
+        <summary>How search works</summary>
+        <p>Titles are matched in memory on this computer, so there is no remote search server to wait for. Posters and playback still use your online providers.</p>
+        <p>No AI service, account passwords or watch history are used. This local link works on this computer; a TV or phone needs its own reachable helper.</p>
+      </details>
+    </aside>
   </main>
 
   <footer class="page-footer">
     <span id="version">Stremio Smart Search</span>
-    <span>Independent community project <span class="footer-divider" aria-hidden="true">/</span> <button id="quit" class="text-button">Quit helper</button></span>
+    <span><a href="/fonts/OFL.txt" target="_blank" rel="noreferrer">Font licence</a> <span class="footer-divider" aria-hidden="true">/</span> <button id="quit" class="text-button">Quit helper</button></span>
   </footer>
   <!--BOOTSTRAP--><script src="/app.js" defer></script>
 </body>

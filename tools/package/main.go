@@ -219,7 +219,7 @@ func run() error {
 	}
 	defer os.RemoveAll(absStage)
 	portable := filepath.Join(stage, "portable")
-	for _, file := range []string{"README.md", "LICENSE", "DATA.md", "START-HERE.txt"} {
+	for _, file := range []string{"README.md", "LICENSE", "THIRD-PARTY-NOTICES.txt", "DATA.md", "START-HERE.txt"} {
 		if err := copyFile(file, filepath.Join(portable, file), 0644); err != nil {
 			return err
 		}
@@ -289,7 +289,7 @@ func run() error {
 		if err = copyFile("internal/app/web/icon.svg", filepath.Join(data, "usr/share/icons/hicolor/scalable/apps/stremio-smart-search.svg"), 0644); err != nil {
 			return err
 		}
-		for _, file := range []string{"LICENSE", "DATA.md", "START-HERE.txt"} {
+		for _, file := range []string{"LICENSE", "THIRD-PARTY-NOTICES.txt", "DATA.md", "START-HERE.txt"} {
 			if err = copyFile(file, filepath.Join(data, "usr/share/doc/stremio-smart-search", file), 0644); err != nil {
 				return err
 			}

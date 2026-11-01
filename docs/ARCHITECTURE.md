@@ -8,7 +8,9 @@ The read-only index contains exact normalized titles, joined-title forms, acrony
 
 Input is limited to 120 Unicode characters and eight terms; results to 20 per request. Prefix expansion, trigram candidate scans, fuzzy word checks, posting lists and simultaneous searches have explicit limits. The normal HTTP request loop never needs an external search call. A request context bounds fuzzy work and the service limits matching concurrency.
 
-The default catalogue holds no more than 50,000 titles, split between movies and series. The data builder streams compressed IMDb files, excludes individual episodes and adult-marked content, and stores a compressed local JSON snapshot. A refresh builds a replacement separately and swaps the serving index only after a valid snapshot is saved. The previous snapshot supports recovery after interruption.
+Three catalogue profiles bound selection: Compact (25k movies + 25k series, minimum 250 votes), Standard (100k + 100k, minimum 25) and Expanded (250k + 250k, minimum 5). Standard is the new-setup default. These are independent per-type ceilings; actual eligible counts can be lower. Legacy snapshots without a profile are treated as Compact.
+
+The data builder streams the same compressed IMDb files for every profile, excludes individual episodes and adult-marked content, and stores a compressed local JSON snapshot. A refresh builds a replacement separately and swaps the serving index only after a valid snapshot is saved. Active and building profiles remain separate in status; the successful snapshot persists its profile. The previous snapshot supports recovery after interruption. The loader accepts at most 500,000 titles and 128 MiB of decompressed JSON; ratings parsing is also bounded. The executable retains its 256 MiB Go soft memory target and two Go execution threads. The target is not a process memory ceiling: live refresh temporarily holds the old and new index and can exceed it. See [measured resource use](PERFORMANCE.md).
 
 ## Stremio protocol
 

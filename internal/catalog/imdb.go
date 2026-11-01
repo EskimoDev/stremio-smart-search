@@ -63,13 +63,21 @@ func numericID(id string) (uint32, error) {
 // ParseIMDb consumes uncompressed TSV streams; production downloads are streamed
 // through gzip readers. No raw multi-gigabyte dataset is retained on disk.
 func ParseIMDb(ctx context.Context, ratingsReader, basicsReader io.Reader) (*Catalog, error) {
-	ratings, err := parseRatings(ctx, ratingsReader)
+	profile, _ := ProfileByID(DefaultProfile)
+	return ParseIMDbProfile(ctx, ratingsReader, basicsReader, profile)
+}
+
+func ParseIMDbProfile(ctx context.Context, ratingsReader, basicsReader io.Reader, profile Profile) (*Catalog, error) {
+	if known, ok := ProfileByID(profile.ID); !ok || known != profile {
+		return nil, fmt.Errorf("unknown catalogue profile")
+	}
+	ratings, err := parseRatings(ctx, ratingsReader, profile.MinVotes)
 	if err != nil {
 		return nil, err
 	}
-	return parseBasics(ctx, basicsReader, ratings)
+	return parseBasics(ctx, basicsReader, ratings, profile)
 }
-func parseRatings(ctx context.Context, reader io.Reader) (map[uint32]rating, error) {
+func parseRatings(ctx context.Context, reader io.Reader, minVotes int) (map[uint32]rating, error) {
 	s := scanner(reader)
 	if !s.Scan() {
 		return nil, fmt.Errorf("ratings file is empty")
@@ -98,7 +106,7 @@ func parseRatings(ctx context.Context, reader io.Reader) (map[uint32]rating, err
 			continue
 		}
 		votes, e := strconv.Atoi(row[voteCol])
-		if e != nil || votes < 250 {
+		if e != nil || votes < minVotes {
 			continue
 		}
 		id, e := numericID(row[idCol])
@@ -110,7 +118,7 @@ func parseRatings(ctx context.Context, reader io.Reader) (map[uint32]rating, err
 			continue
 		}
 		ratings[id] = rating{votes, value}
-		if len(ratings) > 1000000 {
+		if len(ratings) > 4000000 {
 			return nil, fmt.Errorf("ratings exceed the configured memory limit")
 		}
 	}
@@ -122,7 +130,7 @@ func parseRatings(ctx context.Context, reader io.Reader) (map[uint32]rating, err
 	}
 	return ratings, nil
 }
-func parseBasics(ctx context.Context, reader io.Reader, ratings map[uint32]rating) (*Catalog, error) {
+func parseBasics(ctx context.Context, reader io.Reader, ratings map[uint32]rating, profile Profile) (*Catalog, error) {
 	s := scanner(reader)
 	if !s.Scan() {
 		return nil, fmt.Errorf("title file is empty")
@@ -178,10 +186,12 @@ func parseBasics(ctx context.Context, reader io.Reader, ratings map[uint32]ratin
 		}
 		t := Title{ID: id, Name: name, Original: original, Type: kind, Year: year, Votes: r.votes, Rating: r.value}
 		target := movies
+		capacity := profile.Movies
 		if kind == "series" {
 			target = series
+			capacity = profile.Series
 		}
-		if target.Len() < MaxTitles/2 {
+		if target.Len() < capacity {
 			heap.Push(target, t)
 		} else if t.Votes > (*target)[0].Votes || (t.Votes == (*target)[0].Votes && t.ID < (*target)[0].ID) {
 			(*target)[0] = t
@@ -193,7 +203,7 @@ func parseBasics(ctx context.Context, reader io.Reader, ratings map[uint32]ratin
 	}
 	titles := append([]Title(nil), (*movies)...)
 	titles = append(titles, (*series)...)
-	c := &Catalog{Version: 1, BuiltAt: time.Now().UTC(), Source: "IMDb non-commercial datasets (downloaded on this device)", Titles: titles}
+	c := &Catalog{Version: 1, Profile: profile.ID, BuiltAt: time.Now().UTC(), Source: "IMDb non-commercial datasets (downloaded on this device)", Titles: titles}
 	return c, c.Validate()
 }
 
@@ -254,6 +264,14 @@ type datasetReader struct {
 func (d *datasetReader) Close() error { _ = d.gzip.Close(); return d.body.Close() }
 
 func DownloadIMDb(ctx context.Context, progress Progress) (*Catalog, error) {
+	profile, _ := ProfileByID(DefaultProfile)
+	return DownloadIMDbProfile(ctx, profile, progress)
+}
+
+func DownloadIMDbProfile(ctx context.Context, profile Profile, progress Progress) (*Catalog, error) {
+	if known, ok := ProfileByID(profile.ID); !ok || known != profile {
+		return nil, fmt.Errorf("unknown catalogue profile")
+	}
 	if progress != nil {
 		progress("Downloading title ratings", 0)
 	}
@@ -261,7 +279,7 @@ func DownloadIMDb(ctx context.Context, progress Progress) (*Catalog, error) {
 	if err != nil {
 		return nil, err
 	}
-	ratings, err := parseRatings(ctx, r)
+	ratings, err := parseRatings(ctx, r, profile.MinVotes)
 	_ = r.Close()
 	if err != nil {
 		return nil, err
@@ -274,5 +292,5 @@ func DownloadIMDb(ctx context.Context, progress Progress) (*Catalog, error) {
 		return nil, err
 	}
 	defer b.Close()
-	return parseBasics(ctx, b, ratings)
+	return parseBasics(ctx, b, ratings, profile)
 }

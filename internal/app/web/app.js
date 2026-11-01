@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  let timer, stopped = false, clients = [], lastStatus;
+  let timer, stopped = false, clients = [], lastStatus, selectedProfile;
   const clientNames = { stremio: 'Stremio', dxbi: 'dx.bi', enhanced: 'Stremio Enhanced' };
   const installButtons = [...document.querySelectorAll('[data-client]')];
   const base = window.smartSearch.baseURL;
@@ -16,18 +16,24 @@
     return result;
   }
   function render(status) {
+    if (!selectedProfile || (lastStatus?.building && !status.building && !status.error)) selectedProfile = status.buildProfile || status.profile;
     lastStatus = status;
+    $('catalog-profile').value = selectedProfile;
+    $('catalog-profile').disabled = status.building;
+    const profile = status.profiles.find(profile => profile.id === selectedProfile);
+    $('profile-info').textContent = profile ? `Up to ${profile.movies.toLocaleString()} movies + ${profile.series.toLocaleString()} series. Minimum ${profile.minVotes} IMDb votes. Actual totals depend on the source.` : 'Choose a catalogue size.';
     $('connection').textContent = status.building ? 'Preparing catalogue' : status.ready ? 'Ready · running locally' : 'Catalogue needed';
     $('connection').classList.toggle('ready', status.ready);
     $('connection').classList.toggle('building', status.building);
     $('build').disabled = status.building;
-    $('build').textContent = status.building ? 'Preparing…' : status.ready ? 'Refresh catalogue' : 'Prepare catalogue';
+    $('build').textContent = status.building ? 'Preparing…' : status.ready ? selectedProfile !== status.profile ? 'Apply size & rebuild' : 'Refresh catalogue' : 'Prepare catalogue';
     $('progress').hidden = !status.building;
     $('stage').textContent = `${status.stage}${status.bytes ? ` · ${(status.bytes / 1024 / 1024).toFixed(1)} MB downloaded` : ''}`;
     $('catalog-stats').hidden = !status.ready;
     $('movie-count').textContent = status.movies.toLocaleString();
     $('series-count').textContent = status.series.toLocaleString();
-    $('catalog-info').textContent = status.ready ? `Updated ${new Date(status.builtAt).toLocaleDateString()}` : 'Download IMDb title data to enable setup. A few hundred MB; allow several minutes.';
+    const activeProfile = status.profiles.find(profile => profile.id === status.profile);
+    $('catalog-info').textContent = status.ready ? `${activeProfile?.name || 'Local'} · updated ${new Date(status.builtAt).toLocaleDateString()}` : 'Download IMDb title data to enable setup. A few hundred MB; allow several minutes.';
     for (const button of installButtons) {
       const client = clients.find(client => client.id === button.dataset.client);
       button.disabled = !status.ready || !client?.available;
@@ -49,8 +55,12 @@
   }
   $('build').addEventListener('click', async () => {
     clearTimeout(timer); tell('');
-    try { render(await api('build', 'POST')); } catch (error) { tell(error.message); }
+    try { render(await api('build', 'POST', { profile: selectedProfile })); } catch (error) { tell(error.message); }
     refresh();
+  });
+  $('catalog-profile').addEventListener('change', () => {
+    selectedProfile = $('catalog-profile').value;
+    if (lastStatus) render(lastStatus);
   });
   $('copy').addEventListener('click', async () => {
     try { await navigator.clipboard.writeText($('manifest').value); tell('Addon link copied. Paste it into your app’s Add addon dialog.'); }
