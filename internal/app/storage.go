@@ -18,6 +18,8 @@ type Storage struct {
 	Other     int64  `json:"other"`
 	Files     int    `json:"files"`
 	Memory    uint64 `json:"memory"`
+	DiskFree  uint64 `json:"diskFree"`
+	DiskSize  uint64 `json:"diskSize"`
 	CanOpen   bool   `json:"canOpen"`
 }
 
@@ -50,6 +52,7 @@ func (a *App) Storage() Storage {
 		}
 		return nil
 	})
+	s.DiskFree, s.DiskSize = diskFree(s.Path)
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 	s.Memory = m.Sys - m.HeapReleased

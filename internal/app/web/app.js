@@ -88,15 +88,24 @@
   const platform = navigator.userAgentData?.platform || navigator.platform || '';
   const folderLabel = /^win/i.test(platform) ? 'Show in Explorer' : /mac/i.test(platform) ? 'Show in Finder' : 'Open folder';
   $('open-folder').textContent = folderLabel;
-  const size = bytes => bytes >= 1024 ** 3 ? `${(bytes / 1024 ** 3).toFixed(2)} GB` : bytes >= 1024 ** 2 ? `${(bytes / 1024 ** 2).toFixed(1)} MB` : bytes >= 1024 ? `${Math.round(bytes / 1024)} KB` : `${bytes} B`;
+  const size = bytes => bytes >= 1024 ** 4 ? `${(bytes / 1024 ** 4).toFixed(2)} TB` : bytes >= 1024 ** 3 ? `${(bytes / 1024 ** 3).toFixed(bytes >= 100 * 1024 ** 3 ? 0 : 1)} GB` : bytes >= 1024 ** 2 ? `${(bytes / 1024 ** 2).toFixed(1)} MB` : bytes >= 1024 ? `${Math.round(bytes / 1024)} KB` : `${bytes} B`;
   async function refreshStorage() {
     try {
       const storage = await api('storage');
-      $('storage-total').textContent = size(storage.total);
-      $('storage-catalogue').textContent = storage.catalogue ? size(storage.catalogue) : 'Not downloaded';
+      const segments = { catalogue: storage.catalogue, backup: storage.backup, other: storage.other };
+      for (const [name, bytes] of Object.entries(segments)) {
+        $(`seg-${name}`).style.width = storage.total ? `${(bytes / storage.total * 100).toFixed(2)}%` : '0%';
+        $(`seg-${name}`).style.minWidth = bytes ? '3px' : '0';
+        $(`seg-${name}`).title = `${name === 'backup' ? 'Previous catalogue' : name === 'other' ? 'Settings' : 'Catalogue'}: ${size(bytes)}`;
+      }
+      const total = document.createElement('strong'); total.textContent = size(storage.total);
+      $('storage-total').replaceChildren(total, ' used');
+      $('storage-bar').setAttribute('aria-label', `Smart Search uses ${size(storage.total)}: catalogue ${size(storage.catalogue)}, previous catalogue ${size(storage.backup)}, settings ${size(storage.other)}`);
+      $('storage-catalogue').textContent = storage.catalogue ? size(storage.catalogue) : 'None yet';
       $('storage-backup-row').hidden = !storage.backup;
       $('storage-backup').textContent = size(storage.backup);
       $('storage-other').textContent = size(storage.other);
+      $('storage-disk').textContent = storage.diskSize ? `${size(storage.diskFree)} free of ${size(storage.diskSize)} on this drive` : '';
       $('storage-memory').textContent = size(storage.memory);
       $('storage-path').value = storage.path;
       $('open-folder').disabled = !storage.canOpen;

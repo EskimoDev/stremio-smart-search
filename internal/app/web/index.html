@@ -139,14 +139,20 @@
         <p>No AI service, account passwords or watch history are used. This local link works on this computer; a TV or phone needs its own reachable helper.</p>
       </details>
       <section class="storage" aria-labelledby="storage-title">
-        <h3 id="storage-title">Storage</h3>
-        <p class="storage-total"><span id="storage-total">—</span> on disk</p>
-        <dl class="storage-list">
-          <div><dt>Catalogue</dt><dd id="storage-catalogue">—</dd></div>
-          <div id="storage-backup-row" hidden><dt>Previous catalogue</dt><dd id="storage-backup">—</dd></div>
-          <div><dt>Settings &amp; other</dt><dd id="storage-other">—</dd></div>
-          <div><dt>Memory, incl. search index</dt><dd id="storage-memory">—</dd></div>
-        </dl>
+        <div class="storage-head">
+          <h3 id="storage-title">Storage</h3>
+          <span id="storage-total" class="storage-total">—</span>
+        </div>
+        <div id="storage-bar" class="storage-bar" role="img" aria-label="Storage used by Smart Search">
+          <span class="seg seg-catalogue" id="seg-catalogue"></span><span class="seg seg-backup" id="seg-backup"></span><span class="seg seg-other" id="seg-other"></span>
+        </div>
+        <ul class="storage-legend">
+          <li><span class="dot seg-catalogue" aria-hidden="true"></span>Catalogue <span id="storage-catalogue">—</span></li>
+          <li id="storage-backup-row" hidden><span class="dot seg-backup" aria-hidden="true"></span>Previous <span id="storage-backup">—</span></li>
+          <li><span class="dot seg-other" aria-hidden="true"></span>Settings <span id="storage-other">—</span></li>
+        </ul>
+        <p id="storage-disk" class="fine storage-disk"></p>
+        <div class="storage-memory"><span>Memory, incl. search index</span><span id="storage-memory">—</span></div>
         <div class="link-field storage-path">
           <input id="storage-path" readonly spellcheck="false" aria-label="Data folder location" value="Checking…">
           <button id="open-folder" class="copy-button" disabled>Open folder</button>
