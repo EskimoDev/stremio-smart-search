@@ -9,6 +9,7 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 ### Changed
 
 - README: a "Why Smart Search" section with example searches, an at-a-glance summary, measured memory, speed and accuracy per catalogue size, the index rewrite before and after, and an honest "Is it right for you?" section.
+- Trimmed the docs: PERFORMANCE.md leads with current results and one before/after table, DESIGN.md keeps only the rules that apply to the setup page, and maintainer notes moved from INSTALLATION.md to CONTRIBUTING.md.
 
 ## [0.1.0-preview.3] - 2026-11-01
 

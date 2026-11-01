@@ -36,13 +36,11 @@ Each of these returns the expected title first in the [search-quality cases](doc
 
 ### At a glance
 
-| | |
-|---|---|
-| 🎯 **Accurate** | Right title first in **97.9%** of 248 checked searches, and in the top five in **99.5%** (Expanded catalogue) |
-| ⚡ **Fast** | **0.8 ms** for 95% of searches on the largest catalogue, measured over real HTTP on a desktop PC |
-| 🪶 **Light** | About **97 MiB** of memory for 390,000 titles, no measurable CPU while idle, and a single 3 to 8 MB download with no runtime to install |
-| 🔒 **Private** | No account, no Stremio login, no AI or search service. Matching runs on your computer |
-| 🤝 **Plays nicely** | Adds search rows only. Your other addons keep supplying streams, metadata and their own results |
+- 🎯 **Accurate**: Right title first in **97.9%** of 248 checked searches, and in the top five in **99.5%** (Expanded catalogue).
+- ⚡ **Fast**: **0.8 ms** for 95% of searches on the largest catalogue, measured over real HTTP on a desktop PC.
+- 🪶 **Light**: About **97 MiB** of memory for 390,000 titles, no measurable CPU while idle, and a single 3 to 8 MB download with no runtime to install.
+- 🔒 **Private**: No account, no Stremio login, no AI or search service. Matching runs on your computer.
+- 🤝 **Plays nicely**: Adds search rows only. Your other addons keep supplying streams, metadata and their own results.
 
 ## Installation
 
@@ -63,7 +61,7 @@ Needs Windows 10 or newer, macOS 11 or newer, or 64-bit Linux. Full results are 
 1. **Open Stremio Smart Search.** Its settings page opens in your browser.
 2. **Prepare the catalogue.** Pick a size (Standard is the default) and choose **Prepare catalogue**. It downloads IMDb title data straight to your computer, a few hundred MB, and takes a few minutes the first time.
 3. **Add it to your app.** Choose **Stremio**, **dx.bi** or **Stremio Enhanced**. The link is copied and the app opens. Go to **Addons → Add addon**, paste and choose **Install**.
-4. **Search as usual.** Try `HOTD`, `interstelar` or `LOTR` and look for the Smart Search rows.
+4. **Search as usual.** Try `HOTD`, `strangerthings` or `LOTR` and look for the Smart Search rows.
 
 Next time, open **Stremio + Smart Search** to start both together. You can close the settings page; the helper keeps running until you choose **Quit helper**.
 
@@ -102,9 +100,9 @@ Titles kept are from the 2026-11-01 IMDb data; each size allows up to 25k, 100k 
 
 Measured on real IMDb data on one Windows PC (Ryzen 5 5600X, 32 GiB RAM), with 750 real HTTP requests per run mixing exact titles, acronyms, typos, accents, non-Latin text and no-result searches. Medians of three fresh runs.
 
-**The index rewrite in this release**, Expanded catalogue:
+**The index rewrite in this release:**
 
-| | Before | After |
+| Expanded catalogue | Before | After |
 |---|---:|---:|
 | Memory after startup | 276 MiB | **97 MiB** |
 | 95th-percentile search | 9.86 ms | **0.77 ms** |

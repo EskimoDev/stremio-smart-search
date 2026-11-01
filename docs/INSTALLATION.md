@@ -1,6 +1,6 @@
-# Installation and packaging
+# Installation
 
-No package should be described as device-tested until it has actually been run on that platform. The release workflow compiles and tests on Windows, macOS and Linux runners; ARM64 binaries also require device testing.
+Which packages have been tested on real machines is listed in [platform testing](PLATFORM-TESTING.md).
 
 ## Put Smart Search first
 
@@ -21,9 +21,7 @@ If that control is hidden, enable **Addon order & backup** in dx.bi settings. Sa
 
 Moving **only SSS** keeps the other addons in their existing relative order. SSS supplies search-only catalogues: it does not supply streams, metadata or subtitles, or add Home/Discover rows. Your existing playback providers continue working in their previous order. The order is a Stremio account setting and may sync to your other clients.
 
-The companion leaves this choice to you; it does not sign into your account or reorder addons automatically.
-
-Smart Search matches against a local, prebuilt index, avoiding an internet round trip to a search server. This can reduce search waiting; posters, metadata, streams and the client UI still have their own loading time.
+Smart Search never signs into your account or reorders addons itself.
 
 ## Check your download
 
@@ -31,7 +29,7 @@ Each release lists a SHA-256 checksum for every file in `SHA256SUMS.txt`. On Win
 
 ## Windows
 
-The Windows x64 preview has user-confirmed compatibility with standard Stremio, dx.bi and Stremio Enhanced. Installation and removal were also tested on a Windows PC. This confirmation covers the tested desktop clients; Windows ARM64 and additional OS/client releases still need their own verification.
+The Windows x64 preview has been tested with Stremio, dx.bi and Stremio Enhanced, including install and uninstall. Windows ARM64 has not been tested on a device.
 
 The installer is per-user and requests no administrator privileges. It creates:
 
@@ -41,7 +39,7 @@ The installer is per-user and requests no administrator privileges. It creates:
 
 The optional **Start helper when I sign in** component keeps the helper available when Stremio is opened through other shortcuts. This setting is not silently enabled by the app. The portable ZIP makes no startup or shortcut changes.
 
-Unsigned development installers can show Windows publisher/reputation prompts. Signing is a separate release task, not something GitHub Releases automatically provides. Do not claim a verified publisher without a signing certificate.
+Preview installers are not code-signed, so Windows SmartScreen may warn the first time. Choose **More info → Run anyway**.
 
 Running an older installer over a newer version installs the older app; it does not warn first. Your catalogue and settings are kept either way.
 
@@ -51,7 +49,7 @@ Uninstall removes the app and shortcuts, leaving the local catalogue in `%AppDat
 
 Open the disk image and drag both **Stremio Smart Search.app** and **Stremio + Smart Search.app** to Applications. Open the first for setup. Use the second as your combined Stremio launcher afterwards.
 
-The build workflow can produce disk images for Intel and Apple Silicon. Development apps are ad-hoc signed, not Apple notarized. Gatekeeper may require approval in Privacy & Security. A frictionless public macOS release will need Developer ID signing and notarization; this has not been completed.
+Disk images are built for Intel and Apple Silicon. The apps are ad-hoc signed, not notarized by Apple, so Gatekeeper asks for approval the first time: open **System Settings → Privacy & Security** and choose **Open Anyway**.
 
 ## Linux
 
@@ -77,6 +75,3 @@ Portable users can run the executable directly. Pass `--launch` to also open Str
 
 See [OTHER-DEVICES.md](OTHER-DEVICES.md).
 
-## Release readiness
-
-Before publishing: run the platform-native tests and smoke tests, verify installer/uninstaller behavior, verify the actual Stremio addon installation prompt and results, record unsigned-platform prompts accurately, and review the package contents for data, credentials and machine-specific files. The workflow creates a **draft prerelease** for review rather than publishing a public release automatically.
