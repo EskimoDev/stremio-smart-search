@@ -8,6 +8,33 @@ Platform changes need a native test or a clear note that only compilation was ch
 
 Follow [docs/DESIGN.md](docs/DESIGN.md) for setup-page styling. Use locally bundled assets and preserve the install and clipboard behavior. For catalogue or index changes, use the [resource comparison workflow](docs/PERFORMANCE.md#reproduce) with real source data kept outside this repository. The benchmark tool is a developer utility and is not shipped as part of the helper.
 
+## Development setup
+
+Requires Go 1.24 or newer; CI currently uses Go 1.27.x. Node.js is needed for
+the setup-page tests only, and PowerShell is used for packaging and smoke checks.
+The installed app needs none of these tools.
+
+From the repository root:
+
+```sh
+go test ./...
+go vet ./...
+node scripts/ui-test.mjs
+go run ./cmd/smart-search --help
+```
+
+To explore setup without touching your installed helper, use a separate port and
+data folder with the handwritten fixture:
+
+```sh
+go run ./cmd/smart-search --listen 127.0.0.1:11499 --data-dir ../sss-dev-data --catalog testdata/catalog.json
+```
+
+That fixture has a few illustrative titles, not a production catalogue. Keep any
+real IMDb downloads, snapshots and quality reports outside this repository.
+[Scripts](scripts/README.md) and [Tools](tools/README.md) explain the build and
+evaluation commands.
+
 ## Releasing
 
 The version is stamped at build time: `scripts/build.ps1` passes it to the binary with `-ldflags "-X main.version=..."`, and to `tools/package` and the Windows installer. Untagged local builds report `0.1.0-dev`.

@@ -3,6 +3,28 @@
 How accurately Smart Search finds the title someone meant, measured on real
 catalogues with known IMDb answers.
 
+## Current results
+
+After the coverage-ranking follow-up, the recorded 2026-11-01 results with
+alternative titles **off** are:
+
+| Catalogue | Expected answer first | Expected answer in the top five |
+| --- | ---: | ---: |
+| Compact | 191/192 (99.5%) | 191/192 (99.5%) |
+| Standard | 190/192 (99.0%) | 191/192 (99.5%) |
+| Expanded | 188/192 (97.9%) | 191/192 (99.5%) |
+
+These percentages describe a curated test set, not all searches someone might
+make. Each catalogue runs 194 applicable cases: 192 with an expected answer and
+two no-answer checks. The other 54 cases require a particular alternative-title
+language; they are not included in these percentages. The complete suite has
+248 cases. Titles outside a catalogue's coverage and unavailable regional names
+are reported separately rather than counted as ranking failures.
+
+The tables later on this page preserve earlier before/after comparisons; they
+precede the [coverage-ranking follow-up](#follow-up-prefer-titles-the-query-covers).
+See [remaining weaknesses](#remaining-weaknesses) for examples that still fail.
+
 ## The cases
 
 [`testdata/quality/cases.json`](../testdata/quality/cases.json) holds 248
@@ -61,10 +83,14 @@ The case suite tests intent that a person judged. The benchmark's generated
 `-phase accuracy` queries are complementary: thousands of typo, prefix and
 joined forms derived from the catalogue itself. Both are reported below.
 
+Top-1, Recall@5 and MRR use only scored cases with an expected answer as their
+denominator. No-answer cases contribute to false-positive checks, not ranking
+percentages. The tables' **Cases** column includes both kinds.
+
 ## Reproduce
 
 ```sh
-go run ./tools/quality -v -out results/after -baseline results/before \
+go run ./tools/quality -v -out ../sss-quality/after -baseline ../sss-quality/before \
     path/to/compact.json.gz path/to/standard-fr.json.gz ...
 ```
 
@@ -74,14 +100,15 @@ repository. The harness is deterministic: the same build and snapshot always
 give the same report. `go test ./internal/quality` checks the case file and
 the metric code without real data.
 
-## Results, 2026-11-01
+## Earlier ranking fixes, 2026-11-01
 
 These are real IMDb snapshots prepared on 2026-11-01: Compact, Standard and
 Expanded, French versions of all three, and Standard with English, Spanish
 (all regions and Spain only), German and Japanese regional titles. "Before"
 is the compact-index build ([#7](https://github.com/EskimoDev/stremio-smart-search/pull/7)),
-which returns the same results as the previous release. "After" includes the
-fixes below.
+which preserved the pre-rewrite search results. "After" includes the first five
+fixes below, before the later coverage-ranking follow-up. These are historical
+comparisons, not the final preview.3 totals.
 
 | Catalogue | Cases | Top-1 | Recall@5 | MRR | Missing | False-positive cases |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |

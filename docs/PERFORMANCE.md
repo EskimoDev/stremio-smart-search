@@ -22,7 +22,7 @@ local helpers were running at the time, so treat small differences as noise.
 | Standard | 184,606 | 53 MiB | 0.36 ms | 0.60 ms | 0.82 ms | 0.46 ms |
 | Expanded | 390,470 | 97 MiB | 0.42 ms | 0.77 ms | 1.15 ms | 0.50 ms |
 
-| Size | Load + index build | First preparation | Live refresh | Peak RAM during refresh |
+| Size | Load + index build | Preparation (download excluded) | Live refresh (download excluded) | Peak RAM during refresh |
 | --- | ---: | ---: | ---: | ---: |
 | Compact | 0.21 s | 3.55 s | 3.82 s | 86 MiB |
 | Standard | 0.82 s | 4.38 s | 4.74 s | 224 MiB |
@@ -32,7 +32,9 @@ The quiet CPU sample, 10 seconds after the searches had finished, was zero for
 every size. All fixed search cases passed in every run.
 
 **What the numbers mean.** RAM is the process working set three seconds after
-startup, without a forced garbage collection. It is not a ceiling: recent searches,
+startup. Normal startup already calls `debug.FreeOSMemory()` after loading the
+catalogue; the benchmark adds no further forced collection at sampling time.
+It is not a ceiling: recent searches,
 garbage collection and the OS all move it. Each run made 750 real loopback HTTP
 requests, 15 fixed queries repeated 50 times, mixing exact titles, acronyms, typos,
 common words, accents, non-Latin text and no-result queries. Timings include HTTP
@@ -48,7 +50,8 @@ Every size downloads the same two IMDb files, **227 MiB compressed** in the
 2026-11-01 snapshot, so a larger size does not mean a larger download. The helper
 streams them and does not keep them. The stored catalogue is small: about 1.3 MiB
 for Compact, 4.7 MiB for Standard and 9.8 MiB for Expanded. A copy of the previous
-catalogue is kept for recovery, so allow about twice that.
+catalogue is used temporarily during replacement, so allow about twice that
+while saving. A successful save removes the recovery copy.
 
 ## Alternative titles
 
@@ -58,7 +61,7 @@ streamed and never stored.
 
 Measured with French titles in the same run as the tables above:
 
-| Size | French titles kept | RAM after startup | 95th percentile | First preparation | Peak RAM during refresh |
+| Size | French titles kept | RAM after startup | 95th percentile | Preparation (download excluded) | Peak RAM during refresh |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Standard | 55,722 | 58 MiB | 0.52 ms | 11.4 s | 256 MiB |
 | Expanded | 75,501 | 105 MiB | 0.86 ms | 12.8 s | 294 MiB |
@@ -96,7 +99,9 @@ are kept for reference.
    into a directory outside this repository, under
    [IMDb's dataset terms](https://developer.imdb.com/non-commercial-datasets/).
 2. Build the benchmark and run the phases below. Windows reports working set, peak
-   working set and CPU; other platforms currently report heap and wall time only.
+   working set and CPU. Linux reports RSS, peak RSS, anonymous resident memory and
+   process CPU; those memory counters differ from Windows' working set. Other
+   platforms currently report Go heap and wall time without process counters.
 3. Run `measure` three times per size in fresh processes, with nothing else
    benchmarking at the same time. Add `-aliases fr` (or another language, optionally
    with a region such as `es:ES`) to every phase for alternative titles. Do not
@@ -120,6 +125,19 @@ as synthetic. `-cpuprofile` writes a Go CPU profile of any phase, and
 `-phase accuracy -dump <file>` records every generated query and its results so two
 builds can be compared for identical output.
 
-The [raw measurements from before the rewrite](benchmarks/windows-2026-11-01.json)
-include every startup sample, test case, source byte count and checksum. The
-benchmark is a developer tool and is not shipped with the helper.
+## Measurement records
+
+The current Windows tables summarize the measurements recorded in
+[commit b438f3b](https://github.com/EskimoDev/stremio-smart-search/commit/b438f3ba0d0fcc1d82a37e065778322efa660f3e).
+Their individual post-rewrite reports are not checked into this repository.
+The retained JSON files support these earlier comparisons:
+
+- [Windows before the rewrite](benchmarks/windows-2026-11-01.json): startup samples,
+  request timings, source byte counts and checksums for the earlier index.
+- [Synthetic Linux before and after](benchmarks/linux-synthetic-2026-11-01.json):
+  invented IMDb-shaped data, used to compare the index implementations. These
+  are not real-catalogue Windows results.
+
+Use the reproduction steps above to collect a new set of reports. Keep the raw
+datasets and production catalogues outside the repository. The benchmark is a
+developer tool and is not shipped with the helper.
