@@ -131,3 +131,5 @@ Start with [architecture](docs/ARCHITECTURE.md) and the [contribution guide](CON
 MIT licensed. This is an independent community project, not an official Stremio product, and it does not host or distribute video.
 
 The setup page follows [LongCipher Design by Akagi201](https://designmd.ai/Akagi201/longcipher-design) (CC0), with Geist fonts bundled under the SIL Open Font License. See [third-party notices](THIRD-PARTY-NOTICES.txt).
+
+Thanks to [dx.bi](https://github.com/notdxbi/dxbi-stremio), whose README inspired the layout of this one.
