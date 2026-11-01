@@ -68,6 +68,7 @@ type App struct {
 	searchSlots     chan struct{}
 	Quit            func()
 	LaunchClient    func(string) error
+	OpenFolder      func(string) error
 	DownloadCatalog func(context.Context, catalog.Profile, catalog.Progress) (*catalog.Catalog, error)
 	// DownloadAliases adds alternative titles to a freshly built catalogue. It
 	// is only called when the build selected a language.
@@ -85,6 +86,7 @@ func New(ctx context.Context, dataDir, baseURL, version string) (*App, error) {
 	}
 	a := &App{ctx: ctx, dataDir: dataDir, Token: string(token), BaseURL: baseURL, searchSlots: make(chan struct{}, 2)}
 	a.LaunchClient = OpenClient
+	a.OpenFolder = OpenFolder
 	a.DownloadCatalog = catalog.DownloadIMDbProfile
 	a.DownloadAliases = catalog.DownloadIMDbAliases
 	a.status = Status{Product: Product, Version: version, Profile: catalog.DefaultProfile, Profiles: catalog.Profiles(), Languages: catalog.Languages(), Stage: "Set up your local catalogue", Manifest: baseURL + "/manifest.json", WebInstall: "https://web.stremio.com/#/addons?addon=" + url.QueryEscape(baseURL+"/manifest.json"), PreferredClient: loadClientPreference(dataDir)}
@@ -378,6 +380,16 @@ func (a *App) Handler() http.Handler {
 					return
 				}
 				writeJSON(w, 202, a.Status())
+			case r.URL.Path == "/api/storage" && r.Method == http.MethodGet:
+				writeJSON(w, 200, a.Storage())
+			case r.URL.Path == "/api/storage/open" && r.Method == http.MethodPost:
+				// admin() has already limited this to loopback requests from the
+				// settings page, so a LAN client can never open windows here.
+				if a.OpenFolder == nil || a.OpenFolder(a.Storage().Path) != nil {
+					writeJSON(w, 500, map[string]string{"error": "Could not open the folder. Copy the path and open it manually."})
+					return
+				}
+				writeJSON(w, 200, map[string]bool{"ok": true})
 			case r.URL.Path == "/api/launch" && r.Method == http.MethodPost:
 				if err := a.LaunchClient(a.Status().PreferredClient); err != nil {
 					writeJSON(w, 500, map[string]string{"error": "Could not open Stremio. Open it normally, then add the copied addon link."})

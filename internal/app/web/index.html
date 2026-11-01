@@ -138,6 +138,21 @@
         <p>Titles are matched in memory on this computer, so there is no remote search server to wait for. Posters and playback still use your online providers.</p>
         <p>No AI service, account passwords or watch history are used. This local link works on this computer; a TV or phone needs its own reachable helper.</p>
       </details>
+      <section class="storage" aria-labelledby="storage-title">
+        <h3 id="storage-title">Storage</h3>
+        <p class="storage-total"><span id="storage-total">—</span> on disk</p>
+        <dl class="storage-list">
+          <div><dt>Catalogue</dt><dd id="storage-catalogue">—</dd></div>
+          <div id="storage-backup-row" hidden><dt>Previous catalogue</dt><dd id="storage-backup">—</dd></div>
+          <div><dt>Settings &amp; other</dt><dd id="storage-other">—</dd></div>
+          <div><dt>Memory, incl. search index</dt><dd id="storage-memory">—</dd></div>
+        </dl>
+        <div class="link-field storage-path">
+          <input id="storage-path" readonly spellcheck="false" aria-label="Data folder location" value="Checking…">
+          <button id="open-folder" class="copy-button" disabled>Open folder</button>
+        </div>
+        <p id="storage-info" class="fine" aria-live="polite">The search index is rebuilt in memory from the catalogue file each time the helper starts.</p>
+      </section>
     </aside>
   </main>
 

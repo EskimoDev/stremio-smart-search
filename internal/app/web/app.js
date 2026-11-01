@@ -85,9 +85,32 @@
     $('version').textContent = `${status.product} · ${status.version}`;
     if (status.error) tell(`${status.error}${status.ready ? ' Your previous catalogue is still available.' : ' You can try preparing the catalogue again.'}`);
   }
+  const platform = navigator.userAgentData?.platform || navigator.platform || '';
+  const folderLabel = /^win/i.test(platform) ? 'Show in Explorer' : /mac/i.test(platform) ? 'Show in Finder' : 'Open folder';
+  $('open-folder').textContent = folderLabel;
+  const size = bytes => bytes >= 1024 ** 3 ? `${(bytes / 1024 ** 3).toFixed(2)} GB` : bytes >= 1024 ** 2 ? `${(bytes / 1024 ** 2).toFixed(1)} MB` : bytes >= 1024 ? `${Math.round(bytes / 1024)} KB` : `${bytes} B`;
+  async function refreshStorage() {
+    try {
+      const storage = await api('storage');
+      $('storage-total').textContent = size(storage.total);
+      $('storage-catalogue').textContent = storage.catalogue ? size(storage.catalogue) : 'Not downloaded';
+      $('storage-backup-row').hidden = !storage.backup;
+      $('storage-backup').textContent = size(storage.backup);
+      $('storage-other').textContent = size(storage.other);
+      $('storage-memory').textContent = size(storage.memory);
+      $('storage-path').value = storage.path;
+      $('open-folder').disabled = !storage.canOpen;
+    } catch { $('storage-path').value = 'Storage details unavailable'; }
+  }
+  let storageFor;
   async function refresh() {
     if (stopped) return;
-    try { const status = await api('status'); render(status); timer = setTimeout(refresh, status.building ? 1000 : 10000); }
+    try {
+      const status = await api('status'); render(status); timer = setTimeout(refresh, status.building ? 1000 : 10000);
+      // Sizes only change when a catalogue is saved, so skip the walk on ordinary polls.
+      const key = status.building ? null : `${status.ready}|${status.builtAt}`;
+      if (key && key !== storageFor) { storageFor = key; refreshStorage(); }
+    }
     catch { $('connection').textContent = 'Helper is not running'; tell('Open Smart Search again to reconnect.'); }
   }
   $('build').addEventListener('click', async () => {
@@ -126,6 +149,11 @@
   $('launch').addEventListener('click', async () => {
     try { await api('launch', 'POST'); tell(`Opening ${clientNames[lastStatus?.preferredClient] || 'your default Stremio app'}.`); } catch (error) { tell(error.message); }
   });
+  $('open-folder').addEventListener('click', async () => {
+    try { await api('storage/open', 'POST'); $('storage-info').textContent = 'Opened the data folder.'; }
+    catch (error) { $('storage-path').focus(); $('storage-path').select(); $('storage-info').textContent = error.message; }
+  });
+  $('storage-path').addEventListener('focus', () => $('storage-path').select());
   $('quit').addEventListener('click', async () => {
     stopped = true; clearTimeout(timer);
     try { await api('quit', 'POST'); $('connection').textContent = 'Helper stopped'; tell('Smart Search has stopped. You can close this page.'); }
