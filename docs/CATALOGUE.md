@@ -1,6 +1,6 @@
 # Title catalogue
 
-Smart Search matches against a catalogue built on your own computer from IMDb's public datasets. This page covers what goes into it, the optional alternative titles and how updates work. For memory and speed per size, see [PERFORMANCE.md](PERFORMANCE.md).
+Smart Search matches against a catalogue built on your own computer from IMDb's public datasets. This page covers what goes into it, the optional alternative titles, where it is stored and how updates work. For memory and speed per size, see [PERFORMANCE.md](PERFORMANCE.md).
 
 ## Catalogue sizes
 
@@ -20,13 +20,29 @@ In the 2026-11-01 measurements, the three sizes contained **50,000 / 184,588 / 3
 
 Under **Catalogue → Alternative titles**, choose a language. Where titles commonly differ by country, you can also choose a **Regional preference**, such as Spain or Mexico for Spanish, or France or Canada for French. Then choose **Apply titles & rebuild**. Search then also matches those titles, including misspellings and missing accents. Results keep their normal IMDb identifiers and names, and English and original titles keep working. Off is the default, and existing catalogues keep their current behaviour until you change it.
 
-This adds IMDb's alternative-title file to each preparation: about 520 MB more to download (2026-11-01), roughly tripling the download, and it is streamed and discarded like the other files. Preparation takes about 10 seconds longer. With French titles, measured RAM rose by about 8–10 MiB (Compact) and 20–30 MiB (Standard). Search speed was unchanged on those sizes; Expanded, already the most memory-hungry, became slightly slower, so the settings page recommends Standard when alternative titles are on. See [performance](PERFORMANCE.md#alternative-titles). Only the chosen language is kept. It is matched against your own installed catalogue, not translated, and no other service is involved.
+This adds IMDb's alternative-title file to each preparation: about 520 MB more to download (2026-11-01), roughly tripling the download, and it is streamed and discarded like the other files. Preparation takes about 10 seconds longer. With French titles, measured RAM rose by about 8–10 MiB (Compact) and 20–30 MiB (Standard), and search speed was unchanged. Expanded became slightly slower in that measurement because it was already over the helper's memory target. The later [index rewrite](PERFORMANCE.md#index-and-preparation-rewrite) brought Expanded with French titles to about 108 MiB on synthetic data, well under that target, but this has not been re-measured on real data yet. Until it is, the settings page still suggests Standard when you pick alternative titles with Expanded. See [performance](PERFORMANCE.md#alternative-titles). Only the chosen language is kept. It is matched against your own installed catalogue, not translated, and no other service is involved.
 
 ## Matching and ranking
 
 Exact titles are ranked first, whether canonical or, with alternative titles on, regional; popularity decides between them. Acronyms can have several legitimate meanings; popularity helps rank the alternatives. Typo matching has bounded edit distances and work limits. It does not generate fictional titles or use an LLM.
 
 To pick one of several films with the same name, add its release year: `dune 1984`, `halloween 2018`, `it 2017`. If no title matches that year, the year is ignored. Measured accuracy per catalogue size, and the known weak spots, are in [search quality](SEARCH-QUALITY.md).
+
+## Where the catalogue is stored
+
+By default the catalogue lives in the helper's settings folder:
+
+| System | Folder |
+| --- | --- |
+| Windows | `%AppData%\StremioSmartSearch` |
+| macOS | `~/Library/Application Support/StremioSmartSearch` |
+| Linux | `~/.config/StremioSmartSearch` (or `$XDG_CONFIG_HOME/StremioSmartSearch`) |
+
+The **Storage** card in settings shows the space used by the catalogue, the previous catalogue kept for recovery and the settings, plus the free space on that drive and the helper's current memory, including the search index. **Open folder** (**Show in Explorer** on Windows, **Show in Finder** on a Mac) opens the folder.
+
+To keep the catalogue on another drive, choose **Change location…** and pick a folder. Smart Search creates a `Stremio Smart Search` folder inside it, so choosing a drive root never scatters files there. It checks for free space, copies the catalogue, switches over, then removes only its own catalogue files from the old folder. Search keeps working throughout because the index is in memory. **Use default** moves it back. Settings and the private control key always stay in the settings folder. On Linux the folder picker needs `zenity` or `kdialog`; without one you can type a full folder path instead. A move is refused while a catalogue update is running.
+
+Uninstalling leaves the catalogue where it is. Delete the folder yourself if you no longer need it.
 
 ## Updating and changing size
 

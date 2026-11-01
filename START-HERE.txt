@@ -29,6 +29,11 @@ Compare measured usage: https://github.com/EskimoDev/stremio-smart-search/blob/m
 To change size, select it and click Apply size & rebuild. The existing catalogue
 keeps working while the replacement is prepared, and is kept if preparation fails.
 
+STORAGE
+The Storage card in settings shows disk and memory use. Change location... moves
+the catalogue to another folder or drive. Uninstalling leaves the catalogue in
+place; use Open folder first if you want to delete it.
+
 Next time, use the Stremio + Smart Search shortcut to start both together.
 Portable users: run the executable with --launch to open Stremio too.
 

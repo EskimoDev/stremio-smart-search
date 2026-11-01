@@ -1,9 +1,14 @@
 # Catalogue sizes and measured resource use
 
-Standard is the default for new setups. On this snapshot it provided 3.7 times
-the Compact coverage, using about 196 MiB of RAM after startup. Expanded provided
-7.8 times the coverage and used about 276 MiB. Compact remains available for
-smaller devices. Existing installations keep their size until you rebuild it.
+Standard is the default for new setups. On the 2026-11-01 IMDb snapshot it held
+3.7 times the Compact coverage, and Expanded 7.8 times. Compact remains available
+for smaller devices. Existing installations keep their size until you rebuild it.
+
+The [index and preparation rewrite](#index-and-preparation-rewrite) cut memory by
+roughly two thirds. On synthetic data, Standard now uses about 49 MiB of resident
+memory after startup and Expanded about 92 MiB, with 95th-percentile searches near
+2 ms for every size. Expanded no longer runs over the helper's memory target, so it
+is a reasonable choice on most desktops. The Windows tables below predate that change.
 
 These measurements come from one Windows x64 PC: Ryzen 5 5600X, 32 GiB RAM,
 Go 1.27.3, two Go execution threads and the helper's unchanged 256 MiB Go soft
@@ -119,7 +124,9 @@ exclude the download.
 - **Latency:** Compact and Standard search times are unchanged within run-to-run variation. Expanded's median rose
   from about 1.55 to 2.4 ms, and its tail varied too much between runs to call. Its heap (261–277 MiB) is already
   past the 256 MiB soft target, so any added memory means more garbage collection.
-  The settings page therefore recommends Standard when alternative titles are chosen with Expanded.
+  The settings page therefore suggests Standard when alternative titles are chosen with Expanded. After the
+  [index rewrite](#index-and-preparation-rewrite), Expanded with French titles sits well under the soft target on
+  synthetic data, so this advice is due to be revisited once real data is re-measured.
 - **Title counts:** real counts per language are far below the per-size budgets (Compact 75k, Standard 200k,
   Expanded 200k), so no titles were dropped. On Standard: English 54,950, French 55,722, German 55,288,
   Japanese 55,910, Spanish 84,843 (Spain only: 48,906).
