@@ -10,6 +10,7 @@ Planned as `0.1.0-preview.3`.
 
 ### Added
 
+- A **Configure** button for Smart Search in Stremio's addon list opens the local settings page. Settings stay reachable from the host computer only.
 - Optional alternative-title search. Choose a language in settings to also index regional titles from IMDb's `title.akas` data, such as "La Reine des neiges" for *Frozen*. Off by default; results still return the canonical title. ([#1](https://github.com/EskimoDev/stremio-smart-search/pull/1))
 - Catalogue sizes: Compact, Standard (new default) and Expanded, with measured resource comparisons in [docs/PERFORMANCE.md](docs/PERFORMANCE.md). Changing size rebuilds in the background and keeps the current catalogue until the replacement is ready.
 - macOS app and DMG smoke test in CI, and recorded platform test findings in [docs/PLATFORM-TESTING.md](docs/PLATFORM-TESTING.md). ([#2](https://github.com/EskimoDev/stremio-smart-search/pull/2))
