@@ -37,6 +37,12 @@ Planned as `0.1.0-preview.3`.
 - Added a changelog, folder READMEs and release steps, and moved DESIGN.md into docs/. ([#4](https://github.com/EskimoDev/stremio-smart-search/pull/4))
 - Recorded user-confirmed Windows x64 compatibility with Stremio, dx.bi and Stremio Enhanced, and Linux x64 install testing on Ubuntu 24.04.
 
+### Fixed
+
+- **Change location…** no longer deletes the catalogue when the chosen folder is the one already in use under another spelling, such as different letter case on Windows or a linked folder. A move that fails part-way now removes its partial copies, and the catalogue stays where it was.
+- Linux `.deb` previews are versioned `0.1.0~preview.N`, so apt treats the final `0.1.0` as an upgrade.
+- `SHA256SUMS.txt` lists plain file names, and the installation guide explains how to check a download.
+
 ## [0.1.0-preview.2] - 2026-10-31
 
 ### Added
