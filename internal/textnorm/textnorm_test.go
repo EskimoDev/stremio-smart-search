@@ -1,6 +1,10 @@
 package textnorm
 
-import "testing"
+import (
+	"strings"
+	"testing"
+	"unicode"
+)
 
 func TestNormalize(t *testing.T) {
 	for in, want := range map[string]string{
@@ -23,4 +27,45 @@ func TestNormalize(t *testing.T) {
 			t.Errorf("Normalize(%q) = %q, want %q", in, got, want)
 		}
 	}
+}
+
+// referenceNormalize is the original strings.ToLower-based implementation; the
+// fast path must agree with it exactly.
+func referenceNormalize(text string) string {
+	var out strings.Builder
+	space := false
+	for _, r := range strings.ToLower(text) {
+		if unicode.Is(unicode.Mn, r) || r == '\'' || r == '’' {
+			continue
+		}
+		if replacement, ok := fold[r]; ok {
+			if space && out.Len() > 0 {
+				out.WriteByte(' ')
+			}
+			space = false
+			out.WriteString(replacement)
+			continue
+		}
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			if space && out.Len() > 0 {
+				out.WriteByte(' ')
+			}
+			space = false
+			out.WriteRune(r)
+		} else {
+			space = true
+		}
+	}
+	return out.String()
+}
+
+func FuzzNormalizeMatchesReference(f *testing.F) {
+	for _, seed := range []string{"La Reine des Neiges", "L'Âge de glace", "Straße", "Ре́вность", "千と千尋", "\xff\xfeA", "KELVIN K", "İstanbul", "ǅ", "  A/B & 100%  "} {
+		f.Add(seed)
+	}
+	f.Fuzz(func(t *testing.T, text string) {
+		if got, want := Normalize(text), referenceNormalize(text); got != want {
+			t.Fatalf("Normalize(%q) = %q, reference %q", text, got, want)
+		}
+	})
 }

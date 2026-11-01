@@ -164,6 +164,12 @@ func (a *App) Load(path string) error {
 		return err
 	}
 	a.setCatalog(c)
+	// Decoding the snapshot leaves a parsed copy of every title behind once
+	// the index is built. Collect it and return it to the OS once, so startup
+	// memory reflects the index rather than the loader. This runs once per
+	// load, never per search.
+	c = nil
+	debug.FreeOSMemory()
 	return nil
 }
 func (a *App) Restore() error {

@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
+	"runtime/pprof"
 	"slices"
 	"sort"
 	"strings"
@@ -78,7 +79,17 @@ func main() {
 	memoryMiB := flag.Int64("memory-mib", 256, "Go soft memory target; match the installed helper")
 	steadyIdle := flag.Duration("steady-idle", 0, "Optional quiet CPU sample after searches and a 3-second settling period")
 	aliasFlag := flag.String("aliases", "", "Optional alternative-title language[:REGION], e.g. fr or es:ES; needs title.akas.tsv.gz in -data-dir")
+	samples := flag.Int("samples", 3000, "accuracy: titles sampled for generated queries")
+	seed := flag.Uint64("seed", 1, "accuracy: random seed for generated queries")
+	dump := flag.String("dump", "", "accuracy: optional file for every query and its result IDs")
+	cpuProfile := flag.String("cpuprofile", "", "Optional file for a Go CPU profile of the whole phase")
 	flag.Parse()
+	if *cpuProfile != "" {
+		f, err := os.Create(*cpuProfile)
+		must(err)
+		must(pprof.StartCPUProfile(f))
+		defer pprof.StopCPUProfile()
+	}
 	language, region, _ := strings.Cut(*aliasFlag, ":")
 	aliases := catalog.AliasOptions{Language: language, Region: region}
 	if err := aliases.Validate(); err != nil {
@@ -104,6 +115,10 @@ func main() {
 		}
 		defer closeAkas()
 		return catalog.ParseIMDbAliases(ctx, akas, c, options)
+	}
+	if *phase == "accuracy" {
+		runAccuracy(path, *id, *samples, *seed, *dump)
+		return
 	}
 	before := readProcess()
 	start := time.Now()

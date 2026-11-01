@@ -3,8 +3,8 @@
 package textnorm
 
 import (
-	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 // fold maps common precomposed Latin letters to ASCII. Decomposed input loses
@@ -26,32 +26,48 @@ var fold = func() map[rune]string {
 
 // Normalize lowercases, removes accents and apostrophes, and collapses every
 // other non-letter, non-digit run into one space. Non-Latin letters are kept.
+// ASCII, by far the most common input, takes a fast path with no table lookups.
 func Normalize(text string) string {
-	var out strings.Builder
+	out := make([]byte, 0, len(text))
 	space := false
-	for _, r := range strings.ToLower(text) {
+	word := func() {
+		if space && len(out) > 0 {
+			out = append(out, ' ')
+		}
+		space = false
+	}
+	for _, r := range text {
+		if r < utf8.RuneSelf {
+			switch {
+			case r >= 'a' && r <= 'z', r >= '0' && r <= '9':
+				word()
+				out = append(out, byte(r))
+			case r >= 'A' && r <= 'Z':
+				word()
+				out = append(out, byte(r+'a'-'A'))
+			case r == '\'':
+			default:
+				space = true
+			}
+			continue
+		}
+		r = unicode.ToLower(r)
 		if unicode.Is(unicode.Mn, r) || r == '\'' || r == '’' {
 			continue
 		}
 		if replacement, ok := fold[r]; ok {
-			if space && out.Len() > 0 {
-				out.WriteByte(' ')
-			}
-			space = false
-			out.WriteString(replacement)
+			word()
+			out = append(out, replacement...)
 			continue
 		}
 		if unicode.IsLetter(r) || unicode.IsDigit(r) {
-			if space && out.Len() > 0 {
-				out.WriteByte(' ')
-			}
-			space = false
-			out.WriteRune(r)
+			word()
+			out = utf8.AppendRune(out, r)
 		} else {
 			space = true
 		}
 	}
-	return out.String()
+	return string(out)
 }
 
 // Meaningful reports whether a normalized alternative title is distinctive
