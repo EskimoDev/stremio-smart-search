@@ -11,8 +11,6 @@
 ![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-informational)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-<img src="docs/images/setup-page.png" alt="The Smart Search setup page: choose your app, paste the addon link, move Smart Search to the top" width="640">
-
 </div>
 
 ## What it does
