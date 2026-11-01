@@ -3,10 +3,10 @@ package app
 import (
 	"encoding/json"
 	"errors"
-	"strings"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
