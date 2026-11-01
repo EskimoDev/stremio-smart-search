@@ -4,11 +4,21 @@ Status of testing outside Windows, as of 2026-11-01 (commit `17be377`).
 
 | Platform | Status |
 |---|---|
-| Windows x64 | Device-tested by the maintainer |
+| Windows x64 | Device-tested by the maintainer, including the published `0.1.0-preview.3` download (see below) |
 | Linux x64 | Verified on Ubuntu 24.04 (see below) |
 | Linux ARM64 | Builds and packages; not run on a device |
 | macOS (Apple Silicon, Intel) | Untested on a real Mac. CI builds, signs ad hoc and smoke-tests the app bundles and DMG |
 | Fire TV / Android TV | Untested. Works only through LAN mode, described below |
+
+## Windows x64 (published 0.1.0-preview.3)
+
+Tested 2026-11-01 on Windows x64 with the files downloaded from the public release, as an upgrade over an earlier build with an Expanded catalogue.
+
+- The Setup.exe and Portable.zip SHA-256 hashes match `SHA256SUMS.txt`.
+- A browser download shows SmartScreen's "Windows protected your PC" prompt; **More info → Run anyway** continues.
+- The upgrade kept the existing catalogue (no rebuild needed). The manifest, status API and settings page report `0.1.0-preview.3`.
+- Searching `HOTD` in Stremio returns *House of the Dragon*, **Configure** opens the settings page, and **Stremio + Smart Search** starts the helper and opens dx.bi.
+- The portable build runs from an extracted folder without adding Start Menu shortcuts or sign-in entries.
 
 ## Linux x64
 
