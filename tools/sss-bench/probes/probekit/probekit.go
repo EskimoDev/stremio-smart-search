@@ -55,7 +55,18 @@ func (l Limits) Apply() {
 // probes derive it independently, so a probe reports durations alone and the
 // harness can still attribute each one to its query.
 func Order(n int, seed uint64, pass int) []int {
-	return rand.New(rand.NewPCG(seed, uint64(pass)+1)).Perm(n)
+	// Fisher-Yates over the raw generator: only that stream is guaranteed to stay
+	// the same between Go versions, and a probe may be built by a different one.
+	source := rand.NewPCG(seed, uint64(pass)+1)
+	order := make([]int, n)
+	for i := range order {
+		order[i] = i
+	}
+	for i := n - 1; i > 0; i-- {
+		j := source.Uint64() % uint64(i+1)
+		order[i], order[int(j)] = order[int(j)], order[i]
+	}
+	return order
 }
 
 // EngineRequest asks the engine probe to measure a catalogue ("measure") or to

@@ -82,6 +82,60 @@ func TestTinyAbsoluteChangeIsNotARegression(t *testing.T) {
 	}
 }
 
+func TestFewerSamplesThanTheFamilyAllowsGiveNoVerdict(t *testing.T) {
+	// Four against four can reach 0.029, which fails once there are two primary
+	// metrics to correct for. Saying "no change" there would be a false reassurance.
+	c := compareResults(sampleResult(series(1, 4), series(50*mib, 4)), sampleResult(series(9, 4), series(50*mib, 4)), defaultAlpha)
+	if got := metricOf(t, c, latencyID); got.Verdict != verdictInsufficient || !strings.Contains(got.Reason, "primary metrics") {
+		t.Fatalf("verdict %s: %s", got.Verdict, got.Reason)
+	}
+}
+
+func TestSinglePrimaryMetricOutOfManyNeedsToSurviveCorrection(t *testing.T) {
+	// One clean separation at p = 0.0022 is not much evidence among thirty metrics:
+	// by chance alone one of them could look like that.
+	var metrics []MetricComparison
+	for i := 0; i < 30; i++ {
+		p := 0.5
+		metrics = append(metrics, MetricComparison{ID: "m", Primary: true, P: &p, NBaseline: 8, NCandidate: 8})
+	}
+	strong := 0.0022
+	metrics[0].P = &strong
+	metrics[0].worse = true
+	var summary ComparisonSummary
+	settle(metrics, defaultAlpha, &summary)
+	if metrics[0].Verdict != verdictNoChange || !strings.Contains(metrics[0].Reason, "correcting") {
+		t.Fatalf("%s: %s", metrics[0].Verdict, metrics[0].Reason)
+	}
+	// The same p-value alone in its family is a finding.
+	single := []MetricComparison{{ID: "m", Primary: true, P: &strong, worse: true, NBaseline: 6, NCandidate: 6}}
+	settle(single, defaultAlpha, &summary)
+	if single[0].Verdict != verdictRegressed {
+		t.Fatalf("%s", single[0].Verdict)
+	}
+}
+
+func TestSecondaryMetricsAreHintsAndDoNotDecideTheVerdict(t *testing.T) {
+	baseline, candidate := sampleResult(series(1, 6), series(50*mib, 6)), sampleResult(series(1, 6), series(50*mib, 6))
+	add := func(r *Result, value float64) {
+		m := Metric{ID: "search.http.warm.mean_ms", Group: groupHTTP, Unit: "ms", Better: "lower", Status: metricOK}
+		fill(&m, series(value, 6))
+		r.Metrics = append(r.Metrics, m)
+	}
+	add(baseline, 1)
+	add(candidate, 2)
+	c := compareResults(baseline, candidate, defaultAlpha)
+	if got := metricOf(t, c, "search.http.warm.mean_ms"); got.Verdict != verdictRegressed || got.Primary {
+		t.Fatalf("%+v", got)
+	}
+	if c.Verdict != overallNoChange || c.Summary.Regressed != 0 || c.Summary.SecondaryRegressed != 1 {
+		t.Fatalf("verdict %s, summary %+v", c.Verdict, c.Summary)
+	}
+	if !strings.Contains(renderComparison(c), "Secondary hints") {
+		t.Fatal("the report should show the hint")
+	}
+}
+
 func TestFewSamplesGiveNoVerdict(t *testing.T) {
 	c := compareResults(sampleResult(series(1, 3), series(50*mib, 3)), sampleResult(series(9, 3), series(50*mib, 3)), defaultAlpha)
 	got := metricOf(t, c, latencyID)
@@ -102,10 +156,10 @@ func TestIncompatibleResultsMakeNoClaim(t *testing.T) {
 		change  func(*Result)
 		verdict string
 	}{
-		{"hardware", func(r *Result) { r.Environment.HardwareID = "hardware-b" }, overallNoChange},
+		{"hardware", func(r *Result) { r.Environment.HardwareID = "hardware-b" }, overallIncomparable},
 		{"operating system", func(r *Result) { r.Environment.OS = "linux" }, overallIncomparable},
 		{"architecture", func(r *Result) { r.Environment.Arch = "arm64" }, overallIncomparable},
-		{"workload", func(r *Result) { r.Workload.ID = "workload-b" }, overallNoChange},
+		{"workload", func(r *Result) { r.Workload.ID = "workload-b" }, overallIncomparable},
 		{"catalogue", func(r *Result) { r.Catalogue.ContentSHA256 = "catalogue-b" }, overallIncomparable},
 		{"measurement definitions", func(r *Result) { r.Harness.MeasurementVersion = 99 }, overallIncomparable},
 	} {
@@ -131,6 +185,21 @@ func TestIncompatibleResultsMakeNoClaim(t *testing.T) {
 				t.Fatal("no blocking check was reported")
 			}
 		})
+	}
+}
+
+func TestQualityStillComparesAcrossHardware(t *testing.T) {
+	// Ranks are deterministic, so a different machine blocks timings, not quality.
+	baseline, candidate := sampleResult(series(1, 6), series(50*mib, 6)), sampleResult(series(9, 6), series(50*mib, 6))
+	baseline.Quality = []SuiteResult{suiteOf(1, 1)}
+	candidate.Quality = []SuiteResult{suiteOf(1, 3)}
+	candidate.Environment.HardwareID = "hardware-b"
+	c := compareResults(baseline, candidate, defaultAlpha)
+	if c.Comparable != "partial" || c.Quality[0].Status != "compared" || c.Verdict != overallRegressed {
+		t.Fatalf("comparable %s, quality %s, verdict %s", c.Comparable, c.Quality[0].Status, c.Verdict)
+	}
+	if got := metricOf(t, c, latencyID); got.Verdict != verdictIncomparable {
+		t.Fatalf("timing verdict %s", got.Verdict)
 	}
 }
 

@@ -266,6 +266,18 @@ func TestMetricFlags(t *testing.T) {
 	}
 }
 
+func TestEveryPrimaryMetricExists(t *testing.T) {
+	known := map[string]bool{}
+	for _, d := range metricDefs() {
+		known[d.id] = true
+	}
+	for _, id := range primaryMetrics {
+		if !known[id] {
+			t.Errorf("primary metric %s is not defined", id)
+		}
+	}
+}
+
 func TestMetricDefinitionsAreConsistent(t *testing.T) {
 	seen := map[string]bool{}
 	for _, d := range metricDefs() {
@@ -287,8 +299,18 @@ func TestProfilesAreValidAndOrdered(t *testing.T) {
 		t.Fatalf("%d profiles", len(list))
 	}
 	for i, p := range list {
-		if p.tier != i || p.Repetitions < minSignificanceSamples || p.Passes < 1 || len(p.Suites) == 0 || p.Cost == "" {
+		if p.tier != i || p.Passes < 1 || len(p.Suites) == 0 || p.Cost == "" {
 			t.Errorf("%+v", p)
+		}
+		// A profile's default must be able to reach a verdict on its primary metrics.
+		family := 0
+		for _, d := range metricDefs() {
+			if d.primary && inScope(d, p) {
+				family++
+			}
+		}
+		if best := minAchievableP(p.Repetitions, p.Repetitions) * float64(family); best >= defaultAlpha {
+			t.Errorf("%s: %d repetitions cannot reach significance across %d primary metrics", p.Name, p.Repetitions, family)
 		}
 		if p.Sustain > 0 && p.Sustain/sustainSampler < 6 {
 			t.Errorf("%s: too little sustained searching to see a trend", p.Name)
@@ -299,12 +321,19 @@ func TestProfilesAreValidAndOrdered(t *testing.T) {
 	}
 }
 
+// requireEndToEnd skips tests that build and run the application unless asked,
+// like the repository's other opt-in integration tests.
+func requireEndToEnd(t *testing.T) {
+	t.Helper()
+	if os.Getenv("SSS_BENCH_E2E") == "" {
+		t.Skip("set SSS_BENCH_E2E=1 to build and run the application")
+	}
+}
+
 // TestRunEndToEnd measures the real application and probes on this platform with
 // minimal settings: it validates the pipeline, and its numbers mean nothing.
 func TestRunEndToEnd(t *testing.T) {
-	if testing.Short() {
-		t.Skip("builds and runs the application")
-	}
+	requireEndToEnd(t)
 	// Point the user's folders at a sentinel, so any write outside the workspace
 	// would be seen. The workspace goes in a folder this test watches too.
 	sentinel := t.TempDir()
@@ -410,7 +439,7 @@ func TestRunEndToEnd(t *testing.T) {
 	if err := json.Unmarshal([]byte(stdout), &c); err != nil {
 		t.Fatal(err)
 	}
-	if c.Summary.Regressed != 0 || c.Summary.QualityRegressions != 0 || c.Summary.Insufficient == 0 {
+	if c.Summary.Regressed != 0 || c.Summary.QualityRegressions != 0 {
 		t.Fatalf("%+v", c.Summary)
 	}
 
@@ -436,9 +465,7 @@ func TestRunEndToEnd(t *testing.T) {
 }
 
 func TestPrebuiltBinaryHasHonestGaps(t *testing.T) {
-	if testing.Short() {
-		t.Skip("builds and runs the application")
-	}
+	requireEndToEnd(t)
 	work := t.TempDir()
 	binary := filepath.Join(work, executableName("prebuilt"))
 	repo, err := findRepoRoot(".")

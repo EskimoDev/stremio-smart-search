@@ -6,7 +6,7 @@ Run `go test ./...`, `go vet ./...`, `node scripts/ui-test.mjs` and `node script
 
 Platform changes need a native test or a clear note that only compilation was checked. Avoid adding a runtime, background crawler or cloud dependency to make a local installation work. Preserve normal Stremio addon behavior and document any change to first-run download size or memory limits.
 
-Follow [docs/DESIGN.md](docs/DESIGN.md) for setup-page styling. Use locally bundled assets and preserve the install and clipboard behavior. For catalogue or index changes, use the [resource comparison workflow](docs/PERFORMANCE.md#reproduce) with real source data kept outside this repository. The benchmark tool is a developer utility and is not shipped as part of the helper.
+Follow [docs/DESIGN.md](docs/DESIGN.md) for setup-page styling. Use locally bundled assets and preserve the install and clipboard behavior. For catalogue, index or search changes, compare your branch with main using [`sss-bench`](docs/BENCHMARKING.md#compare-two-versions), and include its comparison in the pull request; add a real snapshot with `--catalog` when the change depends on real titles. The benchmark tools are developer utilities and are not shipped as part of the helper.
 
 ## Development setup
 
@@ -46,6 +46,7 @@ downloads. The following integration tests skip unless explicitly enabled:
 | `SMART_SEARCH_REAL_IMDB=1` | `TestRealIMDbFreshnessCheck` | Metadata-only requests to IMDb; no dataset bodies |
 | `SMART_SEARCH_REAL_IMDB_UPDATE=1` | `TestRealIMDbAutomaticUpdate` | About 238 MB from IMDb; no alternative-title file |
 | `SMART_SEARCH_REAL_DATA=PATH` | `TestRealDataAutomaticUpdate` | Uses all three cached IMDb files over loopback; no internet downloads |
+| `SSS_BENCH_E2E=1` | `TestRunEndToEnd`, `TestPrebuiltBinaryHasHonestGaps` | Builds and runs the real application in temporary folders; no network |
 
 Select the intended test explicitly, give it `-timeout 60m` for full-data runs,
 and unset its variable afterwards. All use temporary application folders.

@@ -327,7 +327,7 @@ func commandRun(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "sss-bench:", err)
 		return exitInput
 	}
-	cfg.Source = spec.source
+	cfg.Sources = []string{spec.source}
 	runID, err := randomID()
 	if err != nil {
 		fmt.Fprintln(stderr, "sss-bench:", err)
@@ -425,6 +425,7 @@ func commandAB(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "sss-bench: baseline and candidate are the same folder. For an A/A noise check, use a second worktree")
 		return exitInput
 	}
+	cfg.Sources = []string{first.source, second.source}
 	directory := *outDir
 	if directory == "" {
 		directory = filepath.Join(defaultResultsDir(cfg.Repo), time.Now().Format("20060102-150405")+"-ab-"+cfg.Profile.Name)
@@ -565,7 +566,7 @@ type metricListing struct {
 	FromProfile  string  `json:"from_profile"`
 	Needs        string  `json:"needs,omitempty"`
 	Counter      string  `json:"counter,omitempty"`
-	Detail       bool    `json:"detail,omitempty"`
+	Primary      bool    `json:"primary"`
 	Available    bool    `json:"available_on_this_platform"`
 	MinChangePct float64 `json:"practical_floor_pct,omitempty"`
 	MinChangeAbs float64 `json:"practical_floor_abs,omitempty"`
@@ -599,7 +600,7 @@ func commandMetrics(args []string, stdout, stderr io.Writer) int {
 	}
 	for _, d := range metricDefs() {
 		available := !(strings.HasPrefix(d.id, "memory.") && d.counter == "")
-		listing.Metrics = append(listing.Metrics, metricListing{d.id, d.group, d.unit, d.better, tiers[d.tier], d.needs, d.counter, d.detail, available, d.minPct, d.minAbs, d.definition})
+		listing.Metrics = append(listing.Metrics, metricListing{d.id, d.group, d.unit, d.better, tiers[d.tier], d.needs, d.counter, d.primary, available, d.minPct, d.minAbs, d.definition})
 	}
 	if *asJSON {
 		data, err := marshal(listing)

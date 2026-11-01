@@ -85,6 +85,42 @@ func medianInterval(values []float64) (low, high float64, ok bool) {
 	return sorted[k-1], sorted[n-k], true
 }
 
+// minAchievableP is the smallest two-sided Mann-Whitney p-value these sample sizes
+// can produce: complete separation, two arrangements out of C(n+m, n).
+func minAchievableP(n, m int) float64 {
+	arrangements := 1.0
+	for i := 1; i <= n; i++ {
+		arrangements *= float64(m+i) / float64(i)
+	}
+	return min(2/arrangements, 1)
+}
+
+// holmAdjust applies the Holm-Bonferroni correction, returning adjusted p-values in
+// the input's order. Testing many metrics at 0.05 finds differences that are not
+// there; Holm holds the chance of even one false finding in the family to alpha.
+func holmAdjust(values []float64) []float64 {
+	order := make([]int, len(values))
+	for i := range order {
+		order[i] = i
+	}
+	slices.SortStableFunc(order, func(a, b int) int {
+		switch {
+		case values[a] < values[b]:
+			return -1
+		case values[a] > values[b]:
+			return 1
+		}
+		return 0
+	})
+	adjusted := make([]float64, len(values))
+	running := 0.0
+	for rank, i := range order {
+		running = max(running, min(1, float64(len(values)-rank)*values[i]))
+		adjusted[i] = running
+	}
+	return adjusted
+}
+
 // mannWhitneyP is the two-sided exact p-value of the Mann-Whitney U test, the
 // test benchstat uses. It makes no assumption about the shape of the
 // distributions, which latency samples rarely satisfy, only that repetitions are

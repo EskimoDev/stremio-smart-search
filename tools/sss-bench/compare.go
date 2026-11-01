@@ -71,7 +71,8 @@ type CompatCheck struct {
 	Detail    string `json:"detail,omitempty"`
 }
 
-// ComparisonSummary counts metric verdicts over headline metrics.
+// ComparisonSummary counts verdicts. The plain counts cover primary metrics, which
+// alone decide the outcome; secondary metrics are counted apart as hints.
 type ComparisonSummary struct {
 	Regressed           int `json:"regressed"`
 	Improved            int `json:"improved"`
@@ -83,10 +84,12 @@ type ComparisonSummary struct {
 	Failed              int `json:"failed"`
 	Unavailable         int `json:"unavailable"`
 	NotComparable       int `json:"not_comparable"`
-	DetailRegressed     int `json:"detail_regressed"`
+	SecondaryRegressed  int `json:"secondary_regressed"`
+	SecondaryImproved   int `json:"secondary_improved"`
 	QualityRegressions  int `json:"quality_regressions"`
 	QualityImprovements int `json:"quality_improvements"`
-	Tested              int `json:"significance_tests"`
+	Tested              int `json:"primary_tests"`
+	SecondaryTested     int `json:"secondary_tests"`
 }
 
 // MetricComparison is one metric on both sides. ChangePct and P are absent when
@@ -95,15 +98,19 @@ type MetricComparison struct {
 	ID         string   `json:"id"`
 	Group      string   `json:"group"`
 	Unit       string   `json:"unit"`
-	Detail     bool     `json:"detail,omitempty"`
+	Primary    bool     `json:"primary"`
 	Baseline   *float64 `json:"baseline,omitempty"`
 	Candidate  *float64 `json:"candidate,omitempty"`
 	ChangePct  *float64 `json:"change_pct,omitempty"`
 	P          *float64 `json:"p_value,omitempty"`
+	AdjustedP  *float64 `json:"adjusted_p_value,omitempty"` // Holm, primary metrics only
 	NBaseline  int      `json:"n_baseline"`
 	NCandidate int      `json:"n_candidate"`
 	Verdict    string   `json:"verdict"`
 	Reason     string   `json:"reason,omitempty"`
+	// Decided by settle once every p-value exists.
+	worse      bool
+	belowFloor string
 }
 
 // RateDelta is a share on both sides. Change is in percentage points.
@@ -170,9 +177,11 @@ func compatibility(b, c *Result) []CompatCheck {
 		check("catalogue", "blocking", "all", short(b.Catalogue.ContentSHA256), short(c.Catalogue.ContentSHA256), "different catalogue contents: neither speed nor quality can be attributed to the code"),
 		check("workload", "blocking", "performance", b.Workload.ID, c.Workload.ID, "different workload: profile, queries or parameters differ"),
 		check("measurement definitions", "blocking", "all", fmt.Sprint(b.Harness.MeasurementVersion), fmt.Sprint(c.Harness.MeasurementVersion), "metrics were defined differently"),
-		check("clock resolution", "warning", "performance", fmt.Sprint(b.Environment.ClockResolutionNS), fmt.Sprint(c.Environment.ClockResolutionNS), "the timers differ, as they can between runs of a virtual machine"),
 		check("application Go version", "warning", "performance", b.Target.Go, c.Target.Go, "a toolchain change can move timings by itself"),
 		check("harness version", "warning", "all", b.Harness.Version, c.Harness.Version, "results came from different harness versions"),
+	}
+	if slow, fast := max(b.Environment.ClockResolutionNS, c.Environment.ClockResolutionNS), min(b.Environment.ClockResolutionNS, c.Environment.ClockResolutionNS); slow > 10*max(fast, 1) {
+		checks = append(checks, CompatCheck{Check: "clock resolution", Status: "warning", Scope: "performance", Baseline: fmt.Sprint(b.Environment.ClockResolutionNS), Candidate: fmt.Sprint(c.Environment.ClockResolutionNS), Detail: "one side had a much coarser timer"})
 	}
 	if hosted(b) == "hosted" || hosted(c) == "hosted" {
 		checks = append(checks, CompatCheck{Check: "hosted runner", Status: "warning", Scope: "performance", Baseline: hosted(b), Candidate: hosted(c), Detail: "hosted runners share hardware with other jobs; treat any timing difference as unproven"})
@@ -194,20 +203,21 @@ func blocked(checks []CompatCheck, names ...string) string {
 
 // floorFor returns a metric's practical-significance floor. Saved results do not
 // carry it, because it is a judgement that may be revised without re-measuring.
-func floorFor(id string, defs map[string]metricDef) (pct, absolute float64, detail, known bool) {
-	d, ok := defs[id]
-	return d.minPct, d.minAbs, d.detail, ok
+func floorFor(id string, defs map[string]metricDef) (pct, absolute float64, primary bool) {
+	d := defs[id]
+	return d.minPct, d.minAbs, d.primary
 }
 
-// compareMetric gives one metric its verdict.
-func compareMetric(b, c *Metric, alpha float64, perfBlock, dataBlock string, defs map[string]metricDef, summary *ComparisonSummary) MetricComparison {
-	any := b
-	if any == nil {
-		any = c
+// compareMetric gives one metric its verdict, or leaves it empty with a p-value
+// for settle, which needs every p-value in the family at once.
+func compareMetric(b, c *Metric, perfBlock, dataBlock string, defs map[string]metricDef) MetricComparison {
+	known := b
+	if known == nil {
+		known = c
 	}
-	out := MetricComparison{ID: any.ID, Group: any.Group, Unit: any.Unit}
-	minPct, minAbs, detail, _ := floorFor(any.ID, defs)
-	out.Detail = detail
+	out := MetricComparison{ID: known.ID, Group: known.Group, Unit: known.Unit}
+	minPct, minAbs, primary := floorFor(known.ID, defs)
+	out.Primary = primary
 	if b != nil {
 		out.Baseline, out.NBaseline = b.Value, b.N
 	}
@@ -228,11 +238,11 @@ func compareMetric(b, c *Metric, alpha float64, perfBlock, dataBlock string, def
 		out.Verdict, out.Reason = verdictIncomparable, fmt.Sprintf("definitions differ (%s against %s)", firstNonEmpty(b.Counter, b.Definition), firstNonEmpty(c.Counter, c.Definition))
 		return out
 	}
-	if any.Deterministic && dataBlock != "" {
+	if known.Deterministic && dataBlock != "" {
 		out.Verdict, out.Reason = verdictIncomparable, dataBlock
 		return out
 	}
-	if !any.Deterministic && perfBlock != "" {
+	if !known.Deterministic && perfBlock != "" {
 		out.Verdict, out.Reason = verdictIncomparable, perfBlock
 		return out
 	}
@@ -248,7 +258,7 @@ func compareMetric(b, c *Metric, alpha float64, perfBlock, dataBlock string, def
 		}
 		return verdictImproved
 	}
-	if any.Deterministic {
+	if known.Deterministic {
 		switch {
 		case before == after:
 			out.Verdict = verdictNoChange
@@ -272,17 +282,61 @@ func compareMetric(b, c *Metric, alpha float64, perfBlock, dataBlock string, def
 	}
 	p := mannWhitneyP(b.Samples, c.Samples)
 	out.P = &p
-	summary.Tested++
-	switch {
-	case p >= alpha:
-		out.Verdict = verdictNoChange
-	case math.Abs(after-before) < minAbs || (out.ChangePct != nil && math.Abs(*out.ChangePct) < minPct):
-		out.Verdict = verdictBelow
-		out.Reason = fmt.Sprintf("smaller than the %g%% and %g %s floor", minPct, minAbs, any.Unit)
-	default:
-		out.Verdict = direction()
+	out.worse = direction() == verdictRegressed
+	if math.Abs(after-before) < minAbs || (out.ChangePct != nil && math.Abs(*out.ChangePct) < minPct) {
+		out.belowFloor = fmt.Sprintf("smaller than the %g%% and %g %s floor", minPct, minAbs, known.Unit)
 	}
 	return out
+}
+
+// settle decides the metrics that have a p-value. Primary metrics are judged after
+// Holm correction across the family; secondary ones keep their raw p-value, which is
+// why they can only ever be hints. When the sample sizes cannot reach significance
+// after correction, the honest verdict is too few samples, not no change.
+func settle(metrics []MetricComparison, alpha float64, summary *ComparisonSummary) {
+	var family []int
+	var raw []float64
+	for i := range metrics {
+		if metrics[i].P != nil && metrics[i].Primary {
+			family = append(family, i)
+			raw = append(raw, *metrics[i].P)
+		}
+	}
+	for position, p := range holmAdjust(raw) {
+		adjusted := p
+		metrics[family[position]].AdjustedP = &adjusted
+	}
+	for i := range metrics {
+		m := &metrics[i]
+		if m.P == nil {
+			continue
+		}
+		p := *m.P
+		if m.Primary {
+			summary.Tested++
+			if best := minAchievableP(m.NBaseline, m.NCandidate) * float64(len(family)); best >= alpha {
+				m.Verdict = verdictInsufficient
+				m.Reason = fmt.Sprintf("%d and %d repetitions cannot reach significance across %d primary metrics", m.NBaseline, m.NCandidate, len(family))
+				continue
+			}
+			p = *m.AdjustedP
+		} else {
+			summary.SecondaryTested++
+		}
+		switch {
+		case p >= alpha:
+			m.Verdict = verdictNoChange
+			if *m.P < alpha {
+				m.Reason = "not significant after correcting for the number of primary metrics"
+			}
+		case m.belowFloor != "":
+			m.Verdict, m.Reason = verdictBelow, m.belowFloor
+		case m.worse:
+			m.Verdict = verdictRegressed
+		default:
+			m.Verdict = verdictImproved
+		}
+	}
 }
 
 func firstNonEmpty(values ...string) string {
@@ -294,7 +348,7 @@ func firstNonEmpty(values ...string) string {
 	return ""
 }
 
-func rate(part, whole int, value *float64) string {
+func rate(part, whole int) string {
 	if whole == 0 {
 		return "n/a"
 	}
@@ -302,7 +356,7 @@ func rate(part, whole int, value *float64) string {
 }
 
 func delta(beforePart, beforeWhole, afterPart, afterWhole int) RateDelta {
-	d := RateDelta{Baseline: rate(beforePart, beforeWhole, nil), Candidate: rate(afterPart, afterWhole, nil), BaselinePct: percent(beforePart, beforeWhole), CandidatePct: percent(afterPart, afterWhole)}
+	d := RateDelta{Baseline: rate(beforePart, beforeWhole), Candidate: rate(afterPart, afterWhole), BaselinePct: percent(beforePart, beforeWhole), CandidatePct: percent(afterPart, afterWhole)}
 	if d.BaselinePct != nil && d.CandidatePct != nil {
 		change := *d.CandidatePct - *d.BaselinePct
 		d.ChangePoints = &change
@@ -417,18 +471,34 @@ func compareResults(b, c *Result, alpha float64) *Comparison {
 	before, after := byID(b), byID(c)
 	seen := map[string]bool{}
 	visit := func(id string) {
-		if seen[id] {
-			return
+		if !seen[id] {
+			seen[id] = true
+			out.Metrics = append(out.Metrics, compareMetric(before[id], after[id], perfBlock, dataBlock, defs))
 		}
-		seen[id] = true
-		m := compareMetric(before[id], after[id], alpha, perfBlock, dataBlock, defs, &out.Summary)
-		out.Metrics = append(out.Metrics, m)
+	}
+	for _, m := range b.Metrics {
+		visit(m.ID)
+	}
+	for _, m := range c.Metrics {
+		visit(m.ID)
+	}
+	settle(out.Metrics, alpha, &out.Summary)
+	for _, m := range out.Metrics {
 		s := &out.Summary
-		if m.Detail {
-			if m.Verdict == verdictRegressed {
-				s.DetailRegressed++
+		if !m.Primary {
+			switch m.Verdict {
+			case verdictRegressed:
+				s.SecondaryRegressed++
+			case verdictImproved:
+				s.SecondaryImproved++
+			case verdictMissing:
+				s.Missing++
+			case verdictFailed:
+				s.Failed++
+			case verdictUnavailable:
+				s.Unavailable++
 			}
-			return
+			continue
 		}
 		switch m.Verdict {
 		case verdictRegressed:
@@ -452,12 +522,6 @@ func compareResults(b, c *Result, alpha float64) *Comparison {
 		case verdictIncomparable:
 			s.NotComparable++
 		}
-	}
-	for _, m := range b.Metrics {
-		visit(m.ID)
-	}
-	for _, m := range c.Metrics {
-		visit(m.ID)
 	}
 	qualityBlock := blocked(checks, "catalogue", "measurement definitions")
 	suites := map[string]*SuiteResult{}
@@ -508,7 +572,7 @@ func compareResults(b, c *Result, alpha float64) *Comparison {
 		out.Verdict = overallNoChange
 	}
 	if summary.Tested > 0 {
-		out.Notes = append(out.Notes, fmt.Sprintf("%d significance tests at alpha %g: about %.1f would look significant by chance alone, before the practical floors are applied", summary.Tested, alpha, float64(summary.Tested)*alpha))
+		out.Notes = append(out.Notes, fmt.Sprintf("%d primary metrics were tested with Holm correction at alpha %g. The %d secondary metrics are uncorrected, so expect a few false hints among them", summary.Tested, alpha, summary.SecondaryTested))
 	}
 	if !b.Workload.Interleaved || !c.Workload.Interleaved {
 		out.Notes = append(out.Notes, "the two sides were measured one after the other, so slow drift in the machine can look like a change; sss-bench ab interleaves them")
@@ -517,7 +581,7 @@ func compareResults(b, c *Result, alpha float64) *Comparison {
 		out.Notes = append(out.Notes, "both sides are the same binary: any reported change is noise")
 	}
 	if summary.Insufficient > 0 {
-		out.Notes = append(out.Notes, "metrics with too few repetitions show their change but no verdict; run with more --reps")
+		out.Notes = append(out.Notes, "with too few repetitions a metric shows its change but no verdict. Use the profile's default, or more, with --reps")
 	}
 	return out
 }

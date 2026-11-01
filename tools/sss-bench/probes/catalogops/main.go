@@ -33,6 +33,8 @@ func main() { probekit.Serve(handle) }
 func handle(request probekit.OpsRequest) (probekit.OpsResponse, error) {
 	request.Limits.Apply()
 	switch request.Mode {
+	case "prime":
+		return probekit.OpsResponse{}, nil
 	case "prepare":
 		return prepare(request)
 	case "refresh":

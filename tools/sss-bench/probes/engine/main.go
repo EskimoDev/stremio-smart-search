@@ -25,6 +25,8 @@ func main() { probekit.Serve(handle) }
 func handle(request probekit.EngineRequest) (probekit.EngineResponse, error) {
 	request.Limits.Apply()
 	switch request.Mode {
+	case "prime":
+		return probekit.EngineResponse{}, nil
 	case "measure":
 		return measure(request)
 	case "dump":

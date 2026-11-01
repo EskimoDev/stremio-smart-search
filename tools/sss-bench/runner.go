@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -52,9 +53,9 @@ type Profile struct {
 func profiles() []Profile {
 	allSuites := []string{"cases", "phonetic-holdout", "phonetic-validation"}
 	return []Profile{
-		{Name: "quick", tier: tierQuick, Titles: 20_000, Repetitions: 4, WarmupPasses: 1, Passes: 3, Settle: 3 * time.Second, Suites: []string{"cases"}, Cost: "about 40 seconds; a few MB of temporary disk"},
-		{Name: "standard", tier: tierStandard, Titles: 50_000, Repetitions: 6, WarmupPasses: 2, Passes: 10, Settle: 3 * time.Second, Throughput: 2 * time.Second, Concurrency: []int{1, 2, 4}, Sustain: 10 * time.Second, Suites: allSuites, Cost: "about 3 minutes; a few MB of temporary disk"},
-		{Name: "full", tier: tierFull, Titles: 200_000, Repetitions: 8, WarmupPasses: 3, Passes: 20, Settle: 3 * time.Second, Throughput: 3 * time.Second, Concurrency: []int{1, 2, 4, 8}, Sustain: time.Minute, Suites: allSuites, Generated: true, CatalogOps: true, Rebuilds: 2, Cost: "about 20 minutes; about 100 MB of temporary disk"},
+		{Name: "quick", tier: tierQuick, Titles: 20_000, Repetitions: 6, WarmupPasses: 1, Passes: 3, Settle: 3 * time.Second, Suites: []string{"cases"}, Cost: "about 40 seconds; a few MB of temporary disk"},
+		{Name: "standard", tier: tierStandard, Titles: 50_000, Repetitions: 8, WarmupPasses: 2, Passes: 10, Settle: 3 * time.Second, Throughput: 2 * time.Second, Concurrency: []int{1, 2, 4}, Sustain: 10 * time.Second, Suites: allSuites, Cost: "about 3 minutes; a few MB of temporary disk"},
+		{Name: "full", tier: tierFull, Titles: 200_000, Repetitions: 10, WarmupPasses: 3, Passes: 20, Settle: 3 * time.Second, Throughput: 3 * time.Second, Concurrency: []int{1, 2, 4, 8}, Sustain: time.Minute, Suites: allSuites, Generated: true, CatalogOps: true, Rebuilds: 2, Cost: "about 20 minutes; about 100 MB of temporary disk"},
 	}
 }
 
@@ -70,8 +71,7 @@ func profileByName(name string) (Profile, bool) {
 // Config is a validated command line.
 type Config struct {
 	Profile     Profile
-	Source      string
-	Binary      string
+	Sources     []string // source trees under test, for scrubbing paths from messages
 	Catalog     string
 	IMDbDir     string
 	Repo        string
@@ -175,8 +175,10 @@ func newSession(ctx context.Context, cfg Config, log *logger) (*session, error) 
 	s.ws = ws
 	home, _ := os.UserHomeDir()
 	pairs := []string{ws.root, "<workspace>", cfg.Repo, "<repo>"}
-	if cfg.Source != "" {
-		pairs = append(pairs, cfg.Source, "<source>")
+	for _, source := range cfg.Sources {
+		if source != "" { // a --binary target has none, and "" would match everywhere
+			pairs = append(pairs, source, "<source>")
+		}
 	}
 	if home != "" {
 		pairs = append(pairs, home, "<home>")
@@ -687,6 +689,59 @@ func (s *session) opsStage(ctx context.Context, t *targetRun, rep int) error {
 	return nil
 }
 
+// primeRuns is how many quick runs clear the first-launch effect described at prime.
+const primeRuns = 3
+
+// prime settles a new executable before anything is timed. The first launches of a
+// new file behave differently on Windows: measured here, 48 MiB of working set
+// against 11 MiB, with four times the page faults and identical private memory, so
+// shared pages rather than the application's own. It clears after a few runs, not
+// with time, and every freshly built binary would otherwise carry it into its first
+// repetition. One discarded launch and pass then pages in the code being measured.
+func (s *session) prime(ctx context.Context, t *targetRun) error {
+	s.log.printf("%s: priming", t.spec.name)
+	for i := 0; i < primeRuns; i++ {
+		version := exec.CommandContext(ctx, t.appPath, "--version")
+		version.Env = s.env
+		version.Dir = s.ws.home
+		if err := version.Run(); err != nil {
+			return fmt.Errorf("%s --version: %w", appBinary, err)
+		}
+		for _, probe := range []string{t.enginePath, t.opsPath} {
+			if probe == "" {
+				continue
+			}
+			var ignored struct{}
+			if err := s.runProbe(ctx, t, probe, "prime", map[string]string{"mode": "prime"}, &ignored); err != nil {
+				return fmt.Errorf("priming a probe: %w", err)
+			}
+		}
+	}
+	runDir := filepath.Join(t.dir, "prime")
+	if err := os.MkdirAll(runDir, 0o700); err != nil {
+		return err
+	}
+	defer os.RemoveAll(runDir)
+	a, err := startApp(ctx, t.appPath, filepath.Join(runDir, "data"), s.catalogPath, s.firstSearch.Text, s.env)
+	if err != nil {
+		return err
+	}
+	if err := a.warmConnection(); err != nil {
+		a.kill()
+		return err
+	}
+	s.httpPass(ctx, a.searcher(), 0, make([]timedQuery, 0, len(s.queries)), &passCounts{})
+	if err := a.stop(); err != nil {
+		return err
+	}
+	if t.enginePath == "" {
+		return nil
+	}
+	var ignored probekit.EngineResponse
+	request := probekit.EngineRequest{Mode: "dump", Catalog: s.catalogPath, Queries: s.wire, Limit: searchLimit, Limits: s.limits}
+	return s.runProbe(ctx, t, t.enginePath, "prime-dump", request, &ignored)
+}
+
 // repetition runs one independent sample of every stage for one target.
 func (s *session) repetition(ctx context.Context, t *targetRun, rep int) {
 	stage := func(name string, run func() error) {
@@ -881,6 +936,9 @@ func (s *session) run(ctx context.Context, spec targetSpec, runID string) *Resul
 	started := time.Now()
 	t := s.prepareTarget(ctx, spec)
 	if !t.fatal {
+		if err := s.prime(ctx, t); err != nil {
+			t.fail("priming", err)
+		}
 		for rep := 0; rep < s.profile.Repetitions; rep++ {
 			s.repetition(ctx, t, rep)
 		}
@@ -900,6 +958,11 @@ func (s *session) runInterleaved(ctx context.Context, baseline, candidate target
 	started := time.Now()
 	a, b := s.prepareTarget(ctx, baseline), s.prepareTarget(ctx, candidate)
 	if !a.fatal && !b.fatal {
+		for _, t := range []*targetRun{a, b} {
+			if err := s.prime(ctx, t); err != nil {
+				t.fail("priming", err)
+			}
+		}
 		for rep := 0; rep < s.profile.Repetitions; rep++ {
 			first, second := a, b
 			if rep%2 == 1 {

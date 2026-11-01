@@ -28,7 +28,7 @@ type metricDef struct {
 	id, group, unit, better, definition string
 	counter                             string
 	deterministic                       bool
-	detail                              bool // shown in full tables, not in the headline
+	primary                             bool // decides the overall verdict; see primaryMetrics
 	sustained                           bool // measured only with sustained searching
 	level                               int  // concurrency level, if the metric has one
 	tier                                int  // the lowest profile that selects it
@@ -59,6 +59,20 @@ func concurrencyTier(level int) int {
 	return tierStandard
 }
 
+// primaryMetrics decide a comparison's verdict. They are fixed in advance and few,
+// because every extra metric tested is another chance of a false finding, and a
+// correction across dozens would leave no power. Each is a question a change could
+// plausibly be judged on; all other metrics are reported as secondary hints.
+var primaryMetrics = []string{
+	"search.engine.warm.p50_ms", "search.engine.warm.p95_ms",
+	"search.http.warm.p50_ms", "search.http.warm.p95_ms",
+	"startup.ready_ms",
+	"memory.app.idle", "memory.app.peak", "memory.engine.heap_after_index",
+	"catalog.load_ms", "catalog.index_ms",
+	"search.http.served_rps.c2", "memory.app.sustained_end",
+	"catalog.prepare_ms", "catalog.refresh_ms", "memory.ops.refresh_peak",
+}
+
 // metricDefs lists every metric the harness can produce.
 func metricDefs() []metricDef {
 	resident, private, peak := memoryCounters()
@@ -68,10 +82,6 @@ func metricDefs() []metricDef {
 	cold := func(id, group, what string, needs string) metricDef {
 		d := lat(id, group, what, tierQuick, needs)
 		d.minPct = 10 // one sample per query, so noisier than warm percentiles
-		return d
-	}
-	detail := func(d metricDef) metricDef {
-		d.detail = true
 		return d
 	}
 	memory := func(id, what, counter string, tier int, needs string) metricDef {
@@ -146,7 +156,7 @@ func metricDefs() []metricDef {
 		work("catalog.save_ms", "Writing the prepared snapshot to disk", tierFull, needsOps),
 		work("catalog.refresh_ms", "POST /api/build to the new catalogue being live; download excluded", tierFull, needsOps),
 		cpuTime("catalog.refresh_cpu_ms", "CPU time of the refresh, including the searches made during it", tierFull, needsOps),
-		{id: "catalog.refresh_searches_served", group: groupCatalogue, unit: "count", better: "none", definition: "Searches answered during the refresh", tier: tierFull, needs: needsOps, detail: true},
+		{id: "catalog.refresh_searches_served", group: groupCatalogue, unit: "count", better: "none", definition: "Searches answered during the refresh", tier: tierFull, needs: needsOps},
 		{id: "catalog.refresh_searches_empty", group: groupCatalogue, unit: "count", better: "lower", definition: "Searches during the refresh that lost their result: the working index must keep answering", tier: tierFull, needs: needsOps, minAbs: 0.5},
 
 		exact("catalog.titles", "count", "Titles indexed by the running application", tierQuick, needsApp),
@@ -159,13 +169,13 @@ func metricDefs() []metricDef {
 	}
 	for _, class := range queryClasses {
 		defs = append(defs,
-			detail(lat("search.http.class."+class+".p95_ms", groupHTTP, httpNote+"; "+class+" queries after warmup", tierQuick, needsApp)),
-			detail(lat("search.engine.class."+class+".p95_ms", groupEngine, engineNote+"; "+class+" queries after warmup", tierQuick, needsEngine)))
+			lat("search.http.class."+class+".p95_ms", groupHTTP, httpNote+"; "+class+" queries after warmup", tierQuick, needsApp),
+			lat("search.engine.class."+class+".p95_ms", groupEngine, engineNote+"; "+class+" queries after warmup", tierQuick, needsEngine))
 	}
 	for _, length := range lengthClasses {
 		defs = append(defs,
-			detail(lat("search.http.length."+length+".p95_ms", groupHTTP, httpNote+"; "+length+" queries after warmup", tierQuick, needsApp)),
-			detail(lat("search.engine.length."+length+".p95_ms", groupEngine, engineNote+"; "+length+" queries after warmup", tierQuick, needsEngine)))
+			lat("search.http.length."+length+".p95_ms", groupHTTP, httpNote+"; "+length+" queries after warmup", tierQuick, needsApp),
+			lat("search.engine.length."+length+".p95_ms", groupEngine, engineNote+"; "+length+" queries after warmup", tierQuick, needsEngine))
 	}
 	atLevel := func(d metricDef, level int) metricDef {
 		d.level = level
@@ -178,6 +188,9 @@ func metricDefs() []metricDef {
 			atLevel(metricDef{id: fmt.Sprintf("search.http.shed_pct.c%d", level), group: groupHTTP, unit: "pct", better: "lower", definition: fmt.Sprintf("Share of requests shed by the server's two search slots at %d clients", level), tier: tier, minAbs: 1}, level),
 			atLevel(lat(fmt.Sprintf("search.http.concurrent.c%d.p95_ms", level), groupHTTP, fmt.Sprintf("%s; %d closed-loop clients", httpNote, level), tier, needsApp), level),
 			atLevel(metricDef{id: fmt.Sprintf("search.engine.qps.c%d", level), group: groupEngine, unit: "searches/s", better: "higher", definition: fmt.Sprintf("Direct searches per second from %d goroutines", level), tier: tier, needs: needsEngine, minPct: 5}, level))
+	}
+	for i := range defs {
+		defs[i].primary = slices.Contains(primaryMetrics, defs[i].id)
 	}
 	return defs
 }

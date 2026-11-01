@@ -243,6 +243,9 @@ func comparisonRow(m MetricComparison) string {
 	if m.P != nil {
 		p = fmt.Sprintf("%.3f", *m.P)
 	}
+	if m.AdjustedP != nil {
+		p = fmt.Sprintf("%.3f", *m.AdjustedP)
+	}
 	return fmt.Sprintf("| `%s` | %s | %s | %s | %s | %d/%d | %s |\n", m.ID, value(m.Baseline), value(m.Candidate), change, p, m.NBaseline, m.NCandidate, strings.ReplaceAll(m.Verdict, "_", " "))
 }
 
@@ -264,7 +267,8 @@ func renderComparison(c *Comparison) string {
 	fmt.Fprintf(&b, "## SSS benchmark comparison: %s\n\n", verdictLine(c))
 	fmt.Fprintf(&b, "**Baseline:** %s (%s, %d repetitions, %s)  \n**Candidate:** %s (%s, %d repetitions, %s)  \n", name(c.Baseline), c.Baseline.Profile, c.Baseline.Runs, c.Baseline.Status, name(c.Candidate), c.Candidate.Profile, c.Candidate.Runs, c.Candidate.Status)
 	s := c.Summary
-	fmt.Fprintf(&b, "**Headline metrics:** %d regressed, %d improved, %d no significant change, %d below the practical floor, %d too few samples, %d not comparable, %d missing, %d failed  \n", s.Regressed, s.Improved, s.NoSignificant, s.BelowThreshold, s.Insufficient, s.NotComparable, s.Missing, s.Failed)
+	fmt.Fprintf(&b, "**Primary metrics:** %d regressed, %d improved, %d no significant change, %d below the practical floor, %d too few samples, %d not comparable  \n", s.Regressed, s.Improved, s.NoSignificant, s.BelowThreshold, s.Insufficient, s.NotComparable)
+	fmt.Fprintf(&b, "**All metrics:** %d missing, %d failed, %d unavailable; secondary hints: %d worse, %d better  \n", s.Missing, s.Failed, s.Unavailable, s.SecondaryRegressed, s.SecondaryImproved)
 	fmt.Fprintf(&b, "**Search quality:** %d cases worse, %d cases better\n\n", s.QualityRegressions, s.QualityImprovements)
 	if c.Incomplete {
 		b.WriteString("> **Incomplete:** at least one side failed part of its measurements. Treat absent results as unknown, not as unchanged.\n\n")
@@ -278,10 +282,10 @@ func renderComparison(c *Comparison) string {
 	if len(problems) > 0 {
 		b.WriteString("### Comparability\n\n| Status | Check | Baseline | Candidate | Why it matters |\n| --- | --- | --- | --- | --- |\n" + strings.Join(problems, "") + "\n")
 	}
-	section := func(title, verdict string) {
+	section := func(title string, wanted func(MetricComparison) bool) {
 		var rows []string
 		for _, m := range c.Metrics {
-			if m.Verdict == verdict && !m.Detail {
+			if wanted(m) {
 				rows = append(rows, comparisonRow(m))
 			}
 		}
@@ -289,8 +293,11 @@ func renderComparison(c *Comparison) string {
 			b.WriteString("### " + title + "\n\n" + comparisonHeader + strings.Join(rows, "") + "\n")
 		}
 	}
-	section("Regressions", verdictRegressed)
-	section("Improvements", verdictImproved)
+	section("Regressions", func(m MetricComparison) bool { return m.Primary && m.Verdict == verdictRegressed })
+	section("Improvements", func(m MetricComparison) bool { return m.Primary && m.Verdict == verdictImproved })
+	section("Secondary hints (uncorrected, not findings)", func(m MetricComparison) bool {
+		return !m.Primary && (m.Verdict == verdictRegressed || m.Verdict == verdictImproved)
+	})
 	for _, suite := range c.Quality {
 		fmt.Fprintf(&b, "### Quality: %s\n\n", suite.Suite)
 		if suite.Status != "compared" {
@@ -331,7 +338,7 @@ func renderComparison(c *Comparison) string {
 			b.WriteString("- " + note + "\n")
 		}
 	}
-	b.WriteString("\nRelative metrics show percentage change; shares show percentage points (pp). Verdicts use a two-sided exact Mann-Whitney test across fresh-process repetitions plus a practical floor per metric.\n")
+	b.WriteString("\nRelative metrics show percentage change; shares show percentage points (pp). Verdicts use a two-sided exact Mann-Whitney test across fresh-process repetitions, Holm-corrected across primary metrics (p shown corrected), plus a practical floor per metric.\n")
 	return b.String()
 }
 

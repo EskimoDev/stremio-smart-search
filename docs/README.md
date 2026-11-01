@@ -21,6 +21,7 @@ These guides cover **0.1.0-preview.4**, including sound-alike search, automatic 
 |---|---|
 | Memory, search latency, download sizes and reproduction steps | [Performance](PERFORMANCE.md) |
 | Accuracy cases, scoring rules and known search gaps | [Search quality](SEARCH-QUALITY.md) |
+| Measuring a build and comparing two versions | [Benchmarking](BENCHMARKING.md) |
 | How the helper works, its HTTP routes and command-line options | [Architecture](ARCHITECTURE.md) |
 | Local setup-page styling and interaction rules | [Design](DESIGN.md) |
 | IMDb sources and data terms | [Title data](../DATA.md) |

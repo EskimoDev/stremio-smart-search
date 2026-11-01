@@ -71,6 +71,37 @@ func TestMannWhitneyExactValues(t *testing.T) {
 	}
 }
 
+func TestMinAchievableP(t *testing.T) {
+	for _, test := range []struct {
+		n, m int
+		want float64
+	}{{4, 4, 2.0 / 70}, {6, 6, 2.0 / 924}, {3, 5, 2.0 / 56}, {1, 1, 1}} {
+		if got := minAchievableP(test.n, test.m); !near(got, test.want) {
+			t.Errorf("%d and %d: %g, want %g", test.n, test.m, got, test.want)
+		}
+	}
+	// It must agree with what the test really produces.
+	if got, want := mannWhitneyP([]float64{1, 2, 3, 4, 5, 6}, []float64{7, 8, 9, 10, 11, 12}), minAchievableP(6, 6); !near(got, want) {
+		t.Errorf("%g against %g", got, want)
+	}
+}
+
+func TestHolmAdjust(t *testing.T) {
+	// Worked example: sorted p-values times 4, 3, 2, 1, kept non-decreasing.
+	got := holmAdjust([]float64{0.03, 0.005, 0.5, 0.012})
+	for i, want := range []float64{0.06, 0.02, 0.5, 0.036} {
+		if !near(got[i], want) {
+			t.Errorf("value %d: %g, want %g", i, got[i], want)
+		}
+	}
+	if capped := holmAdjust([]float64{0.9, 0.8}); capped[0] != 1 || capped[1] != 1 {
+		t.Errorf("%v", capped)
+	}
+	if len(holmAdjust(nil)) != 0 {
+		t.Error("empty input")
+	}
+}
+
 // bruteForceP enumerates every way of assigning the pooled values to the two
 // sides, which is the definition the dynamic programme must reproduce.
 func bruteForceP(a, b []float64) float64 {
