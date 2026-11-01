@@ -109,7 +109,7 @@ func renderRun(r *Result) string {
 	fmt.Fprintf(&b, "**Machine:** %s  \n", describeMachine(r.Environment))
 	fmt.Fprintf(&b, "**Catalogue:** %s, %d titles (%d movies, %d series, %d alternative titles), `%s`  \n", r.Catalogue.Name, r.Catalogue.Titles, r.Catalogue.Movies, r.Catalogue.Series, r.Catalogue.Aliases, short(r.Catalogue.ContentSHA256))
 	fmt.Fprintf(&b, "**Workload:** `%s`, %d fresh-process repetitions of %d queries, %d passes after %d warmup; values are medians across repetitions  \n", r.Workload.ID, r.Workload.Repetitions, r.Workload.Queries, r.Workload.Passes, r.Workload.WarmupPasses)
-	fmt.Fprintf(&b, "**Timer resolution:** %d ns; **limits:** GOMAXPROCS %d, %d MiB soft memory target\n\n", r.Environment.ClockResolutionNS, r.Workload.GOMAXPROCS, r.Workload.MemoryLimitMiB)
+	fmt.Fprintf(&b, "**Timer resolution:** %d ns; **limits:** GOMAXPROCS %d, %d MiB soft memory target; **other CPU use while idle:** %s\n\n", r.Environment.ClockResolutionNS, r.Workload.GOMAXPROCS, r.Workload.MemoryLimitMiB, metricValue(m["system.background_cpu_pct"]))
 	if r.Catalogue.Kind == "synthetic" {
 		b.WriteString("> Synthetic catalogue. Quality scores below detect ranking changes between builds; they are not accuracy on real titles.\n\n")
 	}

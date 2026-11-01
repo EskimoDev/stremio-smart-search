@@ -248,6 +248,32 @@ func TestCollectorNeverDropsASelectedMetric(t *testing.T) {
 	}
 }
 
+func TestBusyShare(t *testing.T) {
+	share, ok := busyShare(cpuTimes{busy: 100, total: 1000}, cpuTimes{busy: 300, total: 2000})
+	if !ok || !near(share, 20) {
+		t.Fatalf("%v %v", share, ok)
+	}
+	if _, ok := busyShare(cpuTimes{total: 5}, cpuTimes{total: 5}); ok {
+		t.Fatal("no time passing must not read as an idle machine")
+	}
+	if times, ok := systemCPU(); ok && (times.total <= 0 || times.busy > times.total) {
+		t.Fatalf("%+v", times)
+	}
+}
+
+func TestParseProcStat(t *testing.T) {
+	// user nice system idle iowait irq softirq steal guest guest_nice
+	times, ok := parseProcStat("cpu  100 10 50 700 40 5 5 90 999 999\ncpu0 1 2 3 4\n")
+	if !ok || times.total != 10*time.Second || times.busy != 2600*time.Millisecond {
+		t.Fatalf("%+v %v", times, ok)
+	}
+	for _, bad := range []string{"", "intr 1 2 3", "cpu 1 2", "cpu a b c d e"} {
+		if _, ok := parseProcStat(bad); ok {
+			t.Errorf("%q was accepted", bad)
+		}
+	}
+}
+
 func TestMetricFlags(t *testing.T) {
 	noisy := Metric{ID: "startup.ready_ms"}
 	fill(&noisy, []float64{1, 10, 1, 10})

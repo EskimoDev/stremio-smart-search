@@ -7,6 +7,14 @@ import (
 	"strings"
 )
 
+func systemCPU() (cpuTimes, bool) {
+	data, err := os.ReadFile("/proc/stat")
+	if err != nil {
+		return cpuTimes{}, false
+	}
+	return parseProcStat(string(data))
+}
+
 func systemInfo() (cpu, version string, memory uint64) {
 	if data, err := os.ReadFile("/proc/cpuinfo"); err == nil {
 		for _, line := range strings.Split(string(data), "\n") {

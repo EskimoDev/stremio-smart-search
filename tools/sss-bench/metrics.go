@@ -37,13 +37,14 @@ type metricDef struct {
 }
 
 const (
-	groupStartup   = "startup"
-	groupHTTP      = "search-http"
-	groupEngine    = "search-engine"
-	groupCPU       = "cpu"
-	groupMemory    = "memory"
-	groupCatalogue = "catalogue"
-	mib            = 1 << 20
+	groupStartup     = "startup"
+	groupHTTP        = "search-http"
+	groupEngine      = "search-engine"
+	groupCPU         = "cpu"
+	groupMemory      = "memory"
+	groupCatalogue   = "catalogue"
+	groupEnvironment = "environment"
+	mib              = 1 << 20
 )
 
 var (
@@ -71,6 +72,23 @@ var primaryMetrics = []string{
 	"catalog.load_ms", "catalog.index_ms",
 	"search.http.served_rps.c2", "memory.app.sustained_end",
 	"catalog.prepare_ms", "catalog.refresh_ms", "memory.ops.refresh_peak",
+}
+
+// backgroundLimitPct is the machine-wide idle-time CPU use above which a result is
+// flagged. An ordinary desktop measured 8 to 12% here, so a lower limit would warn on
+// every run and be ignored; two busy threads of twelve reach it, and a virtual
+// machine or a compile running alongside a benchmark clears it easily.
+const backgroundLimitPct = 20
+
+// backgroundLoad is the worst machine-wide CPU use seen in any repetition. One busy
+// repetition can move a result, so the median would hide what matters here.
+func backgroundLoad(r *Result) (float64, bool) {
+	for _, m := range r.Metrics {
+		if m.ID == "system.background_cpu_pct" && m.Status == metricOK && m.Max != nil {
+			return *m.Max, true
+		}
+	}
+	return 0, false
 }
 
 // metricDefs lists every metric the harness can produce.
@@ -158,6 +176,8 @@ func metricDefs() []metricDef {
 		cpuTime("catalog.refresh_cpu_ms", "CPU time of the refresh, including the searches made during it", tierFull, needsOps),
 		{id: "catalog.refresh_searches_served", group: groupCatalogue, unit: "count", better: "none", definition: "Searches answered during the refresh", tier: tierFull, needs: needsOps},
 		{id: "catalog.refresh_searches_empty", group: groupCatalogue, unit: "count", better: "lower", definition: "Searches during the refresh that lost their result: the working index must keep answering", tier: tierFull, needs: needsOps, minAbs: 0.5},
+
+		{id: "system.background_cpu_pct", group: groupEnvironment, unit: "pct", better: "none", definition: "Machine-wide CPU use while the application sat idle during the settle period: work from anything else on this machine, as a share of all logical CPUs", tier: tierQuick},
 
 		exact("catalog.titles", "count", "Titles indexed by the running application", tierQuick, needsApp),
 		exact("catalog.movies", "count", "Movies indexed by the running application", tierQuick, needsApp),

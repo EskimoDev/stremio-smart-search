@@ -217,11 +217,40 @@ func TestDeterministicMetricsSurviveHardwareDifferences(t *testing.T) {
 
 func TestDifferentMemoryCountersAreNotCompared(t *testing.T) {
 	candidate := sampleResult(series(1, 6), series(90*mib, 6))
-	candidate.Metrics[1].Counter = "linux.VmRSS"
+	candidate.Metrics[1].Counter = "other.Counter" // real on no platform, unlike any OS's own name
 	c := compareResults(sampleResult(series(1, 6), series(50*mib, 6)), candidate, defaultAlpha)
 	got := metricOf(t, c, "memory.app.idle")
-	if got.Verdict != verdictIncomparable || !strings.Contains(got.Reason, "linux.VmRSS") {
+	if got.Verdict != verdictIncomparable || !strings.Contains(got.Reason, "other.Counter") {
 		t.Fatalf("verdict %s, reason %q", got.Verdict, got.Reason)
+	}
+}
+
+func TestBackgroundLoadIsReportedOnEitherSide(t *testing.T) {
+	loaded := func(r *Result, percent float64) *Result {
+		m := Metric{ID: "system.background_cpu_pct", Group: groupEnvironment, Unit: "pct", Better: "none", Status: metricOK}
+		fill(&m, []float64{1, 1, percent, 1, 1, 1})
+		r.Metrics = append(r.Metrics, m)
+		return r
+	}
+	warned := func(c *Comparison) bool {
+		for _, check := range c.Compatibility {
+			if check.Check == "background load" && check.Status == "warning" {
+				return true
+			}
+		}
+		return false
+	}
+	quiet := loaded(sampleResult(series(1, 6), series(50*mib, 6)), 2)
+	busy := loaded(sampleResult(series(1, 6), series(50*mib, 6)), 40)
+	if warned(compareResults(quiet, quiet, defaultAlpha)) {
+		t.Fatal("a quiet machine should not warn")
+	}
+	if !warned(compareResults(quiet, busy, defaultAlpha)) || !warned(compareResults(busy, quiet, defaultAlpha)) {
+		t.Fatal("one busy repetition on either side should warn")
+	}
+	// Older results have no such metric, which must not read as a quiet machine or a failure.
+	if warned(compareResults(sampleResult(series(1, 6), series(50*mib, 6)), sampleResult(series(1, 6), series(50*mib, 6)), defaultAlpha)) {
+		t.Fatal("no measurement should mean no claim")
 	}
 }
 

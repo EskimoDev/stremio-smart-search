@@ -47,6 +47,44 @@ func parseKiB(value string) uint64 {
 	return kib << 10
 }
 
+// cpuTimes is cumulative CPU time across all logical CPUs since boot.
+type cpuTimes struct{ busy, total time.Duration }
+
+// busyShare is the percentage of machine-wide CPU used between two readings.
+func busyShare(before, after cpuTimes) (float64, bool) {
+	total := after.total - before.total
+	if total <= 0 {
+		return 0, false
+	}
+	return 100 * float64(after.busy-before.busy) / float64(total), true
+}
+
+// parseProcStat reads the aggregate cpu line of /proc/stat: user, nice, system, idle,
+// iowait, irq, softirq, steal. Waiting on a disk counts as idle, not as work.
+func parseProcStat(text string) (cpuTimes, bool) {
+	line, _, _ := strings.Cut(text, "\n")
+	fields := strings.Fields(line)
+	if len(fields) < 6 || fields[0] != "cpu" {
+		return cpuTimes{}, false
+	}
+	var times cpuTimes
+	for i, field := range fields[1:] {
+		if i >= 8 { // later columns (guest time) are already included in user
+			break
+		}
+		ticks, err := strconv.ParseInt(field, 10, 64)
+		if err != nil {
+			return cpuTimes{}, false
+		}
+		spent := time.Duration(ticks) * time.Second / 100 // USER_HZ is always 100 in /proc
+		times.total += spent
+		if i != 3 && i != 4 {
+			times.busy += spent
+		}
+	}
+	return times, true
+}
+
 // installedHelperRunning checks for something on the default port. It only
 // connects: it never speaks to a running helper, which stays undisturbed.
 func installedHelperRunning() bool {

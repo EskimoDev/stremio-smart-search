@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"syscall"
+	"time"
 	"unsafe"
 )
 
@@ -42,6 +43,19 @@ type memoryStatusEx struct {
 	TotalVirtual         uint64
 	AvailVirtual         uint64
 	AvailExtendedVirtual uint64
+}
+
+// systemCPU reads GetSystemTimes, whose kernel time includes the idle time.
+func systemCPU() (cpuTimes, bool) {
+	var idle, kernel, user syscall.Filetime
+	if ok, _, _ := syscall.NewLazyDLL("kernel32.dll").NewProc("GetSystemTimes").Call(uintptr(unsafe.Pointer(&idle)), uintptr(unsafe.Pointer(&kernel)), uintptr(unsafe.Pointer(&user))); ok == 0 {
+		return cpuTimes{}, false
+	}
+	ticks := func(t syscall.Filetime) time.Duration {
+		return time.Duration(int64(t.HighDateTime)<<32|int64(t.LowDateTime)) * 100
+	}
+	total := ticks(kernel) + ticks(user)
+	return cpuTimes{busy: total - ticks(idle), total: total}, true
 }
 
 func systemInfo() (cpu, version string, memory uint64) {

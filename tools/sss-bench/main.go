@@ -45,7 +45,7 @@ Commands:
   metrics   List profiles and metrics            sss-bench metrics --json
   version   Print the harness version
 
-Profiles: quick (default, about 40 s), standard (about 3 min), full (about 20 min).
+Profiles: quick (default, about 30 s), standard (about 4 min), full (about 20 min).
 Run "sss-bench <command> --help" for flags. Exit codes: 0 ok, 1 harness failure,
 2 bad input, 3 incomplete, 4 regression, 5 not comparable.
 `

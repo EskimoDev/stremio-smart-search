@@ -183,6 +183,11 @@ func compatibility(b, c *Result) []CompatCheck {
 	if slow, fast := max(b.Environment.ClockResolutionNS, c.Environment.ClockResolutionNS), min(b.Environment.ClockResolutionNS, c.Environment.ClockResolutionNS); slow > 10*max(fast, 1) {
 		checks = append(checks, CompatCheck{Check: "clock resolution", Status: "warning", Scope: "performance", Baseline: fmt.Sprint(b.Environment.ClockResolutionNS), Candidate: fmt.Sprint(c.Environment.ClockResolutionNS), Detail: "one side had a much coarser timer"})
 	}
+	before, beforeKnown := backgroundLoad(b)
+	after, afterKnown := backgroundLoad(c)
+	if (beforeKnown && before > backgroundLimitPct) || (afterKnown && after > backgroundLimitPct) {
+		checks = append(checks, CompatCheck{Check: "background load", Status: "warning", Scope: "performance", Baseline: fmt.Sprintf("%.0f%%", before), Candidate: fmt.Sprintf("%.0f%%", after), Detail: "something else was using this machine, so a timing difference may not be the code"})
+	}
 	if hosted(b) == "hosted" || hosted(c) == "hosted" {
 		checks = append(checks, CompatCheck{Check: "hosted runner", Status: "warning", Scope: "performance", Baseline: hosted(b), Candidate: hosted(c), Detail: "hosted runners share hardware with other jobs; treat any timing difference as unproven"})
 	}
@@ -284,7 +289,7 @@ func compareMetric(b, c *Metric, perfBlock, dataBlock string, defs map[string]me
 	out.P = &p
 	out.worse = direction() == verdictRegressed
 	if math.Abs(after-before) < minAbs || (out.ChangePct != nil && math.Abs(*out.ChangePct) < minPct) {
-		out.belowFloor = fmt.Sprintf("smaller than the %g%% and %g %s floor", minPct, minAbs, known.Unit)
+		out.belowFloor = fmt.Sprintf("smaller than the practical floor of %g%% and %s", minPct, formatValue(known.Unit, minAbs))
 	}
 	return out
 }

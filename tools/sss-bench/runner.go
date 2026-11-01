@@ -53,8 +53,8 @@ type Profile struct {
 func profiles() []Profile {
 	allSuites := []string{"cases", "phonetic-holdout", "phonetic-validation"}
 	return []Profile{
-		{Name: "quick", tier: tierQuick, Titles: 20_000, Repetitions: 6, WarmupPasses: 1, Passes: 3, Settle: 3 * time.Second, Suites: []string{"cases"}, Cost: "about 40 seconds; a few MB of temporary disk"},
-		{Name: "standard", tier: tierStandard, Titles: 50_000, Repetitions: 8, WarmupPasses: 2, Passes: 10, Settle: 3 * time.Second, Throughput: 2 * time.Second, Concurrency: []int{1, 2, 4}, Sustain: 10 * time.Second, Suites: allSuites, Cost: "about 3 minutes; a few MB of temporary disk"},
+		{Name: "quick", tier: tierQuick, Titles: 20_000, Repetitions: 6, WarmupPasses: 1, Passes: 3, Settle: 3 * time.Second, Suites: []string{"cases"}, Cost: "about 30 seconds; a few MB of temporary disk"},
+		{Name: "standard", tier: tierStandard, Titles: 50_000, Repetitions: 8, WarmupPasses: 2, Passes: 10, Settle: 3 * time.Second, Throughput: 2 * time.Second, Concurrency: []int{1, 2, 4}, Sustain: 10 * time.Second, Suites: allSuites, Cost: "about 4 minutes; a few MB of temporary disk"},
 		{Name: "full", tier: tierFull, Titles: 200_000, Repetitions: 10, WarmupPasses: 3, Passes: 20, Settle: 3 * time.Second, Throughput: 3 * time.Second, Concurrency: []int{1, 2, 4, 8}, Sustain: time.Minute, Suites: allSuites, Generated: true, CatalogOps: true, Rebuilds: 2, Cost: "about 20 minutes; about 100 MB of temporary disk"},
 	}
 }
@@ -455,9 +455,19 @@ func (s *session) appStage(ctx context.Context, t *targetRun, rep int) error {
 	if err != nil {
 		return err
 	}
+	machineBefore, machineKnown := systemCPU()
 	settleStart := probekit.Nanos()
 	if err := wait(ctx, s.profile.Settle); err != nil {
 		return err
+	}
+	machineAfter, machineStillKnown := systemCPU()
+	switch share, measured := busyShare(machineBefore, machineAfter); {
+	case !machineKnown || !machineStillKnown:
+		c.unavailable("system.background_cpu_pct", "this platform has no machine-wide CPU counter")
+	case s.profile.Settle == 0 || !measured:
+		c.unavailable("system.background_cpu_pct", "needs a settle period")
+	default:
+		c.add("system.background_cpu_pct", share)
 	}
 	settled, err := readProcess(a.pid)
 	if err != nil {
@@ -907,6 +917,9 @@ func (s *session) result(t *targetRun, runID string, started time.Time) *Result 
 	}
 	for _, w := range append(slices.Clone(s.warnings), t.warnings...) {
 		r.Warnings = append(r.Warnings, s.scrubber.Replace(w))
+	}
+	if high, known := backgroundLoad(r); known && high > backgroundLimitPct {
+		r.Warnings = append(r.Warnings, fmt.Sprintf("other work used up to %.0f%% of this machine's CPU while the application sat idle, so timings are less reliable; close it and repeat", high))
 	}
 	measured, broken := 0, false
 	for i := range r.Metrics {
