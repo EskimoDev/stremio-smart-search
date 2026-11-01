@@ -373,6 +373,7 @@ func (a *App) UpdateTick(ctx context.Context) {
 		aliases = catalog.AliasOptions{}
 	}
 	known := append([]catalog.SourceFile(nil), u.state.Sources...)
+	since := u.state.LastSuccess
 	a.mu.Unlock()
 
 	network := "unknown"
@@ -389,9 +390,11 @@ func (a *App) UpdateTick(ctx context.Context) {
 	a.mu.Lock()
 	u.checking = false
 	u.network = network
-	if network == "metered" || ctx.Err() != nil {
+	if network == "metered" || ctx.Err() != nil || a.status.Building || !u.state.LastSuccess.Equal(since) {
+		// Metered, shutting down, or a manual refresh started or finished
+		// meanwhile: this check's answer no longer matters.
 		a.mu.Unlock()
-		return // try again at the next tick; nothing was attempted
+		return
 	}
 	now = a.now()
 	if err != nil {
@@ -413,6 +416,14 @@ func (a *App) UpdateTick(ctx context.Context) {
 	// manual refresh would. If a manual build started meanwhile, this does
 	// nothing.
 	a.startBuildMode(profile, aliases, true)
+}
+
+// DisableUpdates turns automatic updates off for this run only, without
+// saving, for a helper serving a --catalog file it must not replace.
+func (a *App) DisableUpdates() {
+	a.mu.Lock()
+	a.updates.settings.Auto = false
+	a.mu.Unlock()
 }
 
 // adoptAutomaticBuild turns a running automatic build with the same selection
