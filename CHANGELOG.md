@@ -20,6 +20,8 @@ Planned as `0.1.0-preview.3`.
 - Redesigned the setup page as a compact desktop utility following LongCipher Design, with bundled Geist fonts and official client icons for Stremio, dx.bi and Stremio Enhanced.
 - Polished the settings catalogue card and the addon order guide. ([#3](https://github.com/EskimoDev/stremio-smart-search/pull/3))
 - Simplified setup branding and removed the header logo.
+- Rewrote the README as a short landing page with a before/after search comparison. Detail moved to [docs/CATALOGUE.md](docs/CATALOGUE.md), [docs/OTHER-DEVICES.md](docs/OTHER-DEVICES.md) and [docs/INSTALLATION.md](docs/INSTALLATION.md).
+- Added a changelog, folder READMEs and release steps, and moved DESIGN.md into docs/.
 - Recorded user-confirmed Windows x64 compatibility with Stremio, dx.bi and Stremio Enhanced, and Linux x64 install testing on Ubuntu 24.04.
 
 ## [0.1.0-preview.2] - 2026-10-31

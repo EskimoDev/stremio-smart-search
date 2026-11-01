@@ -13,5 +13,5 @@ Follow [docs/DESIGN.md](docs/DESIGN.md) for setup-page styling. Use locally bund
 The version is stamped at build time: `scripts/build.ps1` passes it to the binary with `-ldflags "-X main.version=..."`, and to `tools/package` and the Windows installer. Untagged local builds report `0.1.0-dev`.
 
 1. Move the `[Unreleased]` entries in [CHANGELOG.md](CHANGELOG.md) under the new version and date.
-2. Update the default preview version in `scripts/build.ps1`, `scripts/windows-installer.nsi`, `tools/package/main.go` and `.github/workflows/release.yml` to the next planned version.
+2. Update the default preview version in `scripts/build.ps1`, `scripts/windows-installer.nsi`, `tools/package/main.go` and `.github/workflows/release.yml` to the next planned version, and the version badge at the top of `README.md`.
 3. Push a `v<version>` tag, or run the release workflow by hand. It prepares a draft pre-release with all packages and `SHA256SUMS.txt`.

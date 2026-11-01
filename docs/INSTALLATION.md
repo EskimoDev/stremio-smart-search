@@ -2,13 +2,23 @@
 
 No package should be described as device-tested until it has actually been run on that platform. The release workflow compiles and tests on Windows, macOS and Linux runners; ARM64 binaries also require device testing.
 
-## Recommended search row order
+## Put Smart Search first
 
-After installing the addon, move **Stremio Smart Search** to the top of your addon order. In dx.bi, use **Addons → Order & backup**, move SSS to the top, then **Save order**. Controls vary by client; see [the ordering guide](../README.md#put-smart-search-first-recommended).
+Move **Stremio Smart Search** to the top of your addon order so its movie and series results are easier to find at the top of search. Row placement is controlled by the Stremio client and your addon order; SSS cannot give itself priority through its manifest.
 
-Move only SSS and keep other addons in their existing relative order. Its manifest provides search-only catalogues and no stream, metadata or subtitle resource, so this does not reprioritize your playback providers or add Home/Discover rows. The order is stored with your Stremio account and may sync to other clients. The helper does not change it automatically.
+In **dx.bi**:
 
-SSS matches against a local, prebuilt index, avoiding an internet round trip to a search server. This can reduce search waiting; posters, metadata, streams and the client UI still have their own loading time.
+1. Open **Addons → Order & backup**, beside **Add addon**.
+2. Move **Stremio Smart Search** to the top using the drag handle or up arrows.
+3. Choose **Save order**, then run your search again.
+
+If that control is hidden, enable **Addon order & backup** in dx.bi settings. Saving with that tool requires signing into Stremio. Other clients can have different reorder controls.
+
+Moving **only SSS** keeps the other addons in their existing relative order. SSS supplies search-only catalogues: it does not supply streams, metadata or subtitles, or add Home/Discover rows. Your existing playback providers continue working in their previous order. The order is a Stremio account setting and may sync to your other clients.
+
+The companion leaves this choice to you; it does not sign into your account or reorder addons automatically.
+
+Smart Search matches against a local, prebuilt index, avoiding an internet round trip to a search server. This can reduce search waiting; posters, metadata, streams and the client UI still have their own loading time.
 
 ## Windows
 
@@ -38,13 +48,17 @@ Debian/Ubuntu users can open the `.deb` through their software installer. It pro
 
 Other distributions can extract the portable archive and run `stremio-smart-search` for setup. `stremio-smart-search --launch` opens Stremio after starting the helper. The binary includes its runtime and does not require Node.js or Python. A desktop session with `xdg-open` and a registered Stremio protocol handler is needed for launch buttons; copying the addon URL remains a fallback.
 
+## Launcher and portable use
+
+The **Stremio + Smart Search** launcher starts the helper and opens your registered Stremio app. The helper stays available in the background until you choose **Quit helper** in settings. It does not monitor your processes or watching activity. Closing the browser settings page does not stop it.
+
+The launcher remembers the app chosen in setup. App-specific buttons launch installed executables directly, and the helper does not change protocol associations. Generic `stremio://` addon links are deliberately avoided because Stremio rewrites them to HTTPS, which does not suit this local HTTP service. Keep the full `http://127.0.0.1:11479/manifest.json` address when installing manually. Some browsers ask for local-network permission for the **Install through Stremio Web** option.
+
+Portable users can run the executable directly. Pass `--launch` to also open Stremio, or `--no-browser` to run in the background without opening settings. No Node.js, Python, Docker or API keys are needed.
+
 ## A TV, phone or another computer
 
-The companion currently runs on desktop operating systems. For another device to use a home-hosted copy, the host needs to remain online and the addon address must be reachable by that client. Account synchronization does not install or start the companion on that device.
-
-For HTTPS-capable hosting, run the helper behind an HTTPS reverse proxy. Only addon routes should be exposed: `/manifest.json` and `/catalog/*`. The settings interface intentionally accepts loopback clients only. Avoid assuming plain HTTP LAN URLs are accepted by every Stremio client.
-
-Native Android/TV packages, iOS/tvOS companions, a hosted public service and automatic cloud deployment are outside this first preview.
+See [OTHER-DEVICES.md](OTHER-DEVICES.md).
 
 ## Release readiness
 
