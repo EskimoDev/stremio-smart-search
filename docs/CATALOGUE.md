@@ -24,7 +24,7 @@ This adds IMDb's alternative-title file to each preparation: about 520 MB more t
 
 ## Matching and ranking
 
-Exact titles are ranked first, whether canonical or, with alternative titles on, regional; popularity decides between them. Acronyms can have several legitimate meanings; popularity helps rank the alternatives. Typo matching has bounded edit distances and work limits. It does not generate fictional titles or use an LLM.
+Exact canonical titles and longer alternative titles rank ahead of acronym and fuzzy matches; popularity decides between exact matches. Short Latin alternative titles (up to five letters after removing spaces) share the acronym ranking band instead. Acronyms can have several legitimate meanings. Typo matching has bounded edit distances and work limits. It does not generate fictional titles or use an LLM.
 
 To pick one of several films with the same name, add its release year: `dune 1984`, `halloween 2018`, `it 2017`. If no title matches that year, the year is ignored. Measured accuracy per catalogue size, and the known weak spots, are in [search quality](SEARCH-QUALITY.md).
 
@@ -38,7 +38,9 @@ By default the catalogue lives in the helper's settings folder:
 | macOS | `~/Library/Application Support/StremioSmartSearch` |
 | Linux | `~/.config/StremioSmartSearch` (or `$XDG_CONFIG_HOME/StremioSmartSearch`) |
 
-The **Storage** card in settings shows the space used by the catalogue, the previous catalogue kept for recovery and the settings, plus the free space on that drive and the helper's current memory, including the search index. **Open folder** (**Show in Explorer** on Windows, **Show in Finder** on a Mac) opens the folder.
+The **Storage** card in settings shows catalogue and settings sizes, free space on the catalogue drive, and a Go runtime memory estimate that includes the search index. That estimate is not the same counter as process memory in Task Manager or the performance tables. **Open folder** (**Show in Explorer** on Windows, **Show in Finder** on a Mac) opens the catalogue folder.
+
+During a save, the old catalogue is temporarily renamed to `catalog.json.gz.previous` so it can be recovered if replacement is interrupted. A successful save removes that file. **Previous catalogue** appears in Storage only when a recovery file exists; it is not a permanent backup or version history.
 
 To keep the catalogue on another drive, choose **Change location…** and pick a folder. Smart Search creates a `Stremio Smart Search` folder inside it, so choosing a drive root never scatters files there. It checks for free space, copies the catalogue, switches over, then removes only its own catalogue files from the old folder. Search keeps working throughout because the index is in memory. **Use default** moves it back. Settings and the private control key always stay in the settings folder. On Linux the folder picker needs `zenity` or `kdialog`; without one you can type a full folder path instead. A move is refused while a catalogue update is running.
 
@@ -46,6 +48,6 @@ Uninstalling leaves the catalogue where it is. Delete the folder yourself if you
 
 ## Updating and changing size
 
-Catalogue updates are manual from settings. They do not run during every startup or search. To change size, select the option and choose **Apply size & rebuild**. The current index keeps serving during preparation; the new size is saved with the replacement catalogue only after success. A failed refresh keeps the previous working catalogue. Existing catalogues retain their Compact selection until you change it.
+Catalogue updates are manual from settings. They do not run during every startup or search. To change size, select the option and choose **Apply size & rebuild**. If you also change alternative titles, the button reads **Apply changes & rebuild**. The current index keeps serving during preparation; new choices are saved with the replacement catalogue only after success. A failed refresh keeps the previous working catalogue. Existing catalogues retain their saved size. Legacy catalogues without a size field are treated as Compact.
 
 IMDb data terms are covered in [DATA.md](../DATA.md). The matching internals are in [ARCHITECTURE.md](ARCHITECTURE.md#search).

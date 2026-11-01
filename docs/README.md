@@ -1,18 +1,30 @@
-# Docs
+# Documentation
 
-Background reading for users and contributors. Start with the [project README](../README.md) for what Smart Search does and how to install it.
+New here? Start with the [project README](../README.md) for screenshots and a quick install.
 
-| File | What it covers |
+## Setup and everyday use
+
+| I want to… | Read |
 |---|---|
-| [INSTALLATION.md](INSTALLATION.md) | Installing and first setup on each platform |
-| [CATALOGUE.md](CATALOGUE.md) | Catalogue sizes, alternative titles, ranking and updates |
-| [OTHER-DEVICES.md](OTHER-DEVICES.md) | TVs, phones, home-server and LAN setups |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | How the index, matching, Stremio protocol and helper lifecycle work |
-| [SEARCH-QUALITY.md](SEARCH-QUALITY.md) | Curated accuracy cases, measured top-1 and recall per catalogue, and remaining weaknesses |
-| [PERFORMANCE.md](PERFORMANCE.md) | Measured memory, CPU and latency per catalogue size, and how to reproduce them |
-| [PLATFORM-TESTING.md](PLATFORM-TESTING.md) | What has been tested on which OS and client, and what is still open |
-| [DESIGN.md](DESIGN.md) | Visual rules for the setup page, based on LongCipher Design |
-| `images/` | Screenshots used in the README |
-| `benchmarks/` | Raw benchmark results referenced by PERFORMANCE.md, one JSON file per device and date |
+| Install SSS, connect it to Stremio or fix setup problems | [Installation](INSTALLATION.md) |
+| Put Smart Search above my other search rows | [Addon order](INSTALLATION.md#put-smart-search-first) |
+| Choose a catalogue size or enable regional titles | [Catalogue](CATALOGUE.md) |
+| Move downloaded data to another drive | [Catalogue storage](CATALOGUE.md#where-the-catalogue-is-stored) |
+| Use a TV, phone or home server | [Other devices](OTHER-DEVICES.md) |
+| Check which platforms have actually been tested | [Platform testing](PLATFORM-TESTING.md) |
 
-IMDb data terms are in [DATA.md](../DATA.md).
+## Results and technical reference
+
+| Topic | Read |
+|---|---|
+| Memory, search latency, download sizes and reproduction steps | [Performance](PERFORMANCE.md) |
+| Accuracy cases, scoring rules and known search gaps | [Search quality](SEARCH-QUALITY.md) |
+| How the helper works, its HTTP routes and command-line options | [Architecture](ARCHITECTURE.md) |
+| Local setup-page styling and interaction rules | [Design](DESIGN.md) |
+| IMDb sources and data terms | [Title data](../DATA.md) |
+
+## Working on the project
+
+See [Contributing](../CONTRIBUTING.md) for development and release checks, [Scripts](../scripts/README.md) for build and test helpers, and [Tools](../tools/README.md) for packaging and evaluation commands.
+
+The `images/` folder holds README screenshots. `benchmarks/` holds historical Windows measurements and synthetic Linux results; see [measurement records](PERFORMANCE.md#measurement-records) for which figures each file supports. Production catalogues are kept outside the repository.

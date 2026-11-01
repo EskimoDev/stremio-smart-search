@@ -1,14 +1,17 @@
 # Platform testing
 
-Status of testing outside Windows, as of 2026-11-01 (commit `17be377`).
+Recorded platform testing as of 2026-11-01. Windows includes a test of the
+published `0.1.0-preview.3` packages; the sections below distinguish earlier
+source/package checks from release-download tests.
 
 | Platform | Status |
 |---|---|
 | Windows x64 | Device-tested by the maintainer, including the published `0.1.0-preview.3` download (see below) |
+| Windows ARM64 | Builds and packages; not run on a device |
 | Linux x64 | Verified on Ubuntu 24.04 (see below) |
 | Linux ARM64 | Builds and packages; not run on a device |
 | macOS (Apple Silicon, Intel) | Untested on a real Mac. CI builds, signs ad hoc and smoke-tests the app bundles and DMG |
-| Fire TV / Android TV | Untested. Works only through LAN mode, described below |
+| Fire TV / Android TV | No native helper. Access from a computer or home server still needs client testing; see below |
 
 ## Windows x64 (published 0.1.0-preview.3)
 
