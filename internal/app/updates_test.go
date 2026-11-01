@@ -737,26 +737,90 @@ func TestAutomaticUpdatesOffMakesNoRequests(t *testing.T) {
 	}
 }
 
-func TestAliasesFileIsCheckedWhenSelected(t *testing.T) {
+// With alternative titles on, routine automatic updates carry them over from
+// the current catalogue and download title.akas only once a week. Manual
+// refreshes still download everything.
+func TestAlternativeTitlesRefreshWeekly(t *testing.T) {
 	f := newFakeIMDb(t)
 	c := &clock{now: startTime()}
 	a := updateApp(t, context.Background(), t.TempDir(), f, c)
 	profile, _ := catalog.ProfileByID("compact")
-	a.startBuild(profile, catalog.AliasOptions{Language: "fr"})
-	if s := waitBuild(t, a); s.Language != "fr" || s.Error != "" {
+	french := catalog.AliasOptions{Language: "fr"}
+	a.startBuild(profile, french)
+	if s := waitBuild(t, a); s.Language != "fr" || s.Error != "" || s.Aliases == 0 {
 		t.Fatalf("alias build: %+v", s)
 	}
-	if got := len(readState(t, a.dataDir).Sources); got != 3 {
-		t.Fatalf("recorded %d source files; want ratings, basics and akas", got)
+	aliasCount := a.Status().Aliases
+	findsFrench := func() bool {
+		w := request(a, "GET", "/catalog/movie/smart-search/search=la%20reine%20des%20neiges.json", "", "")
+		return strings.Contains(w.Body.String(), "tt2294629")
 	}
-	if b := a.Status().Updates.DownloadBytes; b != int64(len(f.files[catalog.RatingsFile])+len(f.files[catalog.BasicsFile])+len(f.files[catalog.AkasFile])) {
-		t.Fatalf("estimate %d does not use recorded sizes", b)
+	if !findsFrench() {
+		t.Fatal("French title not found after the first build")
 	}
-	heads, _ := f.requests()
+	if st := readState(t, a.dataDir); len(st.Sources) != 3 || !st.AliasesAt.Equal(startTime()) {
+		t.Fatalf("state after alias build: %+v", st)
+	}
+	u := a.Status().Updates
+	if u.DownloadBytes != int64(len(f.files[catalog.RatingsFile])+len(f.files[catalog.BasicsFile])) || u.AliasBytes != int64(len(f.files[catalog.AkasFile])) {
+		t.Fatalf("estimates %d + %d do not use recorded sizes", u.DownloadBytes, u.AliasBytes)
+	}
+
+	// Routine update after 49 hours: two files checked and downloaded, the
+	// alternative titles carried over.
+	f.set(func(f *fakeIMDb) { f.etag = `"v2"` })
 	c.Advance(49 * time.Hour)
+	heads, gets := f.requests()
 	a.UpdateTick(context.Background())
-	if h, _ := f.requests(); h != heads+3 {
-		t.Fatalf("checked %d files; want 3", h-heads)
+	waitBuild(t, a)
+	if h, g := f.requests(); h-heads != 2 || g-gets != 2 {
+		t.Fatalf("routine update: %d HEAD, %d GET; want 2 and 2", h-heads, g-gets)
+	}
+	if s := a.Status(); s.Aliases != aliasCount || s.Language != "fr" || !findsFrench() {
+		t.Fatalf("alternative titles not carried over: %d of %d, %q", s.Aliases, aliasCount, s.Language)
+	}
+	st := readState(t, a.dataDir)
+	if !st.AliasesAt.Equal(startTime()) || len(st.Sources) != 3 || st.Sources[2].File != catalog.AkasFile || st.Sources[2].ETag != `"v1"` {
+		t.Fatalf("carried state: %+v", st)
+	}
+
+	// Seven days after the akas download: all three files again.
+	f.set(func(f *fakeIMDb) { f.etag = `"v3"` })
+	c.Set(startTime().Add(7*24*time.Hour + time.Minute))
+	heads, gets = f.requests()
+	a.UpdateTick(context.Background())
+	waitBuild(t, a)
+	if h, g := f.requests(); h-heads != 3 || g-gets != 3 {
+		t.Fatalf("weekly update: %d HEAD, %d GET; want 3 and 3", h-heads, g-gets)
+	}
+	if st := readState(t, a.dataDir); !st.AliasesAt.Equal(c.Now()) || st.Sources[2].ETag != `"v3"` {
+		t.Fatalf("weekly state: %+v", st)
+	}
+
+	// Refresh now always downloads everything.
+	c.Advance(time.Hour)
+	_, gets = f.requests()
+	if w := postJSON(a, "/api/build", `{}`); w.Code != 202 {
+		t.Fatalf("Refresh now: %d %s", w.Code, w.Body)
+	}
+	waitBuild(t, a)
+	if _, g := f.requests(); g-gets != 3 {
+		t.Fatalf("Refresh now downloaded %d files; want 3", g-gets)
+	}
+
+	// An unreadable previous snapshot falls back to downloading title.akas.
+	if err := os.WriteFile(a.catalogPath(), []byte("broken"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	f.set(func(f *fakeIMDb) { f.etag = `"v4"` })
+	c.Advance(49 * time.Hour)
+	_, gets = f.requests()
+	a.UpdateTick(context.Background())
+	if s := waitBuild(t, a); s.Updates.Failures != 0 || s.Aliases != aliasCount || !findsFrench() {
+		t.Fatalf("fallback build: %+v", s.Updates)
+	}
+	if _, g := f.requests(); g-gets != 3 {
+		t.Fatalf("fallback downloaded %d files; want 3", g-gets)
 	}
 }
 

@@ -33,6 +33,9 @@ const (
 	// recheckAfterUnchanged spaces metadata checks while IMDb has not
 	// published new files. IMDb normally publishes daily.
 	recheckAfterUnchanged = 6 * time.Hour
+	// aliasRefresh is how often automatic updates download IMDb's 520 MB
+	// title.akas file; in between, alternative titles are carried over.
+	aliasRefresh = 7 * 24 * time.Hour
 	// Failed attempts back off 1, 2, 4, 8, 16 then 24 hours, persisted, so a
 	// restart never retries a large download straight away.
 	backoffBase  = time.Hour
@@ -75,6 +78,8 @@ type updateState struct {
 	RetryAfter  time.Time `json:"retryAfter,omitzero"`
 	// Sources are the validators of the files the active catalogue came from.
 	Sources []catalog.SourceFile `json:"sources,omitempty"`
+	// AliasesAt is when title.akas was last downloaded into a saved catalogue.
+	AliasesAt time.Time `json:"aliasesAt,omitzero"`
 }
 
 // UpdateStatus is the automatic-update part of /api/status.
@@ -93,8 +98,10 @@ type UpdateStatus struct {
 	LastError string `json:"lastError,omitempty"`
 	// Network is metered, unmetered or unknown (no reliable detection here).
 	Network string `json:"network"`
-	// DownloadBytes estimates one full update with the active selection.
+	// DownloadBytes estimates a routine update (ratings and titles);
+	// AliasBytes is the extra weekly alternative-title download, 0 when off.
 	DownloadBytes int64 `json:"downloadBytes"`
+	AliasBytes    int64 `json:"aliasBytes"`
 }
 
 // IMDb dataset sizes on 1 November 2026, used until a download has recorded
@@ -247,10 +254,14 @@ func (a *App) updateStatusLocked() UpdateStatus {
 		known[f.File] = f.Size
 	}
 	for _, file := range catalog.DatasetFiles(aliases) {
-		if known[file] > 0 {
-			st.DownloadBytes += known[file]
+		size := known[file]
+		if size <= 0 {
+			size = defaultDatasetBytes[file]
+		}
+		if file == catalog.AkasFile {
+			st.AliasBytes = size
 		} else {
-			st.DownloadBytes += defaultDatasetBytes[file]
+			st.DownloadBytes += size
 		}
 	}
 	switch {
@@ -311,15 +322,37 @@ func (a *App) beginBuildLocked(automatic bool) {
 }
 
 // finishBuildLocked records the outcome of any build, manual or automatic.
-func (a *App) finishBuildLocked(c *catalog.Catalog, err error) {
+// carried means the alternative titles were copied from the previous
+// catalogue, so their download time and validator are kept.
+func (a *App) finishBuildLocked(c *catalog.Catalog, err error, carried bool) {
 	a.updates.automatic = false
 	s := &a.updates.state
 	if err != nil {
 		a.recordFailureLocked(a.now(), err.Error())
 		return
 	}
+	previous := *s
 	*s = updateState{LastSuccess: a.now(), Sources: c.Sources}
+	switch {
+	case c.AliasLanguage == "":
+	case carried:
+		s.AliasesAt = previous.AliasesAt
+		for _, f := range previous.Sources {
+			if f.File == catalog.AkasFile {
+				s.Sources = append(s.Sources, f)
+			}
+		}
+	default:
+		s.AliasesAt = a.now()
+	}
 	a.saveUpdateStateLocked()
+}
+
+// aliasesFreshLocked reports whether the active alternative titles were
+// downloaded recently enough to carry over instead of downloading again.
+func (a *App) aliasesFreshLocked(now time.Time) bool {
+	at := a.updates.state.AliasesAt
+	return !at.IsZero() && now.Sub(sane(at, now)) < aliasRefresh
 }
 
 // StartUpdates runs the update schedule until ctx ends. It returns at once.
@@ -373,6 +406,11 @@ func (a *App) UpdateTick(ctx context.Context) {
 		aliases = catalog.AliasOptions{}
 	}
 	known := append([]catalog.SourceFile(nil), u.state.Sources...)
+	carry := aliases.Enabled() && a.aliasesFreshLocked(now)
+	files := catalog.DatasetFiles(aliases)
+	if carry {
+		files = catalog.DatasetFiles(catalog.AliasOptions{}) // title.akas is not due
+	}
 	since := u.state.LastSuccess
 	a.mu.Unlock()
 
@@ -383,7 +421,7 @@ func (a *App) UpdateTick(ctx context.Context) {
 	result, err := catalog.Freshness(""), error(nil)
 	if network != "metered" {
 		checkCtx, cancel := context.WithTimeout(ctx, checkTimeout)
-		result, err = a.CheckSource(checkCtx, catalog.DatasetFiles(aliases), known)
+		result, err = a.CheckSource(checkCtx, files, known)
 		cancel()
 	}
 
@@ -415,7 +453,7 @@ func (a *App) UpdateTick(ctx context.Context) {
 	// Changed, or unknown with the interval elapsed: rebuild exactly as a
 	// manual refresh would. If a manual build started meanwhile, this does
 	// nothing.
-	a.startBuildMode(profile, aliases, true)
+	a.startBuildMode(profile, aliases, true, carry)
 }
 
 // DisableUpdates turns automatic updates off for this run only, without

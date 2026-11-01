@@ -61,6 +61,7 @@
     $('auto-update').disabled = updateSaving;
     $('update-frequency').disabled = updateSaving || !updates.auto;
     const size = `about ${megabytes(updates.downloadBytes)}`;
+    const weekly = updates.aliasBytes ? `, plus ${megabytes(updates.aliasBytes)} once a week for alternative titles` : '';
     const next = updates.nextCheck && new Date(updates.nextCheck) > new Date() ? ` Next check ${when(updates.nextCheck)}.` : ' Next check soon.';
     let info;
     if (!status.ready) info = updates.auto
@@ -72,7 +73,7 @@
     else if (updates.state === 'metered') info = 'Paused on a metered connection. Refresh now still works.';
     else if (updates.state === 'retrying') info = `The last update didn’t finish (${updates.lastError || 'unknown error'}). Your current catalogue is unchanged.${next}`;
     else if (updates.checkResult === 'unchanged') info = `Up to date: IMDb had no new data at ${when(updates.lastCheck)}.${next}`;
-    else info = `Downloads ${size} only when IMDb has new data.${next}`;
+    else info = `Downloads ${size} only when IMDb has new data${weekly}.${next}`;
     $('update-info').textContent = info;
   }
   async function saveUpdates(change) {

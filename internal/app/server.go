@@ -209,13 +209,14 @@ func (a *App) Restore() error {
 	return err
 }
 func (a *App) startBuild(profile catalog.Profile, aliases catalog.AliasOptions) bool {
-	return a.startBuildMode(profile, aliases, false)
+	return a.startBuildMode(profile, aliases, false, false)
 }
 
 // startBuildMode starts a rebuild unless one is running. Automatic builds use
-// the same path as manual ones; they differ only in how a failure is shown
-// and in one extra plausibility check.
-func (a *App) startBuildMode(profile catalog.Profile, aliases catalog.AliasOptions, automatic bool) bool {
+// the same path as manual ones; they differ only in how a failure is shown,
+// in one extra plausibility check, and in carryAliases: copy alternative
+// titles from the current snapshot instead of downloading title.akas.
+func (a *App) startBuildMode(profile catalog.Profile, aliases catalog.AliasOptions, automatic, carryAliases bool) bool {
 	a.mu.Lock()
 	if a.status.Building || a.moving {
 		a.mu.Unlock()
@@ -241,7 +242,20 @@ func (a *App) startBuildMode(profile catalog.Profile, aliases catalog.AliasOptio
 			a.mu.Unlock()
 		}
 		c, err := a.DownloadCatalog(ctx, profile, progress)
-		if err == nil && aliases.Enabled() {
+		carried := false
+		if err == nil && aliases.Enabled() && carryAliases {
+			progress("Keeping your alternative titles", 0)
+			if catalog.CarryAliases(a.catalogPath(), c, aliases) == nil {
+				carried = true
+			} else {
+				// Unreadable or different selection: download them instead.
+				for i := range c.Titles {
+					c.Titles[i].Aliases = nil
+				}
+				c.AliasLanguage, c.AliasRegion = "", ""
+			}
+		}
+		if err == nil && aliases.Enabled() && !carried {
 			err = a.DownloadAliases(ctx, c, aliases, progress)
 		}
 		if err == nil && automatic && sameProfile && len(c.Titles) < active/2 {
@@ -254,13 +268,14 @@ func (a *App) startBuildMode(profile catalog.Profile, aliases catalog.AliasOptio
 			err = catalog.Save(a.catalogPath(), c)
 		}
 		if err == nil {
+			// Record the saved snapshot before setCatalog clears Building,
+			// so the schedule never sees a finished build without its
+			// validators and starts a second download.
 			a.mu.Lock()
 			a.status.Stage = "Preparing fast local search"
+			a.finishBuildLocked(c, nil, carried)
 			a.mu.Unlock()
 			a.setCatalog(c)
-			a.mu.Lock()
-			a.finishBuildLocked(c, nil)
-			a.mu.Unlock()
 			// Return transient parsing memory after an explicit large download.
 			// This is not a timer or a per-search garbage collection request.
 			c = nil
@@ -272,7 +287,7 @@ func (a *App) startBuildMode(profile catalog.Profile, aliases catalog.AliasOptio
 		}
 		a.mu.Lock()
 		automatic := a.updates.automatic
-		a.finishBuildLocked(nil, err)
+		a.finishBuildLocked(nil, err, false)
 		a.status.Building = false
 		a.status.BuildProfile = ""
 		a.status.BuildLanguage, a.status.BuildRegion = "", ""
