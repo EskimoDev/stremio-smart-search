@@ -8,7 +8,7 @@ The initial catalogue is prepared only after the user chooses **Prepare catalogu
 - `https://datasets.imdbws.com/title.basics.tsv.gz`
 - `https://datasets.imdbws.com/title.akas.tsv.gz`, only when **Alternative titles** is set to a language. It is not downloaded otherwise.
 
-**Unreleased main:** optional automatic updates also contact IMDb in the background while the helper runs. New installations default to a 48-hour interval; existing catalogues stay manual until enabled. Conditional `HEAD` requests check for changes before full downloads; without usable validators the schedule permits a download. Routine updates carry existing alternative titles forward for up to a week, then download `title.akas` again. Manual **Refresh now** downloads all selected sources. See [automatic updates and bandwidth](https://github.com/EskimoDev/stremio-smart-search/blob/main/docs/CATALOGUE.md#automatic-updates).
+**Preview.4:** optional automatic updates also contact IMDb in the background while the helper runs. New installations default to a 48-hour interval; existing catalogues stay manual until enabled. Conditional `HEAD` requests check for changes before full downloads; without usable validators the schedule permits a download. Routine updates carry existing alternative titles forward for up to a week, then download `title.akas` again. Manual **Refresh now** downloads all selected sources. See [automatic updates and bandwidth](https://github.com/EskimoDev/stremio-smart-search/blob/main/docs/CATALOGUE.md#automatic-updates).
 
 HTTP validators, dataset sizes and update timestamps are saved in the helper's local update-state file, separately from the catalogue. They contain no Stremio account or viewing data.
 

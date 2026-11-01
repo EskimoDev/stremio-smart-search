@@ -3,10 +3,9 @@
 How accurately Smart Search finds the title someone meant, measured on real
 catalogues with known IMDb answers.
 
-## Current main (unreleased)
+## Preview.4 search quality
 
-The sound-alike matcher is merged into main but is not in the public preview.3
-download. The suite now contains **288 cases in 16 categories**. With alternative
+The sound-alike matcher is included in preview.4 but is not in preview.3. The suite now contains **288 cases in 16 categories**. With alternative
 titles off, the current engine produced the following results on the existing
 local real catalogues during documentation verification:
 
@@ -51,7 +50,7 @@ rather than counted as ranking failures.
 
 The earlier-ranking tables below preserve historical before/after comparisons.
 The [coverage-ranking follow-up](#follow-up-prefer-titles-the-query-covers) produced
-this release baseline; the phonetic sections describe later, unreleased work.
+this release baseline; the phonetic sections describe later preview.4 work.
 See [remaining weaknesses](#remaining-weaknesses) for examples that still fail.
 
 ## The cases
@@ -252,7 +251,7 @@ from 99.4% to 97.7%. People who type an obscure title exactly would lose it.
   night" does the same with *The Dark Night*. Both are listed second. Making
   popularity outweigh an exact match would need a vote-ratio rule that the
   current cases cannot justify.
-- **Phonetic spellings, partly (unreleased main).** "rattatooey", "fone
+- **Phonetic spellings, partly (preview.4).** "rattatooey", "fone
   booth", "the dark nite" and "nite rider" still miss. The near-code follow-up
   finds "back to the fucher", "the wocking dead" and "brekin bad"; "pinokkio"
   reaches rank four on Expanded. Three-letter words such as "hoo" and long
@@ -271,7 +270,7 @@ from 99.4% to 97.7%. People who type an obscure title exactly would lose it.
 
 ## Sound-alike fallback, 2026-11-01
 
-**Unreleased main, first-round measurements.** This section preserves the original
+**Preview.4 development, first-round measurements.** This section preserves the original
 implementation and comparisons. The near-code and confidence follow-up below
 supersedes its scores and list of missed titles.
 

@@ -76,4 +76,4 @@ Gaps before LAN mode is a supported feature:
 ## Small packaging notes
 
 - The Linux .tar.gz has no top-level folder, so it extracts into the current directory.
-- The published preview.3 macOS app bundles have no icon (`Contents/Resources/*.icns`). Unreleased main now packages `AppIcon.icns`; the icon's desktop appearance still needs native verification.
+- The published preview.3 macOS app bundles have no icon (`Contents/Resources/*.icns`). Preview.4 now packages `AppIcon.icns`; the icon's desktop appearance still needs native verification.

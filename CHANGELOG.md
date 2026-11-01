@@ -6,6 +6,8 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 
 ## [Unreleased]
 
+## [0.1.0-preview.4] - 2026-11-01
+
 ### Added
 
 - Automatic catalogue updates, on by default for new installations. While the helper runs, it checks IMDb every 2 days (or every day, 3 days or week) with conditional `HEAD` requests and rebuilds only when the files changed. Start-up and search never wait for it, the current catalogue stays until the new one is validated, failures back off from 1 to 24 hours across restarts, Windows metered connections are skipped, and **Refresh now** joins a running update. With alternative titles on, routine updates keep the existing ones and download IMDb's 520 MB alternative-title file only weekly. Existing installations stay manual until switched on. Details in [docs/CATALOGUE.md](docs/CATALOGUE.md#automatic-updates).
@@ -22,6 +24,12 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 - Corrected documentation of accuracy denominators, temporary recovery files, the Storage memory estimate, platform testing and benchmark provenance.
 - Distinguished public preview.3 behavior from newer main features, retained historical performance and quality records, and clarified automatic-update downloads and optional real-data tests.
 - Trimmed the docs: PERFORMANCE.md leads with current results and one before/after table, DESIGN.md keeps only the rules that apply to the setup page, and maintainer notes moved from INSTALLATION.md to CONTRIBUTING.md.
+
+### Fixed
+
+- Automatic updates keep the working catalogue after interrupted, truncated or older-CDN downloads, and reject implausibly small replacements. Failure/retry state persists across restarts.
+- Freshness checks overtaken by manual refreshes are discarded. Runs using `--catalog` keep automatic updates disabled for that run.
+- A manual refresh can adopt an automatic update rather than starting a duplicate download; if alias carry-over is already committed, settings explain when to retry.
 
 ## [0.1.0-preview.3] - 2026-11-01
 
@@ -86,7 +94,8 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 - Executable permissions are preserved in cross-built archives.
 - Platform download names are easier to identify.
 
-[Unreleased]: https://github.com/EskimoDev/stremio-smart-search/compare/v0.1.0-preview.3...main
+[Unreleased]: https://github.com/EskimoDev/stremio-smart-search/compare/v0.1.0-preview.4...main
+[0.1.0-preview.4]: https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.4
 [0.1.0-preview.3]: https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.3
 [0.1.0-preview.2]: https://github.com/EskimoDev/stremio-smart-search/commit/30f644c625763da24e44de98db46d9deca06d286
 [0.1.0-preview.1]: https://github.com/EskimoDev/stremio-smart-search/commit/d3a6d98aed1aee833fb834ae55dc071186f83a4f

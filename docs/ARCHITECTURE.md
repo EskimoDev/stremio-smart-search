@@ -1,6 +1,6 @@
 # Architecture
 
-The application is a single Go executable with an embedded local setup page. This document describes **current main**; phonetic search, automatic updates and theme controls are unreleased relative to the public preview.3 download. There are no native media hooks, Stremio patches, browser extensions or runtime package downloads.
+The application is a single Go executable with an embedded local setup page. This document describes **0.1.0-preview.4**, which adds phonetic search, automatic updates and theme controls to preview.3. There are no native media hooks, Stremio patches, browser extensions or runtime package downloads.
 
 ## Package boundaries
 
