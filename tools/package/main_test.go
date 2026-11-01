@@ -63,3 +63,11 @@ func TestCrossPlatformArchiveExecutablePermissions(t *testing.T) {
 		}
 	}
 }
+
+func TestDebianVersionOrdersPreviewsBeforeRelease(t *testing.T) {
+	for in, want := range map[string]string{"0.1.0-preview.3": "0.1.0~preview.3", "0.1.0": "0.1.0", "1.2.3-rc.1": "1.2.3~rc.1"} {
+		if got := debVersion(in); got != want {
+			t.Fatalf("debVersion(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
