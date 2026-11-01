@@ -193,6 +193,10 @@
     openMovePanel(lastStorage?.defaultPath || '', 'Moves the catalogue back to the default folder next to your settings.', true);
   });
   $('move-cancel').addEventListener('click', () => { $('move-panel').hidden = true; });
+  $('move-path').addEventListener('keydown', event => {
+    if (event.key === 'Enter') $('move-confirm').click();
+    if (event.key === 'Escape') $('move-cancel').click();
+  });
   $('move-confirm').addEventListener('click', async () => {
     const path = resetMode ? '' : $('move-path').value.trim();
     if (!resetMode && !path) { $('move-info').textContent = 'Enter or choose a folder first.'; return; }
@@ -207,7 +211,17 @@
       $('move-confirm').disabled = false; $('move-confirm').textContent = resetMode ? 'Move back' : 'Move catalogue';
     }
   });
+  // Quitting stops search in Stremio until the helper is started again, so a
+  // stray click only arms the button.
+  let quitArmed = false, quitReset;
   $('quit').addEventListener('click', async () => {
+    if (!quitArmed) {
+      quitArmed = true;
+      $('quit').textContent = 'Click again to quit';
+      quitReset = setTimeout(() => { quitArmed = false; $('quit').textContent = 'Quit helper'; }, 4000);
+      return;
+    }
+    clearTimeout(quitReset);
     stopped = true; clearTimeout(timer);
     try { await api('quit', 'POST'); $('connection').textContent = 'Helper stopped'; tell('Smart Search has stopped. You can close this page.'); }
     catch (error) { tell(error.message); }

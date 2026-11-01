@@ -142,4 +142,14 @@ nodes['alias-language'].change();
 nodes['alias-region'].value='CA';
 nodes['alias-region'].change();
 assert.equal(nodes.build.textContent,'Apply size & rebuild');
+// The move panel answers Enter and Escape; Quit needs a second click.
+nodes['move-panel'].hidden=false;
+nodes['move-path'].keydown({key:'Escape'});
+assert.equal(nodes['move-panel'].hidden,true);
+const quitsBefore=requests.filter(request=>request.path==='/api/quit').length;
+await nodes.quit.click();
+assert.equal(requests.filter(request=>request.path==='/api/quit').length,quitsBefore,'one click must not quit');
+assert.match(nodes.quit.textContent,/again/);
+await nodes.quit.click();
+assert.equal(requests.filter(request=>request.path==='/api/quit').length,quitsBefore+1);
 console.log('Setup UI checks passed: HTTP install, clipboard fallback, profile and alternative-title selection, refresh and failure states.');
