@@ -18,7 +18,6 @@
   <main class="utility">
     <aside class="catalogue" aria-labelledby="catalogue-title">
       <div>
-        <p class="section-label">Catalogue</p>
         <h2 id="catalogue-title">Title catalogue</h2>
         <p id="connection" class="connection" role="status">Connecting…</p>
         <dl id="catalog-stats" class="catalog-stats" hidden>
@@ -111,6 +110,13 @@
       <section class="setup-section order-section" aria-labelledby="order-title">
         <div class="step-heading"><span class="step-number" aria-hidden="true">03</span><h2 id="order-title">Move Smart Search to the top</h2></div>
         <p>Recommended, so its search results appear first. In dx.bi: <strong>Addons → Order & backup → move to top → Save order</strong>.</p>
+        <details>
+          <summary>Using Stremio or Stremio Enhanced?</summary>
+          <p>These apps have no built-in reorder control. Two options:</p>
+          <p><strong>Addon manager:</strong> open the community <a href="https://github.com/pancake3000/stremio-addon-manager" target="_blank" rel="noreferrer">Stremio Addon Manager</a>, sign in, choose <strong>Load addons</strong>, drag Stremio Smart Search to the top, then <strong>Sync to Stremio</strong>.</p>
+          <p class="fine">This is a third-party tool. It is not affiliated with Stremio Smart Search or Stremio, and it asks for your Stremio login. Use it at your own discretion.</p>
+          <p><strong>No sign-in:</strong> newly installed addons go to the bottom. Remove your other addons and reinstall them after Stremio Smart Search. Note their install links first.</p>
+        </details>
         <details>
           <summary>What about my other addons?</summary>
           <p>Move only Stremio Smart Search. The others keep their relative order, including your stream providers: this addon supplies search rows only. Your account's addon order may sync to other devices. Reorder controls vary between clients.</p>

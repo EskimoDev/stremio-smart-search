@@ -43,3 +43,43 @@ jobs:
             dist/*.tar.gz
             dist/*.deb
           if-no-files-found: error
+
+  macos-app:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15        # Apple Silicon
+            arch: arm64
+          - runner: macos-15-intel  # Intel
+            arch: amd64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.x'
+          cache: false
+      - name: Build the app bundles
+        shell: pwsh
+        run: ./scripts/build.ps1 -TargetOS darwin -TargetArch ${{ matrix.arch }}
+      - name: Ad-hoc sign and verify, as the release does
+        run: |
+          set -euo pipefail
+          stage="dist/macos-${{ matrix.arch }}"
+          for app in "$stage/Stremio Smart Search.app" "$stage/Stremio + Smart Search.app"; do
+            codesign --force --deep --sign - "$app"
+            codesign --verify --strict --verbose=2 "$app"
+            plutil -lint "$app/Contents/Info.plist"
+          done
+      - name: Smoke-test the binary inside the .app
+        shell: pwsh
+        run: ./scripts/smoke.ps1 -Binary "dist/macos-${{ matrix.arch }}/Stremio Smart Search.app/Contents/MacOS/SmartSearch"
+      - name: Build, mount and run from the DMG
+        run: |
+          set -euo pipefail
+          hdiutil create -volname SmokeTest -srcfolder "dist/macos-${{ matrix.arch }}" -ov -format UDZO dist/smoke.dmg
+          mnt=$(hdiutil attach dist/smoke.dmg -nobrowse | tail -1 | awk -F'\t' '{print $NF}')
+          "$mnt/Stremio Smart Search.app/Contents/MacOS/SmartSearch" --version
+          "$mnt/Stremio + Smart Search.app/Contents/MacOS/SmartSearchLauncher" --version
+          hdiutil detach "$mnt"

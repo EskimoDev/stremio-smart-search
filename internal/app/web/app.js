@@ -56,7 +56,7 @@
     $('catalog-profile').disabled = status.building;
     const profile = status.profiles.find(profile => profile.id === selectedProfile);
     $('profile-info').textContent = profile ? `Up to ${profile.movies.toLocaleString()} movies + ${profile.series.toLocaleString()} series. Minimum ${profile.minVotes} IMDb votes. Actual totals depend on the source.` : 'Choose a catalogue size.';
-    $('connection').textContent = status.building ? 'Preparing catalogue' : status.ready ? 'Ready · running locally' : 'Catalogue needed';
+    $('connection').textContent = status.building ? 'Preparing catalogue' : status.ready ? 'Running locally' : 'Catalogue needed';
     $('connection').classList.toggle('ready', status.ready);
     $('connection').classList.toggle('building', status.building);
     $('build').disabled = status.building;
