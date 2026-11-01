@@ -6,6 +6,7 @@
 
 [Download](https://github.com/EskimoDev/stremio-smart-search/releases) · [Install guide](docs/INSTALLATION.md) · [Changelog](CHANGELOG.md)
 
+[![Version](https://img.shields.io/badge/version-0.1.0--preview.3-orange)](CHANGELOG.md)
 [![Check addon](https://github.com/EskimoDev/stremio-smart-search/actions/workflows/ci.yml/badge.svg)](https://github.com/EskimoDev/stremio-smart-search/actions/workflows/ci.yml)
 ![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-informational)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
