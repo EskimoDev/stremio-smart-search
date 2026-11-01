@@ -2,7 +2,8 @@
 
 Recorded platform testing as of 2026-11-01. Windows includes a test of the
 published `0.1.0-preview.3` packages; the sections below distinguish earlier
-source/package checks from release-download tests.
+source/package checks from release-download tests. These records do not establish
+that every later main commit has been device-tested.
 
 | Platform | Status |
 |---|---|
@@ -75,4 +76,4 @@ Gaps before LAN mode is a supported feature:
 ## Small packaging notes
 
 - The Linux .tar.gz has no top-level folder, so it extracts into the current directory.
-- The macOS app bundles have no icon (`Contents/Resources/*.icns`).
+- The published preview.3 macOS app bundles have no icon (`Contents/Resources/*.icns`). Unreleased main now packages `AppIcon.icns`; the icon's desktop appearance still needs native verification.

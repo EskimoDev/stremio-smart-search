@@ -4,7 +4,6 @@ on:
     inputs:
       version:
         description: Preview version
-        default: 0.1.0-preview.3
         required: true
   push:
     tags: ['v*']
@@ -28,6 +27,7 @@ jobs:
       - run: go test ./...
       - run: go vet ./...
       - run: node scripts/ui-test.mjs
+      - run: node scripts/docs-test.mjs
       - name: Install Windows installer builder
         if: runner.os == 'Windows'
         run: choco install nsis --no-progress -y

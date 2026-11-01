@@ -200,11 +200,26 @@ func appBundle(root, binary, name, executable, identifier, version string) error
 	plist := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>CFBundleName</key><string>%s</string><key>CFBundleDisplayName</key><string>%s</string><key>CFBundleExecutable</key><string>%s</string><key>CFBundleIdentifier</key><string>%s</string><key>CFBundleIconFile</key><string>AppIcon</string><key>CFBundlePackageType</key><string>APPL</string><key>CFBundleShortVersionString</key><string>%s</string><key>CFBundleVersion</key><string>%s</string><key>LSMinimumSystemVersion</key><string>11.0</string><key>LSUIElement</key><true/></dict></plist>`, name, name, executable, identifier, short, short)
 	return put(filepath.Join(dir, "Info.plist"), plist, 0644)
 }
+
+// packageDocs keeps archive entry points self-contained. The repository README
+// depends on docs/images and relative guide links that are not shipped.
+func packageDocs(root string) error {
+	for name, text := range map[string]string{
+		"README.md":       "# Stremio Smart Search\n\nStart with [START-HERE.txt](START-HERE.txt) for offline setup and launcher instructions.\n\nSee [INSTALLATION.md](INSTALLATION.md) for the online guides and [DATA.md](DATA.md) for IMDb data terms.\n\n[Project and release status](https://github.com/EskimoDev/stremio-smart-search)\n",
+		"INSTALLATION.md": "# Installation\n\nThe bundled [START-HERE.txt](START-HERE.txt) covers setup without needing the repository's documentation folder.\n\n[Full platform installation guide](https://github.com/EskimoDev/stremio-smart-search/blob/main/docs/INSTALLATION.md) · [Platform testing](https://github.com/EskimoDev/stremio-smart-search/blob/main/docs/PLATFORM-TESTING.md)\n\nThe online guides label features that are merged into main but not yet released.\n",
+	} {
+		if err := put(filepath.Join(root, name), text, 0644); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func run() error {
 	osName := flag.String("os", "", "Target OS")
 	arch := flag.String("arch", "", "Target architecture")
 	binary := flag.String("binary", "", "Compiled binary path")
-	version := flag.String("version", "0.1.0-preview.3", "Release version")
+	version := flag.String("version", "0.1.0-dev", "Package version (set explicitly for releases)")
 	out := flag.String("out", "dist", "Artifact folder")
 	flag.Parse()
 	if *osName == "" || *arch == "" || *binary == "" {
@@ -230,12 +245,12 @@ func run() error {
 	}
 	defer os.RemoveAll(absStage)
 	portable := filepath.Join(stage, "portable")
-	for _, file := range []string{"README.md", "LICENSE", "THIRD-PARTY-NOTICES.txt", "DATA.md", "START-HERE.txt"} {
+	for _, file := range []string{"LICENSE", "THIRD-PARTY-NOTICES.txt", "DATA.md", "START-HERE.txt"} {
 		if err := copyFile(file, filepath.Join(portable, file), 0644); err != nil {
 			return err
 		}
 	}
-	if err := copyFile("docs/INSTALLATION.md", filepath.Join(portable, "INSTALLATION.md"), 0644); err != nil {
+	if err := packageDocs(portable); err != nil {
 		return err
 	}
 	platformName := map[string]string{"windows": "Windows", "darwin": "macOS", "linux": "Linux"}[*osName]

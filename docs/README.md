@@ -2,6 +2,8 @@
 
 New here? Start with the [project README](../README.md) for screenshots and a quick install.
 
+The public download is **0.1.0-preview.3**. These guides also cover development on `main`; sound-alike search, automatic updates, dark mode and the new icons are marked as unreleased. See the [changelog](../CHANGELOG.md#unreleased) before expecting a newer feature in an installed download.
+
 ## Setup and everyday use
 
 | I want to… | Read |

@@ -5,6 +5,9 @@
 coverage.out
 control.key
 preferences.json
+storage.json
+updates.json
+update-state.json
 catalog.json.gz
 catalog.json.gz.previous
 .DS_Store

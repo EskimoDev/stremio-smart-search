@@ -2,6 +2,8 @@
 
 [Download Smart Search](https://github.com/EskimoDev/stremio-smart-search/releases) for the computer where you use Stremio. SSS is a separate helper that must be running for its search rows to respond.
 
+The public release is **0.1.0-preview.3**. Its catalogue refreshes are manual. **Update automatically**, sound-alike matching, dark mode and the new app icons belong to unreleased main builds; see the [changelog](../CHANGELOG.md#unreleased).
+
 [Choose a download](#choose-a-download) · [First setup](#first-setup) · [Addon order](#put-smart-search-first) · [Troubleshooting](#troubleshooting) · [Uninstall](#uninstalling)
 
 ## Choose a download

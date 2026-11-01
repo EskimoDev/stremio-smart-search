@@ -3,10 +3,37 @@
 How accurately Smart Search finds the title someone meant, measured on real
 catalogues with known IMDb answers.
 
-## Current results
+## Current main (unreleased)
 
-After the coverage-ranking follow-up, the recorded 2026-11-01 results with
-alternative titles **off** are:
+The sound-alike matcher is merged into main but is not in the public preview.3
+download. The suite now contains **288 cases in 16 categories**. With alternative
+titles off, the current engine produced the following results on the existing
+local real catalogues during documentation verification:
+
+| Catalogue | Titles | Expected answer first | Expected answer in the top five |
+| --- | ---: | ---: | ---: |
+| Compact | 50,000 | 224/228 (98.2%) | 225/228 (98.7%) |
+| Standard | 184,588 | 222/229 (96.9%) | 226/229 (98.7%) |
+| Expanded | 390,449 | 222/231 (96.1%) | 228/231 (98.7%) |
+
+Each row also ran three no-answer checks with no false positives. The 54
+language-specific cases did not apply; three additional expected titles were
+outside Compact's coverage and two outside Standard's. Those are excluded from
+the ranking denominator. The current suite adds difficult phonetic cases, so
+these aggregate percentages cannot be compared directly with the smaller
+preview.3 suite below. These snapshots also slightly predate the larger title
+counts in the recorded Windows performance baseline.
+
+The [near-code and confidence results](#sound-alike-follow-up-near-codes-and-confidence-2026-11-01)
+cover the latest phonetic-specific checks, including a separate blind validation
+set with known false positives. Tests do not establish accuracy on every search
+or language.
+
+## Released preview.3 baseline
+
+On the original **248-case suite**, after the coverage-ranking follow-up and
+before phonetic matching, the recorded results with alternative titles **off**
+were:
 
 | Catalogue | Expected answer first | Expected answer in the top five |
 | --- | ---: | ---: |
@@ -17,12 +44,14 @@ alternative titles **off** are:
 These percentages describe a curated test set, not all searches someone might
 make. Each catalogue runs 194 applicable cases: 192 with an expected answer and
 two no-answer checks. The other 54 cases require a particular alternative-title
-language; they are not included in these percentages. The complete suite has
-248 cases. Titles outside a catalogue's coverage and unavailable regional names
-are reported separately rather than counted as ranking failures.
+language; they are not included in these percentages. The release-era suite had
+248 cases; the current expanded suite is described above. Titles outside a
+catalogue's coverage and unavailable regional names are reported separately
+rather than counted as ranking failures.
 
-The tables later on this page preserve earlier before/after comparisons; they
-precede the [coverage-ranking follow-up](#follow-up-prefer-titles-the-query-covers).
+The earlier-ranking tables below preserve historical before/after comparisons.
+The [coverage-ranking follow-up](#follow-up-prefer-titles-the-query-covers) produced
+this release baseline; the phonetic sections describe later, unreleased work.
 See [remaining weaknesses](#remaining-weaknesses) for examples that still fail.
 
 ## The cases
@@ -223,11 +252,12 @@ from 99.4% to 97.7%. People who type an obscure title exactly would lose it.
   night" does the same with *The Dark Night*. Both are listed second. Making
   popularity outweigh an exact match would need a vote-ratio rule that the
   current cases cannot justify.
-- **Phonetic spellings, partly.** Double Metaphone does not equate every
-  respelling: "back to the fucher" (*Future*), "rattatooey", "pinokkio",
-  "the wocking dead" and "brekin bad" still miss. "the dark nite" and "nite
-  rider" miss because "nite" is three edits from "knight", beyond the
-  sound-alike letter limit. See [Sound-alike fallback](#sound-alike-fallback-2026-11-01).
+- **Phonetic spellings, partly (unreleased main).** "rattatooey", "fone
+  booth", "the dark nite" and "nite rider" still miss. The near-code follow-up
+  finds "back to the fucher", "the wocking dead" and "brekin bad"; "pinokkio"
+  reaches rank four on Expanded. Three-letter words such as "hoo" and long
+  consonant runs such as "sicksth" are excluded. See the
+  [latest follow-up](#sound-alike-follow-up-near-codes-and-confidence-2026-11-01).
 - **Three-letter typos.** "retour ver le futur" misses because "ver" is too
   short for fuzzy matching. Its prefix scan stops after the first 20
   vocabulary words, which come before "vers".
@@ -241,6 +271,10 @@ from 99.4% to 97.7%. People who type an obscure title exactly would lose it.
 
 ## Sound-alike fallback, 2026-11-01
 
+**Unreleased main, first-round measurements.** This section preserves the original
+implementation and comparisons. The near-code and confidence follow-up below
+supersedes its scores and list of missed titles.
+
 Some searches are spelled the way the title sounds: `incepshun`, `pulp
 fikshun`, `nite at the museum`. They are three or more edits from the title,
 so edit distance cannot reach them without also matching everything else.
@@ -249,9 +283,9 @@ uses that as a weak, last-resort match.
 
 ### How it works
 
-- **Index.** At build time every vocabulary word made only of the ASCII
-  letters a–z gets its Double Metaphone primary and alternate codes, at full
-  length rather than the usual four symbols. Codes are packed four bits per
+- **Index.** At build time ASCII vocabulary words of 3–64 letters get their
+  Double Metaphone primary and alternate codes, capped at 12 sounds rather
+  than the usual four. Codes shorter than two sounds are omitted. Codes are packed four bits per
   sound into a `uint64`, stored once each, sorted, with a posting list of the
   words that share them. Words with digits, accents that did not fold to
   ASCII, or non-Latin script get no code.

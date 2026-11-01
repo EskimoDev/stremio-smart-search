@@ -8,16 +8,17 @@ Run these from the repository root. They are development helpers, not app runtim
 | [windows-installer.nsi](windows-installer.nsi) | Build a Windows installer from an already compiled binary using NSIS |
 | [smoke.ps1](smoke.ps1) | Start a built helper with a handwritten fixture, check the manifest and three searches, then stop it |
 | [ui-test.mjs](ui-test.mjs) | Test settings-page behaviour with Node.js and a mocked API |
+| [docs-test.mjs](docs-test.mjs) | Check tracked Markdown paths, section links and HTML image sources without network access |
 
 ## Build an archive
 
 Requires Go and PowerShell 7. For example:
 
 ```powershell
-./scripts/build.ps1 -TargetOS windows -TargetArch amd64 -Version 0.1.0-preview.3
+./scripts/build.ps1 -TargetOS windows -TargetArch amd64 -Version 0.1.0-dev
 ```
 
-Targets are `windows`, `darwin` and `linux`; architectures are `amd64` and `arm64`. Outputs go in `dist/`. Use `-GoExecutable` if Go is not on your PATH.
+Targets are `windows`, `darwin` and `linux`; architectures are `amd64` and `arm64`. Outputs go in `dist/`. Local builds default to `0.1.0-dev`; provide an unused release version explicitly when preparing a release. Use `-GoExecutable` if Go is not on your PATH.
 
 This command creates the binary and portable packages. It does **not** create a Windows installer or a macOS DMG: the [release workflow](../.github/workflows/release.yml) adds NSIS and native macOS signing/DMG steps.
 
@@ -29,4 +30,8 @@ This command creates the binary and portable packages. It does **not** create a 
 
 The smoke test uses an isolated temporary data folder and port 11498. It does not download a real catalogue or connect to your Stremio account.
 
-For regular source checks and release preparation, see [Contributing](../CONTRIBUTING.md).
+## Check documentation
+
+Run `node scripts/docs-test.mjs` from a Git checkout. It checks local Markdown links, headings and image paths, including the README's light/dark logo sources. It does not contact external sites or verify benchmark claims. CI and release preparation both run it.
+
+For regular source checks, opt-in real-data tests and release preparation, see [Contributing](../CONTRIBUTING.md).

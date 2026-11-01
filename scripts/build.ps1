@@ -1,7 +1,7 @@
 param(
   [string]$TargetOS = 'windows',
   [string]$TargetArch = 'amd64',
-  [string]$Version = '0.1.0-preview.3',
+  [string]$Version = '0.1.0-dev',
   [string]$GoExecutable = 'go'
 )
 $ErrorActionPreference = 'Stop'

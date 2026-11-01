@@ -8,6 +8,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -60,6 +62,52 @@ func TestCrossPlatformArchiveExecutablePermissions(t *testing.T) {
 		}
 		if entry.Mode != want {
 			t.Fatalf("tar %s has mode %o, want %o", entry.Name, entry.Mode, want)
+		}
+	}
+}
+
+func TestArchiveDocumentationLinksResolve(t *testing.T) {
+	root := t.TempDir()
+	if err := packageDocs(root); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"START-HERE.txt", "DATA.md"} {
+		if err := copyFile(filepath.Join("..", "..", name), filepath.Join(root, name), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	archivePath := filepath.Join(t.TempDir(), "docs.zip")
+	if err := archiveZip(root, archivePath); err != nil {
+		t.Fatal(err)
+	}
+	z, err := zip.OpenReader(archivePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer z.Close()
+	present := map[string]bool{}
+	for _, entry := range z.File {
+		present[entry.Name] = true
+	}
+	links := regexp.MustCompile(`\]\(([^)]+)\)`)
+	for _, entry := range z.File {
+		if !strings.HasSuffix(entry.Name, ".md") {
+			continue
+		}
+		reader, err := entry.Open()
+		if err != nil {
+			t.Fatal(err)
+		}
+		data, err := io.ReadAll(reader)
+		reader.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, match := range links.FindAllSubmatch(data, -1) {
+			target := string(match[1])
+			if !strings.Contains(target, "://") && !present[target] {
+				t.Errorf("%s links to missing archive file %s", entry.Name, target)
+			}
 		}
 	}
 }
