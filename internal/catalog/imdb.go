@@ -44,6 +44,14 @@ func scanner(reader io.Reader) *bufio.Scanner {
 	s.Buffer(make([]byte, 64<<10), 1<<20)
 	return s
 }
+
+// aheadScanner is scanner with reading moved to its own goroutine; call stop
+// when done.
+func aheadScanner(reader io.Reader) (*bufio.Scanner, func()) {
+	ahead, stop := readAhead(reader)
+	return scanner(ahead), stop
+}
+
 func column(header []string, name string) (int, error) {
 	for i, v := range header {
 		if v == name {
@@ -78,7 +86,8 @@ func ParseIMDbProfile(ctx context.Context, ratingsReader, basicsReader io.Reader
 	return parseBasics(ctx, basicsReader, ratings, profile)
 }
 func parseRatings(ctx context.Context, reader io.Reader, minVotes int) (map[uint32]rating, error) {
-	s := scanner(reader)
+	s, stop := aheadScanner(reader)
+	defer stop()
 	if !s.Scan() {
 		return nil, fmt.Errorf("ratings file is empty")
 	}
@@ -97,23 +106,24 @@ func parseRatings(ctx context.Context, reader io.Reader, minVotes int) (map[uint
 	}
 	ratings := make(map[uint32]rating)
 	largest := max(idCol, voteCol, ratingCol)
+	var row [][]byte
 	for s.Scan() {
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
 		}
-		row := strings.Split(s.Text(), "\t")
+		row = splitTabs(s.Bytes(), row, largest+1)
 		if len(row) <= largest {
 			continue
 		}
-		votes, e := strconv.Atoi(row[voteCol])
+		votes, e := atoi(row[voteCol])
 		if e != nil || votes < minVotes {
 			continue
 		}
-		id, e := numericID(row[idCol])
-		if e != nil {
+		id, ok := parseTitleID(row[idCol])
+		if !ok {
 			continue
 		}
-		value, e := strconv.ParseFloat(row[ratingCol], 64)
+		value, e := strconv.ParseFloat(string(row[ratingCol]), 64)
 		if e != nil {
 			continue
 		}
@@ -131,7 +141,8 @@ func parseRatings(ctx context.Context, reader io.Reader, minVotes int) (map[uint
 	return ratings, nil
 }
 func parseBasics(ctx context.Context, reader io.Reader, ratings map[uint32]rating, profile Profile) (*Catalog, error) {
-	s := scanner(reader)
+	s, stop := aheadScanner(reader)
+	defer stop()
 	if !s.Scan() {
 		return nil, fmt.Errorf("title file is empty")
 	}
@@ -149,16 +160,20 @@ func parseBasics(ctx context.Context, reader io.Reader, ratings map[uint32]ratin
 	movies, series := &titleHeap{}, &titleHeap{}
 	heap.Init(movies)
 	heap.Init(series)
+	idCol, typeCol, nameCol, originalCol, adultCol, yearCol := columns["tconst"], columns["titleType"], columns["primaryTitle"], columns["originalTitle"], columns["isAdult"], columns["startYear"]
+	var row [][]byte
 	for s.Scan() {
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
 		}
-		row := strings.Split(s.Text(), "\t")
-		if len(row) <= largest || row[columns["isAdult"]] != "0" {
+		// Most rows are episodes and other unsupported types: reject them from
+		// the raw bytes before anything is converted or allocated.
+		row = splitTabs(s.Bytes(), row, largest+1)
+		if len(row) <= largest || string(row[adultCol]) != "0" {
 			continue
 		}
 		var kind string
-		switch row[columns["titleType"]] {
+		switch string(row[typeCol]) {
 		case "movie", "tvMovie":
 			kind = "movie"
 		case "tvSeries", "tvMiniSeries":
@@ -166,34 +181,37 @@ func parseBasics(ctx context.Context, reader io.Reader, ratings map[uint32]ratin
 		default:
 			continue
 		}
-		id := row[columns["tconst"]]
-		numeric, err := numericID(id)
-		if err != nil {
+		numeric, ok := parseTitleID(row[idCol])
+		if !ok {
 			continue
 		}
 		r, ok := ratings[numeric]
 		if !ok {
 			continue
 		}
-		name := row[columns["primaryTitle"]]
-		if name == "" || len(name) > 1000 {
+		if len(row[nameCol]) == 0 || len(row[nameCol]) > 1000 {
 			continue
 		}
-		year, _ := strconv.Atoi(row[columns["startYear"]])
-		original := row[columns["originalTitle"]]
-		if original == `\N` || original == name {
-			original = ""
-		}
-		t := Title{ID: id, Name: name, Original: original, Type: kind, Year: year, Votes: r.votes, Rating: r.value}
 		target := movies
 		capacity := profile.Movies
 		if kind == "series" {
 			target = series
 			capacity = profile.Series
 		}
+		id := string(row[idCol])
+		if target.Len() >= capacity && !(r.votes > (*target)[0].Votes || (r.votes == (*target)[0].Votes && id < (*target)[0].ID)) {
+			continue // would not displace the least-voted title kept so far
+		}
+		name := string(row[nameCol])
+		year, _ := atoi(row[yearCol])
+		original := ""
+		if field := row[originalCol]; string(field) != `\N` && string(field) != name {
+			original = string(field)
+		}
+		t := Title{ID: id, Name: name, Original: original, Type: kind, Year: year, Votes: r.votes, Rating: r.value}
 		if target.Len() < capacity {
 			heap.Push(target, t)
-		} else if t.Votes > (*target)[0].Votes || (t.Votes == (*target)[0].Votes && t.ID < (*target)[0].ID) {
+		} else {
 			(*target)[0] = t
 			heap.Fix(target, 0)
 		}

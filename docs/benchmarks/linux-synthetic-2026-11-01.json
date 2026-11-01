@@ -1,0 +1,606 @@
+{
+ "note": "Synthetic IMDb-shaped data from tools/synthetic (seed 1); Linux x64 cloud VM; Go 1.24.7; GOMAXPROCS 2; 256 MiB soft memory target. Medians of 3 measure runs; prepare and refresh are one run each. Linux RSS, not comparable with the Windows working-set tables.",
+ "before": "main at 85a0318",
+ "results": {
+  "compact": {
+   "before": {
+    "titles": 50000,
+    "aliases": 0,
+    "loadAndIndexMS": 719.047,
+    "heapMiB": 55.1,
+    "rssMiB": 67.3,
+    "p50MS": 0.707,
+    "p95MS": 1.795,
+    "p99MS": 2.581,
+    "requestCPUMS": 0.977,
+    "prepareMS": 12574.31,
+    "aliasMS": 0,
+    "refreshMS": 13184.036,
+    "refreshPeakRSSMiB": 148,
+    "accuracyMeanMS": {
+     "exact": 0.8088670777663584,
+     "one typo": 0.6117507342143906,
+     "two typos": 0.8236448152562574,
+     "joined": 0.1313225404732254,
+     "prefix": 0.56097747385358
+    },
+    "recall": {
+     "exact": {
+      "top1": 0.929,
+      "top20": 0.9842
+     },
+     "one typo": {
+      "top1": 0.8425,
+      "top20": 0.9324
+     },
+     "two typos": {
+      "top1": 0.8092,
+      "top20": 0.8295
+     },
+     "joined": {
+      "top1": 0.9941,
+      "top20": 1
+     },
+     "prefix": {
+      "top1": 0.8238,
+      "top20": 0.9485
+     }
+    }
+   },
+   "after": {
+    "titles": 50000,
+    "aliases": 0,
+    "loadAndIndexMS": 440.147,
+    "heapMiB": 9.6,
+    "rssMiB": 20.7,
+    "p50MS": 0.505,
+    "p95MS": 0.953,
+    "p99MS": 1.206,
+    "requestCPUMS": 0.64,
+    "prepareMS": 8505.721,
+    "aliasMS": 0,
+    "refreshMS": 7813.899,
+    "refreshPeakRSSMiB": 79,
+    "accuracyMeanMS": {
+     "exact": 0.4074594039054471,
+     "one typo": 0.3301453744493392,
+     "two typos": 0.4287127532777116,
+     "joined": 0.05953300124533001,
+     "prefix": 0.313787610619469
+    },
+    "recall": {
+     "exact": {
+      "top1": 0.929,
+      "top20": 0.9842
+     },
+     "one typo": {
+      "top1": 0.8425,
+      "top20": 0.9324
+     },
+     "two typos": {
+      "top1": 0.8092,
+      "top20": 0.8295
+     },
+     "joined": {
+      "top1": 0.9941,
+      "top20": 1
+     },
+     "prefix": {
+      "top1": 0.8238,
+      "top20": 0.9485
+     }
+    }
+   }
+  },
+  "compact-fr": {
+   "before": {
+    "titles": 50000,
+    "aliases": 39287,
+    "loadAndIndexMS": 1156.935,
+    "heapMiB": 52.9,
+    "rssMiB": 83.4,
+    "p50MS": 0.929,
+    "p95MS": 2.87,
+    "p99MS": 4.187,
+    "requestCPUMS": 1.385,
+    "prepareMS": 19978.911,
+    "aliasMS": 7345.168,
+    "refreshMS": 20658.949,
+    "refreshPeakRSSMiB": 183,
+    "accuracyMeanMS": {
+     "exact": 1.2447485440219253,
+     "one typo": 0.9484776064610866,
+     "two typos": 1.2554112038140643,
+     "joined": 0.19377833125778332,
+     "prefix": 0.8885534995977473,
+     "alternative title": 1.2291585156058,
+     "alternative title, one typo": 0.9178693493598119
+    },
+    "recall": {
+     "exact": {
+      "top1": 0.929,
+      "top20": 0.9842
+     },
+     "one typo": {
+      "top1": 0.8344,
+      "top20": 0.9269
+     },
+     "two typos": {
+      "top1": 0.7806,
+      "top20": 0.7997
+     },
+     "joined": {
+      "top1": 0.9941,
+      "top20": 1
+     },
+     "prefix": {
+      "top1": 0.7851,
+      "top20": 0.9123
+     },
+     "alternative title": {
+      "top1": 0.8682,
+      "top20": 0.9321
+     },
+     "alternative title, one typo": {
+      "top1": 0.7201,
+      "top20": 0.8555
+     }
+    }
+   },
+   "after": {
+    "titles": 50000,
+    "aliases": 39287,
+    "loadAndIndexMS": 552.225,
+    "heapMiB": 12.5,
+    "rssMiB": 25.4,
+    "p50MS": 0.666,
+    "p95MS": 1.219,
+    "p99MS": 1.603,
+    "requestCPUMS": 0.835,
+    "prepareMS": 14054.927,
+    "aliasMS": 6468.541,
+    "refreshMS": 13841.319,
+    "refreshPeakRSSMiB": 103,
+    "accuracyMeanMS": {
+     "exact": 0.5456646111682083,
+     "one typo": 0.436674375917768,
+     "two typos": 0.5688235995232419,
+     "joined": 0.07837775010377751,
+     "prefix": 0.42001126307320996,
+     "alternative title": 0.5107952813959203,
+     "alternative title, one typo": 0.4018758818918213
+    },
+    "recall": {
+     "exact": {
+      "top1": 0.929,
+      "top20": 0.9842
+     },
+     "one typo": {
+      "top1": 0.8344,
+      "top20": 0.9269
+     },
+     "two typos": {
+      "top1": 0.7806,
+      "top20": 0.7997
+     },
+     "joined": {
+      "top1": 0.9941,
+      "top20": 1
+     },
+     "prefix": {
+      "top1": 0.7851,
+      "top20": 0.9123
+     },
+     "alternative title": {
+      "top1": 0.8682,
+      "top20": 0.9321
+     },
+     "alternative title, one typo": {
+      "top1": 0.7201,
+      "top20": 0.8555
+     }
+    }
+   }
+  },
+  "standard": {
+   "before": {
+    "titles": 188244,
+    "aliases": 0,
+    "loadAndIndexMS": 3026.117,
+    "heapMiB": 179.5,
+    "rssMiB": 201.2,
+    "p50MS": 1.265,
+    "p95MS": 3.6,
+    "p99MS": 6.459,
+    "requestCPUMS": 1.921,
+    "prepareMS": 14177.906,
+    "aliasMS": 0,
+    "refreshMS": 24563.158,
+    "refreshPeakRSSMiB": 303,
+    "accuracyMeanMS": {
+     "exact": 2.1654789455665866,
+     "one typo": 1.6898368401624215,
+     "two typos": 2.304063679245283,
+     "prefix": 1.4401711711711713,
+     "joined": 0.3675110732538331
+    },
+    "recall": {
+     "exact": {
+      "top1": 0.8938,
+      "top20": 0.9626
+     },
+     "one typo": {
+      "top1": 0.7331,
+      "top20": 0.8405
+     },
+     "two typos": {
+      "top1": 0.6969,
+      "top20": 0.7452
+     },
+     "prefix": {
+      "top1": 0.6543,
+      "top20": 0.787
+     },
+     "joined": {
+      "top1": 0.9842,
+      "top20": 1
+     }
+    }
+   },
+   "after": {
+    "titles": 188244,
+    "aliases": 0,
+    "loadAndIndexMS": 1851.114,
+    "heapMiB": 32.9,
+    "rssMiB": 49.4,
+    "p50MS": 0.768,
+    "p95MS": 1.472,
+    "p99MS": 1.759,
+    "requestCPUMS": 0.937,
+    "prepareMS": 8737.058,
+    "aliasMS": 0,
+    "refreshMS": 10300.936,
+    "refreshPeakRSSMiB": 245,
+    "accuracyMeanMS": {
+     "exact": 0.7054176651831565,
+     "one typo": 0.5615046142488003,
+     "two typos": 0.7361356132075473,
+     "prefix": 0.510015561015561,
+     "joined": 0.10103790459965928
+    },
+    "recall": {
+     "exact": {
+      "top1": 0.8938,
+      "top20": 0.9626
+     },
+     "one typo": {
+      "top1": 0.7331,
+      "top20": 0.8405
+     },
+     "two typos": {
+      "top1": 0.6969,
+      "top20": 0.7452
+     },
+     "prefix": {
+      "top1": 0.6543,
+      "top20": 0.787
+     },
+     "joined": {
+      "top1": 0.9842,
+      "top20": 1
+     }
+    }
+   }
+  },
+  "standard-fr": {
+   "before": {
+    "titles": 188244,
+    "aliases": 98726,
+    "loadAndIndexMS": 3775.691,
+    "heapMiB": 179.7,
+    "rssMiB": 233.5,
+    "p50MS": 1.927,
+    "p95MS": 6.272,
+    "p99MS": 10.037,
+    "requestCPUMS": 3.246,
+    "prepareMS": 23848.415,
+    "aliasMS": 8840.073,
+    "refreshMS": 40193.446,
+    "refreshPeakRSSMiB": 333,
+    "accuracyMeanMS": {
+     "exact": 3.3010308113659703,
+     "one typo": 2.588609449981543,
+     "two typos": 3.5786261792452834,
+     "prefix": 2.3296453726453725,
+     "joined": 0.5410251277683135,
+     "alternative title": 3.238337461731144,
+     "alternative title, one typo": 2.5451549940898346
+    },
+    "recall": {
+     "exact": {
+      "top1": 0.8938,
+      "top20": 0.9626
+     },
+     "one typo": {
+      "top1": 0.7212,
+      "top20": 0.832
+     },
+     "two typos": {
+      "top1": 0.6804,
+      "top20": 0.7311
+     },
+     "prefix": {
+      "top1": 0.6339,
+      "top20": 0.7633
+     },
+     "joined": {
+      "top1": 0.9842,
+      "top20": 1
+     },
+     "alternative title": {
+      "top1": 0.8438,
+      "top20": 0.9135
+     },
+     "alternative title, one typo": {
+      "top1": 0.6781,
+      "top20": 0.8204
+     }
+    }
+   },
+   "after": {
+    "titles": 188244,
+    "aliases": 98726,
+    "loadAndIndexMS": 2301.932,
+    "heapMiB": 39.5,
+    "rssMiB": 58.8,
+    "p50MS": 0.973,
+    "p95MS": 2.038,
+    "p99MS": 2.676,
+    "requestCPUMS": 1.222,
+    "prepareMS": 15574.459,
+    "aliasMS": 6178.911,
+    "refreshMS": 17989.249,
+    "refreshPeakRSSMiB": 261,
+    "accuracyMeanMS": {
+     "exact": 0.9413426908592947,
+     "one typo": 0.7686441491325212,
+     "two typos": 0.9855978773584906,
+     "prefix": 0.7061769041769042,
+     "joined": 0.13941354344122658,
+     "alternative title": 0.8975787642638464,
+     "alternative title, one typo": 0.7092940307328606
+    },
+    "recall": {
+     "exact": {
+      "top1": 0.8938,
+      "top20": 0.9626
+     },
+     "one typo": {
+      "top1": 0.7212,
+      "top20": 0.832
+     },
+     "two typos": {
+      "top1": 0.6804,
+      "top20": 0.7311
+     },
+     "prefix": {
+      "top1": 0.6339,
+      "top20": 0.7633
+     },
+     "joined": {
+      "top1": 0.9842,
+      "top20": 1
+     },
+     "alternative title": {
+      "top1": 0.8438,
+      "top20": 0.9135
+     },
+     "alternative title, one typo": {
+      "top1": 0.6781,
+      "top20": 0.8204
+     }
+    }
+   }
+  },
+  "expanded": {
+   "before": {
+    "titles": 396656,
+    "aliases": 0,
+    "loadAndIndexMS": 8181.228,
+    "heapMiB": 256.3,
+    "rssMiB": 275.5,
+    "p50MS": 2.846,
+    "p95MS": 20.55,
+    "p99MS": 31.985,
+    "requestCPUMS": 7.958,
+    "prepareMS": 18405.95,
+    "aliasMS": 0,
+    "refreshMS": 50271.875,
+    "refreshPeakRSSMiB": 554,
+    "accuracyMeanMS": {
+     "exact": 11.160583533447683,
+     "one typo": 9.567969798657717,
+     "prefix": 7.93368085106383,
+     "joined": 1.3887074309978769,
+     "two typos": 12.67064197530864
+    },
+    "recall": {
+     "exact": {
+      "top1": 0.8778,
+      "top20": 0.9454
+     },
+     "one typo": {
+      "top1": 0.6465,
+      "top20": 0.7494
+     },
+     "prefix": {
+      "top1": 0.5859,
+      "top20": 0.7111
+     },
+     "joined": {
+      "top1": 0.9719,
+      "top20": 0.9974
+     },
+     "two typos": {
+      "top1": 0.5667,
+      "top20": 0.6116
+     }
+    }
+   },
+   "after": {
+    "titles": 396656,
+    "aliases": 0,
+    "loadAndIndexMS": 4176.58,
+    "heapMiB": 66.6,
+    "rssMiB": 91.9,
+    "p50MS": 0.95,
+    "p95MS": 1.947,
+    "p99MS": 2.73,
+    "requestCPUMS": 1.165,
+    "prepareMS": 10891.723,
+    "aliasMS": 0,
+    "refreshMS": 14280.59,
+    "refreshPeakRSSMiB": 270,
+    "accuracyMeanMS": {
+     "exact": 0.946841166380789,
+     "one typo": 0.7852725577926921,
+     "prefix": 0.7018887070376432,
+     "joined": 0.12120084925690021,
+     "two typos": 0.988658810325477
+    },
+    "recall": {
+     "exact": {
+      "top1": 0.8778,
+      "top20": 0.9454
+     },
+     "one typo": {
+      "top1": 0.6465,
+      "top20": 0.7494
+     },
+     "prefix": {
+      "top1": 0.5859,
+      "top20": 0.7111
+     },
+     "joined": {
+      "top1": 0.9719,
+      "top20": 0.9974
+     },
+     "two typos": {
+      "top1": 0.5667,
+      "top20": 0.6116
+     }
+    }
+   }
+  },
+  "expanded-fr": {
+   "before": {
+    "titles": 396656,
+    "aliases": 155705,
+    "loadAndIndexMS": 11528.792,
+    "heapMiB": 281.6,
+    "rssMiB": 299.1,
+    "p50MS": 3.922,
+    "p95MS": 17.441,
+    "p99MS": 24.019,
+    "requestCPUMS": 11.065,
+    "prepareMS": 29141.921,
+    "aliasMS": 10650.406,
+    "refreshMS": 65844.475,
+    "refreshPeakRSSMiB": 613,
+    "accuracyMeanMS": {
+     "exact": 10.651150600343053,
+     "one typo": 9.15052423564504,
+     "prefix": 8.030257774140754,
+     "joined": 1.4738853503184712,
+     "two typos": 12.518359147025814,
+     "alternative title": 10.487945411502576,
+     "alternative title, one typo": 8.508235119928932
+    },
+    "recall": {
+     "exact": {
+      "top1": 0.8778,
+      "top20": 0.9454
+     },
+     "one typo": {
+      "top1": 0.6357,
+      "top20": 0.7397
+     },
+     "prefix": {
+      "top1": 0.5507,
+      "top20": 0.6726
+     },
+     "joined": {
+      "top1": 0.9719,
+      "top20": 0.9974
+     },
+     "two typos": {
+      "top1": 0.5533,
+      "top20": 0.5982
+     },
+     "alternative title": {
+      "top1": 0.838,
+      "top20": 0.9108
+     },
+     "alternative title, one typo": {
+      "top1": 0.6816,
+      "top20": 0.8178
+     }
+    }
+   },
+   "after": {
+    "titles": 396656,
+    "aliases": 155705,
+    "loadAndIndexMS": 4839.722,
+    "heapMiB": 76.4,
+    "rssMiB": 108.0,
+    "p50MS": 1.137,
+    "p95MS": 2.653,
+    "p99MS": 3.436,
+    "requestCPUMS": 1.39,
+    "prepareMS": 17858.186,
+    "aliasMS": 6669.974,
+    "refreshMS": 25251.949,
+    "refreshPeakRSSMiB": 302,
+    "accuracyMeanMS": {
+     "exact": 1.0948493996569468,
+     "one typo": 0.9033885160328113,
+     "prefix": 0.8030073649754501,
+     "joined": 0.14208492569002124,
+     "two typos": 1.1000549943883278,
+     "alternative title": 1.200200250661468,
+     "alternative title, one typo": 0.954425821735268
+    },
+    "recall": {
+     "exact": {
+      "top1": 0.8778,
+      "top20": 0.9454
+     },
+     "one typo": {
+      "top1": 0.6357,
+      "top20": 0.7397
+     },
+     "prefix": {
+      "top1": 0.5507,
+      "top20": 0.6726
+     },
+     "joined": {
+      "top1": 0.9719,
+      "top20": 0.9974
+     },
+     "two typos": {
+      "top1": 0.5533,
+      "top20": 0.5982
+     },
+     "alternative title": {
+      "top1": 0.838,
+      "top20": 0.9108
+     },
+     "alternative title, one typo": {
+      "top1": 0.6816,
+      "top20": 0.8178
+     }
+    }
+   }
+  }
+ }
+}
