@@ -294,3 +294,22 @@ func DownloadIMDbProfile(ctx context.Context, profile Profile, progress Progress
 	defer b.Close()
 	return parseBasics(ctx, b, ratings, profile)
 }
+
+// DownloadIMDbAliases streams title.akas.tsv.gz and attaches the selected
+// language's alternative titles to c. Nothing is downloaded when options are
+// disabled. On failure c is unchanged and the caller keeps its previous snapshot.
+func DownloadIMDbAliases(ctx context.Context, c *Catalog, options AliasOptions, progress Progress) error {
+	if err := options.Validate(); err != nil || !options.Enabled() {
+		return err
+	}
+	const stage = "Downloading alternative titles"
+	if progress != nil {
+		progress(stage, 0)
+	}
+	a, err := openDataset(ctx, AkasURL, stage, 1536<<20, progress)
+	if err != nil {
+		return err
+	}
+	defer a.Close()
+	return ParseIMDbAliases(ctx, a, c, options)
+}

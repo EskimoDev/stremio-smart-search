@@ -84,13 +84,60 @@ puts it ahead of the fuzzy Interstellar match, which remains in the results.
 The benchmark checks presence rather than requiring a fuzzy match to outrank a
 genuine exact title.
 
+## Alternative titles
+
+Alternative titles are off by default and cost nothing when off. These measurements use French titles (`-aliases fr`)
+on the same Windows x64 PC (Ryzen 5 5600X), with Go 1.27.0, two Go threads and the 256 MiB soft target, on IMDb data
+downloaded 2026-11-01. Ranges cover three fresh `measure` runs; preparation and refresh are one run each and
+exclude the download.
+
+| Size | French titles kept | Stored catalogue | RAM after startup | Median request | 95th percentile | 99th percentile |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Compact, off | | 1.34 MB | 70 MiB | 0.36 ms | 0.65 ms | 1.1–1.4 ms |
+| Compact, French | 25,394 | 1.68 MB | 78–80 MiB | 0.37 ms | 0.66–0.74 ms | 1.2 ms |
+| Standard, off | | 4.93 MB | 197–200 MiB | 0.71–0.77 ms | 1.57–1.78 ms | 2.8–3.2 ms |
+| Standard, French | 55,722 | 5.70 MB | 217–231 MiB | 0.71–0.78 ms | 1.45–1.69 ms | 2.7–3.5 ms |
+| Expanded, off | | 10.29 MB | 299–301 MiB | 1.5–1.6 ms | 11–15 ms | 19–24 ms |
+| Expanded, French | 75,501 | 11.38 MB | 306–309 MiB | 2.3–2.5 ms | 8–14 ms | 12–30 ms |
+
+| Size | First preparation, off → French | Live refresh, off → French | Peak RAM during refresh, off → French |
+| --- | ---: | ---: | ---: |
+| Compact | 7.4 → 16.9 s | 7.6 → 19.0 s | 165 → 182 MiB |
+| Standard | 8.2 → 18.8 s | 15.1 → 27.8 s | 291 → 310 MiB |
+| Expanded | 8.7 → 19.9 s | 27.4 → 45.9 s | 565 → 595 MiB |
+
+- **Download:** `title.akas.tsv.gz` was 520 MB (520,070,554 bytes), against 238 MB for ratings and basics together.
+  Enabling alternative titles roughly triples each preparation's download. It is streamed and never stored.
+- **Preparation:** streaming and filtering the alternative-title file adds about 10–11 s of processing per build.
+- **Memory:** Compact and Standard add about 8–10 MiB and 20–30 MiB of RAM after startup. Expanded adds about 7 MiB,
+  but it already runs above the soft target, which makes its RAM figures less sensitive.
+- **Latency:** Compact and Standard search times are unchanged within run-to-run variation. Expanded's median rose
+  from about 1.55 to 2.4 ms, and its tail varied too much between runs to call. Its heap (261–277 MiB) is already
+  past the 256 MiB soft target, so any added memory means more garbage collection.
+  The settings page therefore recommends Standard when alternative titles are chosen with Expanded.
+- **Title counts:** real counts per language are far below the per-size budgets (Compact 75k, Standard 200k,
+  Expanded 200k), so no titles were dropped. On Standard: English 54,950, French 55,722, German 55,288,
+  Japanese 55,910, Spanish 84,843 (Spain only: 48,906).
+- **Quality:** *la reine des neiges*, *la rene des neige* (→ Frozen) and *le trone de fer* (→ Game of Thrones)
+  returned the expected title first. With English titles, IMDb lists "H.O.T.D." for Highschool of the Dead, which first
+  outranked House of the Dragon for "HOTD". Short Latin alternative titles (five letters or fewer) now rank with
+  acronyms, so popularity decides. That fix is covered by a regression test but has not been re-measured on this PC.
+
+Synthetic tests during development, at the same title counts but with about 0.9 alternative titles per title, put
+the index cost at about 100–160 bytes per alternative title. The real counts above are lower than that synthetic load.
+
+To reproduce, add `title.akas.tsv.gz` to the data directory and pass `-aliases fr` to every phase (any listed
+language works, optionally with a region such as `es:ES`). Snapshots are stored as `<size>-<language>.json.gz`. The
+timed 15-query workload is unchanged, so runs with and without alternative titles are comparable. Language-specific
+checks are reported once in `cases` and are not timed.
+
 ## Reproduce
 
 The [raw measurements](benchmarks/windows-2026-11-01.json) include every startup
 sample, test case, source byte count and checksum. No production catalogue,
 account data, user searches or local user paths are included.
 
-1. Use Go and download title.ratings.tsv.gz and title.basics.tsv.gz from
+1. Use Go and download title.ratings.tsv.gz and title.basics.tsv.gz (plus title.akas.tsv.gz for alternative titles) from
    [IMDb's dataset server](https://datasets.imdbws.com/) into an explicitly chosen
    directory outside this repository. Observe [IMDb's dataset terms](https://developer.imdb.com/non-commercial-datasets/).
    The benchmark caches the compressed sources to reuse an identical snapshot;

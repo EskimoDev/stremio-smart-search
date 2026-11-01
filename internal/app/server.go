@@ -32,22 +32,30 @@ const Product = "Stremio Smart Search"
 const DefaultPort = "11479"
 
 type Status struct {
-	Product         string            `json:"product"`
-	Version         string            `json:"version"`
-	Profile         string            `json:"profile"`
-	BuildProfile    string            `json:"buildProfile,omitempty"`
-	Profiles        []catalog.Profile `json:"profiles"`
-	Ready           bool              `json:"ready"`
-	Building        bool              `json:"building"`
-	Stage           string            `json:"stage"`
-	Bytes           int64             `json:"bytes"`
-	Movies          int               `json:"movies"`
-	Series          int               `json:"series"`
-	BuiltAt         time.Time         `json:"builtAt"`
-	Error           string            `json:"error,omitempty"`
-	Manifest        string            `json:"manifest"`
-	WebInstall      string            `json:"webInstall"`
-	PreferredClient string            `json:"preferredClient"`
+	Product      string            `json:"product"`
+	Version      string            `json:"version"`
+	Profile      string            `json:"profile"`
+	BuildProfile string            `json:"buildProfile,omitempty"`
+	Profiles     []catalog.Profile `json:"profiles"`
+	// Alternative-title selection of the active catalogue, the one being built,
+	// and the choices offered. Empty language means alternative titles are off.
+	Language        string             `json:"language"`
+	Region          string             `json:"region"`
+	BuildLanguage   string             `json:"buildLanguage,omitempty"`
+	BuildRegion     string             `json:"buildRegion,omitempty"`
+	Languages       []catalog.Language `json:"languages"`
+	Aliases         int                `json:"aliases"`
+	Ready           bool               `json:"ready"`
+	Building        bool               `json:"building"`
+	Stage           string             `json:"stage"`
+	Bytes           int64              `json:"bytes"`
+	Movies          int                `json:"movies"`
+	Series          int                `json:"series"`
+	BuiltAt         time.Time          `json:"builtAt"`
+	Error           string             `json:"error,omitempty"`
+	Manifest        string             `json:"manifest"`
+	WebInstall      string             `json:"webInstall"`
+	PreferredClient string             `json:"preferredClient"`
 }
 type App struct {
 	ctx             context.Context
@@ -61,6 +69,9 @@ type App struct {
 	Quit            func()
 	LaunchClient    func(string) error
 	DownloadCatalog func(context.Context, catalog.Profile, catalog.Progress) (*catalog.Catalog, error)
+	// DownloadAliases adds alternative titles to a freshly built catalogue. It
+	// is only called when the build selected a language.
+	DownloadAliases func(context.Context, *catalog.Catalog, catalog.AliasOptions, catalog.Progress) error
 }
 
 func New(ctx context.Context, dataDir, baseURL, version string) (*App, error) {
@@ -75,7 +86,8 @@ func New(ctx context.Context, dataDir, baseURL, version string) (*App, error) {
 	a := &App{ctx: ctx, dataDir: dataDir, Token: string(token), BaseURL: baseURL, searchSlots: make(chan struct{}, 2)}
 	a.LaunchClient = OpenClient
 	a.DownloadCatalog = catalog.DownloadIMDbProfile
-	a.status = Status{Product: Product, Version: version, Profile: catalog.DefaultProfile, Profiles: catalog.Profiles(), Stage: "Set up your local catalogue", Manifest: baseURL + "/manifest.json", WebInstall: "https://web.stremio.com/#/addons?addon=" + url.QueryEscape(baseURL+"/manifest.json"), PreferredClient: loadClientPreference(dataDir)}
+	a.DownloadAliases = catalog.DownloadIMDbAliases
+	a.status = Status{Product: Product, Version: version, Profile: catalog.DefaultProfile, Profiles: catalog.Profiles(), Languages: catalog.Languages(), Stage: "Set up your local catalogue", Manifest: baseURL + "/manifest.json", WebInstall: "https://web.stremio.com/#/addons?addon=" + url.QueryEscape(baseURL+"/manifest.json"), PreferredClient: loadClientPreference(dataDir)}
 	return a, nil
 }
 
@@ -125,6 +137,9 @@ func (a *App) setCatalog(c *catalog.Catalog) {
 	a.status.Ready = true
 	a.status.Building = false
 	a.status.BuildProfile = ""
+	a.status.BuildLanguage, a.status.BuildRegion = "", ""
+	a.status.Language, a.status.Region = c.AliasLanguage, c.AliasRegion
+	a.status.Aliases = engine.AlternateTitles()
 	a.status.Profile = c.Profile
 	if a.status.Profile == "" {
 		a.status.Profile = "compact" // Catalogues made before selectable profiles.
@@ -161,7 +176,7 @@ func (a *App) Restore() error {
 	}
 	return err
 }
-func (a *App) startBuild(profile catalog.Profile) bool {
+func (a *App) startBuild(profile catalog.Profile, aliases catalog.AliasOptions) bool {
 	a.mu.Lock()
 	if a.status.Building {
 		a.mu.Unlock()
@@ -169,6 +184,7 @@ func (a *App) startBuild(profile catalog.Profile) bool {
 	}
 	a.status.Building = true
 	a.status.BuildProfile = profile.ID
+	a.status.BuildLanguage, a.status.BuildRegion = aliases.Language, aliases.Region
 	a.status.Error = ""
 	a.status.Stage = "Connecting to IMDb"
 	a.status.Bytes = 0
@@ -176,12 +192,16 @@ func (a *App) startBuild(profile catalog.Profile) bool {
 	go func() {
 		ctx, cancel := context.WithTimeout(a.ctx, 45*time.Minute)
 		defer cancel()
-		c, err := a.DownloadCatalog(ctx, profile, func(stage string, bytes int64) {
+		progress := func(stage string, bytes int64) {
 			a.mu.Lock()
 			a.status.Stage = stage
 			a.status.Bytes = bytes
 			a.mu.Unlock()
-		})
+		}
+		c, err := a.DownloadCatalog(ctx, profile, progress)
+		if err == nil && aliases.Enabled() {
+			err = a.DownloadAliases(ctx, c, aliases, progress)
+		}
 		if err == nil {
 			err = catalog.Save(filepath.Join(a.dataDir, "catalog.json.gz"), c)
 		}
@@ -198,6 +218,7 @@ func (a *App) startBuild(profile catalog.Profile) bool {
 		a.mu.Lock()
 		a.status.Building = false
 		a.status.BuildProfile = ""
+		a.status.BuildLanguage, a.status.BuildRegion = "", ""
 		a.status.Stage = "Catalogue update did not finish"
 		a.status.Error = err.Error()
 		a.mu.Unlock()
@@ -311,9 +332,14 @@ func (a *App) Handler() http.Handler {
 				}
 				writeJSON(w, 200, map[string]string{"client": selection.Client, "name": clientNames[selection.Client], "manifest": a.Status().Manifest})
 			case r.URL.Path == "/api/build" && r.Method == http.MethodPost:
+				// Omitted fields keep the active selection, so an older settings
+				// page that only sends a size never turns alternative titles off.
+				current := a.Status()
 				selection := struct {
-					Profile string `json:"profile"`
-				}{Profile: a.Status().Profile}
+					Profile  string  `json:"profile"`
+					Language *string `json:"language"`
+					Region   *string `json:"region"`
+				}{Profile: current.Profile}
 				decoder := json.NewDecoder(r.Body)
 				decoder.DisallowUnknownFields()
 				err := decoder.Decode(&selection)
@@ -333,7 +359,21 @@ func (a *App) Handler() http.Handler {
 					writeJSON(w, 400, map[string]string{"error": "Choose a catalogue size: Compact, Standard or Expanded."})
 					return
 				}
-				if !a.startBuild(profile) {
+				aliases := catalog.AliasOptions{Language: current.Language, Region: current.Region}
+				if aliases.Validate() != nil {
+					aliases = catalog.AliasOptions{} // e.g. a snapshot from a newer build
+				}
+				if selection.Language != nil {
+					aliases = catalog.AliasOptions{Language: *selection.Language}
+				}
+				if selection.Region != nil {
+					aliases.Region = *selection.Region
+				}
+				if aliases.Validate() != nil {
+					writeJSON(w, 400, map[string]string{"error": "Choose a listed language and region for alternative titles."})
+					return
+				}
+				if !a.startBuild(profile, aliases) {
 					writeJSON(w, 409, map[string]string{"error": "A catalogue update is already running."})
 					return
 				}

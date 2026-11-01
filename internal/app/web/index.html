@@ -35,6 +35,17 @@
           </select>
           <p id="profile-info" class="fine" aria-live="polite">Loading catalogue options…</p>
           <a class="comparison-link" href="https://github.com/EskimoDev/stremio-smart-search/blob/main/docs/PERFORMANCE.md" target="_blank" rel="noreferrer">Compare memory & speed <span aria-hidden="true">↗</span></a>
+          <div class="alias-settings">
+            <label for="alias-language">Alternative titles</label>
+            <select id="alias-language" aria-describedby="alias-info" disabled>
+              <option value="" selected>Off</option>
+            </select>
+            <label for="alias-region" id="alias-region-label" hidden>Regional preference</label>
+            <select id="alias-region" aria-describedby="alias-info" hidden disabled>
+              <option value="" selected>All regions</option>
+            </select>
+            <p id="alias-info" class="fine" aria-live="polite">Also find movies and series by their title in another language or region.</p>
+          </div>
         </div>
         <button id="build" class="catalogue-button" disabled>Prepare catalogue</button>
         <div id="progress" class="progress" hidden>
@@ -44,6 +55,7 @@
           <summary>About the title data</summary>
           <p>The first download from IMDb can be a few hundred MB and take several minutes. Smart Search then builds a compact local index.</p>
           <p>All sizes download the same source files. Larger options retain more titles and use more memory. Changing size takes effect after a successful rebuild; your current catalogue stays available while it runs.</p>
+          <p>Alternative titles add IMDb's regional title list to the download and keep only titles in your chosen language for movies and series already in your catalogue. English, original and translated names all keep working.</p>
           <p>IMDb data is for personal, non-commercial use. <a href="https://developer.imdb.com/non-commercial-datasets/" target="_blank" rel="noreferrer">Data terms <span aria-hidden="true">↗</span></a></p>
         </details>
       </div>

@@ -3,8 +3,8 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 const source = await readFile(new URL('../internal/app/web/app.js', import.meta.url), 'utf8');
-const ids = ['manifest','message','connection','build','progress','stage','catalog-info','catalog-stats','movie-count','series-count','catalog-profile','profile-info','web-install','launch','version','copy','quit','install-help','install-stremio','install-dxbi','install-enhanced','client-status-stremio','client-status-dxbi','client-status-enhanced'];
-const nodes = Object.fromEntries(ids.map(id => [id, { value:'', disabled:false, dataset:{}, classList:{toggle(){}}, setAttribute(){}, removeAttribute(name){delete this[name];}, addEventListener(event,callback){this[event]=callback;}, focus(){}, select(){this.selected=true;} }]));
+const ids = ['manifest','message','connection','build','progress','stage','catalog-info','catalog-stats','movie-count','series-count','catalog-profile','profile-info','web-install','launch','version','copy','quit','install-help','alias-language','alias-region','alias-region-label','alias-info','install-stremio','install-dxbi','install-enhanced','client-status-stremio','client-status-dxbi','client-status-enhanced'];
+const nodes = Object.fromEntries(ids.map(id => [id, { value:'', disabled:false, dataset:{}, classList:{toggle(){}}, setAttribute(){}, removeAttribute(name){delete this[name];}, addEventListener(event,callback){this[event]=callback;}, options:[], append(...items){this.options.push(...items);}, replaceChildren(...items){this.options=[...items];}, focus(){}, select(){this.selected=true;} }]));
 const buttons = ['stremio','dxbi','enhanced'].map(id => { const node=nodes[`install-${id}`];node.dataset.client=id;return node; });
 const manifest = 'http://127.0.0.1:11479/manifest.json';
 const webInstall = `https://web.stremio.com/#/addons?addon=${encodeURIComponent(manifest)}`;
@@ -13,7 +13,7 @@ let nextRefresh;
 let status = {ready:true,building:false,profile:'compact',profiles:[{id:'compact',name:'Compact',movies:25000,series:25000,minVotes:250},{id:'standard',name:'Standard',movies:100000,series:100000,minVotes:25},{id:'expanded',name:'Expanded',movies:250000,series:250000,minVotes:5}],movies:25000,series:12500,builtAt:'2026-10-31',manifest,webInstall,preferredClient:'system',product:'Smart Search',version:'test'};
 const requests=[];
 const context = {
-  document:{getElementById:id=>nodes[id],querySelectorAll:()=>buttons},
+  document:{getElementById:id=>nodes[id],querySelectorAll:()=>buttons,createElement:()=>({})},
   window:{smartSearch:{baseURL:'http://127.0.0.1:11479',token:'fixture'}},
   navigator:{clipboard:{async writeText(value){if(clipboardBlocked)throw Error('blocked');copied=value;}}},
   setTimeout(callback){nextRefresh=callback;},clearTimeout(){},
@@ -73,4 +73,50 @@ assert.equal(nodes.progress.hidden,false);
 assert.equal(nodes.build.disabled,true);
 assert.match(nodes.stage.textContent,/2.0 MB downloaded/);
 assert(buttons.every(button=>button.disabled));
-console.log('Setup UI checks passed: HTTP install, clipboard fallback, profile selection, refresh and failure states.');
+// Alternative titles: off by default, selectable, applied by a rebuild.
+const languages=[{id:'en',name:'English',regions:[{id:'US',name:'United States'},{id:'GB',name:'United Kingdom'}]},{id:'fr',name:'French',regions:[{id:'FR',name:'France'},{id:'CA',name:'Canada'}]},{id:'it',name:'Italian'}];
+status={...status,ready:true,building:false,bytes:0,profile:'expanded',buildProfile:'',movies:25000,series:12500,languages,language:'',region:'',aliases:0};
+await nextRefresh();
+assert.equal(nodes['alias-language'].value,'');
+assert.equal(nodes['alias-language'].options.length,3);
+assert.equal(nodes['alias-region'].hidden,true);
+assert.equal(nodes.build.textContent,'Refresh catalogue','existing users keep their behaviour');
+nodes['alias-language'].value='fr';
+nodes['alias-language'].change();
+assert.equal(nodes.build.textContent,'Apply titles & rebuild');
+assert.equal(nodes['alias-region'].hidden,false);
+assert.equal(nodes['alias-region'].options.length,3);
+assert.match(nodes['alias-info'].textContent,/French.*rebuilding/);
+assert.match(nodes['alias-info'].textContent,/Standard is recommended/,'Expanded + alternative titles recommends Standard');
+nodes['alias-region'].value='CA';
+nodes['alias-region'].change();
+assert.match(nodes['alias-info'].textContent,/Canada/);
+await nextRefresh();
+assert.equal(nodes['alias-language'].value,'fr','polling must preserve an unapplied language');
+await nodes.build.click();
+await new Promise(resolve=>setImmediate(resolve));
+const aliasBuild=JSON.parse(requests.filter(request=>request.path==='/api/build').at(-1).options.body);
+assert.deepEqual(aliasBuild,{profile:'expanded',language:'fr',region:'CA'});
+assert.equal(nodes['alias-language'].disabled,true);
+status={...status,building:false,buildProfile:'',buildLanguage:'',buildRegion:'',language:'fr',region:'CA',aliases:1234};
+await nextRefresh();
+assert.equal(nodes.build.textContent,'Refresh catalogue');
+assert.match(nodes['catalog-info'].textContent,/French titles/);
+assert.match(nodes['alias-info'].textContent,/1,234 alternative titles/);
+nodes['alias-language'].value='it';
+nodes['alias-language'].change();
+assert.equal(nodes['alias-region'].hidden,true,'no region choice where it does not matter');
+assert.equal(nodes['alias-region'].value,'');
+nodes['catalog-profile'].value='compact';
+nodes['catalog-profile'].change();
+assert.equal(nodes.build.textContent,'Apply changes & rebuild');
+assert.doesNotMatch(nodes['alias-info'].textContent,/Standard is recommended/);
+nodes['alias-language'].value='';
+nodes['alias-language'].change();
+assert.equal(nodes.build.textContent,'Apply changes & rebuild','turning titles off is a change too');
+nodes['alias-language'].value='fr';
+nodes['alias-language'].change();
+nodes['alias-region'].value='CA';
+nodes['alias-region'].change();
+assert.equal(nodes.build.textContent,'Apply size & rebuild');
+console.log('Setup UI checks passed: HTTP install, clipboard fallback, profile and alternative-title selection, refresh and failure states.');

@@ -137,3 +137,104 @@ func TestNewSetupOffersStandardAndLocalAssets(t *testing.T) {
 		}
 	}
 }
+
+func TestAlternativeTitlesBuildPersistAndRestore(t *testing.T) {
+	a := testApp(t)
+	if s := a.Status(); s.Language != "" || s.Aliases != 0 || len(s.Languages) == 0 {
+		t.Fatalf("existing catalogue must start with alternative titles off: %+v", s)
+	}
+	var requested []catalog.AliasOptions
+	a.DownloadCatalog = func(_ context.Context, profile catalog.Profile, _ catalog.Progress) (*catalog.Catalog, error) {
+		c, err := catalog.Load("../../testdata/catalog.json")
+		if err == nil {
+			c.Profile = profile.ID
+		}
+		return c, err
+	}
+	a.DownloadAliases = func(_ context.Context, c *catalog.Catalog, options catalog.AliasOptions, _ catalog.Progress) error {
+		requested = append(requested, options)
+		for i := range c.Titles {
+			if c.Titles[i].ID == "tt0816692" {
+				c.Titles[i].Aliases = []string{"Interstellaire"}
+			}
+		}
+		c.AliasLanguage, c.AliasRegion = options.Language, options.Region
+		return nil
+	}
+	// An older settings page sends only a size: alternative titles stay off.
+	if buildRequest(a, `{"profile":"compact"}`).Code != 202 {
+		t.Fatal("build not accepted")
+	}
+	waitForBuild(t, a)
+	if len(requested) != 0 {
+		t.Fatal("alternative titles downloaded without being selected")
+	}
+	if response := buildRequest(a, `{"profile":"compact","language":"fr","region":"CA"}`); response.Code != 202 {
+		t.Fatal(response.Body)
+	}
+	waitForBuild(t, a)
+	if s := a.Status(); s.Language != "fr" || s.Region != "CA" || s.Aliases != 1 || s.Error != "" {
+		t.Fatalf("selection not applied: %+v", s)
+	}
+	if response := request(a, "GET", "/catalog/movie/smart-search/search=interstellaire.json", "", ""); !strings.Contains(response.Body.String(), `"name":"Interstellar"`) {
+		t.Fatalf("alias search failed or changed the display name: %s", response.Body)
+	}
+	// A size-only refresh keeps the active language.
+	if buildRequest(a, `{"profile":"standard"}`).Code != 202 {
+		t.Fatal("refresh not accepted")
+	}
+	waitForBuild(t, a)
+	if len(requested) != 2 || requested[1] != (catalog.AliasOptions{Language: "fr", Region: "CA"}) || a.Status().Profile != "standard" {
+		t.Fatalf("refresh dropped the language: %v %+v", requested, a.Status())
+	}
+	restored, err := New(context.Background(), a.dataDir, a.BaseURL, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := restored.Restore(); err != nil {
+		t.Fatal(err)
+	}
+	if s := restored.Status(); s.Language != "fr" || s.Region != "CA" || s.Aliases != 1 {
+		t.Fatalf("selection not restored with the catalogue: %+v", s)
+	}
+	// Explicitly turning it off.
+	if buildRequest(a, `{"profile":"standard","language":"","region":""}`).Code != 202 {
+		t.Fatal("off not accepted")
+	}
+	waitForBuild(t, a)
+	if len(requested) != 2 || a.Status().Language != "" || a.Status().Aliases != 0 {
+		t.Fatalf("turning alternative titles off failed: %+v", a.Status())
+	}
+}
+
+func TestAlternativeTitleFailureKeepsPreviousCatalogue(t *testing.T) {
+	a := testApp(t)
+	a.DownloadCatalog = func(context.Context, catalog.Profile, catalog.Progress) (*catalog.Catalog, error) {
+		return catalog.Load("../../testdata/catalog.json")
+	}
+	a.DownloadAliases = func(context.Context, *catalog.Catalog, catalog.AliasOptions, catalog.Progress) error {
+		return errors.New("simulated alternative-title download failure")
+	}
+	if buildRequest(a, `{"profile":"expanded","language":"de"}`).Code != 202 {
+		t.Fatal("build not accepted")
+	}
+	waitForBuild(t, a)
+	if s := a.Status(); !s.Ready || s.Profile != "compact" || s.Language != "" || s.Error == "" || s.BuildLanguage != "" {
+		t.Fatalf("previous catalogue lost: %+v", s)
+	}
+	if _, err := os.Stat(filepath.Join(a.dataDir, "catalog.json.gz")); !os.IsNotExist(err) {
+		t.Fatal("failed build saved a snapshot")
+	}
+}
+
+func TestBuildRejectsUnknownAlternativeTitleChoices(t *testing.T) {
+	a := testApp(t)
+	for _, body := range []string{`{"profile":"compact","language":"xx"}`, `{"profile":"compact","region":"FR"}`, `{"profile":"compact","language":"fr","region":"ES"}`, `{"profile":"compact","language":7}`} {
+		if buildRequest(a, body).Code != 400 {
+			t.Fatalf("invalid alternative-title choice accepted: %s", body)
+		}
+	}
+	if a.Status().Building {
+		t.Fatal("invalid input started a download")
+	}
+}
