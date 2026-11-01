@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  let timer, stopped = false, clients = [], lastStatus, selectedProfile;
+  let timer, stopped = false, clients = [], lastStatus, selectedProfile, selectedLanguage, selectedRegion, regionOptionsFor;
   const clientNames = { stremio: 'Stremio', dxbi: 'dx.bi', enhanced: 'Stremio Enhanced' };
   const installButtons = [...document.querySelectorAll('[data-client]')];
   const base = window.smartSearch.baseURL;
@@ -15,8 +15,42 @@
     if (!response.ok) throw new Error(result.error || 'The helper could not complete that request.');
     return result;
   }
+  const option = (value, text) => { const node = document.createElement('option'); node.value = value; node.textContent = text; return node; };
+  const languageOf = (status, id) => (status.languages || []).find(language => language.id === id);
+  function renderAliases(status) {
+    const languageSelect = $('alias-language'), regionSelect = $('alias-region');
+    if (languageSelect.options.length <= 1 && status.languages?.length) {
+      for (const language of status.languages) languageSelect.append(option(language.id, language.name));
+    }
+    languageSelect.value = selectedLanguage;
+    languageSelect.disabled = status.building;
+    const language = languageOf(status, selectedLanguage);
+    const regions = language?.regions || [];
+    if (regionOptionsFor !== selectedLanguage) {
+      regionOptionsFor = selectedLanguage;
+      regionSelect.replaceChildren(option('', 'All regions'), ...regions.map(region => option(region.id, region.name)));
+    }
+    regionSelect.value = selectedRegion;
+    regionSelect.hidden = $('alias-region-label').hidden = regions.length === 0;
+    regionSelect.disabled = status.building;
+    const changed = selectedLanguage !== (status.language || '') || selectedRegion !== (status.region || '');
+    const region = regions.find(region => region.id === selectedRegion);
+    let info = !language ? 'Also find movies and series by their title in another language or region.'
+      : `Find titles by their ${language.name} names${region ? ` used in ${region.name}` : ''}, as well as their usual names.`;
+    if (changed && status.ready && !status.building) info += ' Takes effect after rebuilding; the current catalogue keeps working meanwhile.';
+    else if (language && status.ready && !changed) info += ` ${status.aliases.toLocaleString()} alternative titles in this catalogue.`;
+    if (language && (changed || !status.ready)) info += ' Adds IMDb’s alternative-title file (about 500 MB) to the download.';
+    // Measured: Expanded already exceeds the memory target, so alternative titles slow it; Standard is unaffected.
+    if (language && selectedProfile === 'expanded') info += ' Standard is recommended with alternative titles: Expanded uses the most memory and searches more slowly with them.';
+    $('alias-info').textContent = info;
+    return changed;
+  }
   function render(status) {
-    if (!selectedProfile || (lastStatus?.building && !status.building && !status.error)) selectedProfile = status.buildProfile || status.profile;
+    if (!selectedProfile || (lastStatus?.building && !status.building && !status.error)) {
+      selectedProfile = status.buildProfile || status.profile;
+      selectedLanguage = status.building ? status.buildLanguage || '' : status.language || '';
+      selectedRegion = status.building ? status.buildRegion || '' : status.region || '';
+    }
     lastStatus = status;
     $('catalog-profile').value = selectedProfile;
     $('catalog-profile').disabled = status.building;
@@ -26,14 +60,17 @@
     $('connection').classList.toggle('ready', status.ready);
     $('connection').classList.toggle('building', status.building);
     $('build').disabled = status.building;
-    $('build').textContent = status.building ? 'Preparing…' : status.ready ? selectedProfile !== status.profile ? 'Apply size & rebuild' : 'Refresh catalogue' : 'Prepare catalogue';
+    const sizeChanged = selectedProfile !== status.profile, titlesChanged = renderAliases(status);
+    $('build').textContent = status.building ? 'Preparing…' : !status.ready ? 'Prepare catalogue'
+      : sizeChanged && titlesChanged ? 'Apply changes & rebuild' : sizeChanged ? 'Apply size & rebuild' : titlesChanged ? 'Apply titles & rebuild' : 'Refresh catalogue';
     $('progress').hidden = !status.building;
     $('stage').textContent = `${status.stage}${status.bytes ? ` · ${(status.bytes / 1024 / 1024).toFixed(1)} MB downloaded` : ''}`;
     $('catalog-stats').hidden = !status.ready;
     $('movie-count').textContent = status.movies.toLocaleString();
     $('series-count').textContent = status.series.toLocaleString();
     const activeProfile = status.profiles.find(profile => profile.id === status.profile);
-    $('catalog-info').textContent = status.ready ? `${activeProfile?.name || 'Local'} · updated ${new Date(status.builtAt).toLocaleDateString()}` : 'Download IMDb title data to enable setup. A few hundred MB; allow several minutes.';
+    const activeLanguage = languageOf(status, status.language);
+    $('catalog-info').textContent = status.ready ? `${activeProfile?.name || 'Local'}${activeLanguage ? ` · ${activeLanguage.name} titles` : ''} · updated ${new Date(status.builtAt).toLocaleDateString()}` : 'Download IMDb title data to enable setup. A few hundred MB; allow several minutes.';
     for (const button of installButtons) {
       const client = clients.find(client => client.id === button.dataset.client);
       button.disabled = !status.ready || !client?.available;
@@ -55,11 +92,20 @@
   }
   $('build').addEventListener('click', async () => {
     clearTimeout(timer); tell('');
-    try { render(await api('build', 'POST', { profile: selectedProfile })); } catch (error) { tell(error.message); }
+    try { render(await api('build', 'POST', { profile: selectedProfile, language: selectedLanguage, region: selectedRegion })); } catch (error) { tell(error.message); }
     refresh();
   });
   $('catalog-profile').addEventListener('change', () => {
     selectedProfile = $('catalog-profile').value;
+    if (lastStatus) render(lastStatus);
+  });
+  $('alias-language').addEventListener('change', () => {
+    selectedLanguage = $('alias-language').value;
+    selectedRegion = '';
+    if (lastStatus) render(lastStatus);
+  });
+  $('alias-region').addEventListener('change', () => {
+    selectedRegion = $('alias-region').value;
     if (lastStatus) render(lastStatus);
   });
   $('copy').addEventListener('click', async () => {

@@ -13,6 +13,16 @@ import (
 
 const MaxTitles = 500000
 
+// Alternative-title bounds. The builder keeps at most AliasesPerTitle per title;
+// the loader tolerates a little more for hand-made catalogues. MaxAliases bounds
+// the snapshot, the decompressed JSON size and the index regardless of profile.
+const (
+	AliasesPerTitle    = 4
+	MaxAliasesPerTitle = 8
+	MaxAliases         = 600000
+	maxAliasBytes      = 300
+)
+
 type Title struct {
 	ID       string  `json:"id"`
 	Name     string  `json:"name"`
@@ -21,14 +31,22 @@ type Title struct {
 	Year     int     `json:"year,omitempty"`
 	Votes    int     `json:"votes,omitempty"`
 	Rating   float64 `json:"rating,omitempty"`
+	// Aliases are optional regional/translated titles (IMDb title.akas). They are
+	// search keys only; results keep the canonical ID and name. Older builds
+	// ignore this field, and older snapshots simply have none.
+	Aliases []string `json:"aliases,omitempty"`
 }
 
 type Catalog struct {
-	Version int       `json:"version"`
-	Profile string    `json:"profile,omitempty"`
-	BuiltAt time.Time `json:"builtAt"`
-	Source  string    `json:"source"`
-	Titles  []Title   `json:"titles"`
+	Version int    `json:"version"`
+	Profile string `json:"profile,omitempty"`
+	// AliasLanguage/AliasRegion record which alternative titles this snapshot
+	// contains. Empty means none (every snapshot made before this option).
+	AliasLanguage string    `json:"aliasLanguage,omitempty"`
+	AliasRegion   string    `json:"aliasRegion,omitempty"`
+	BuiltAt       time.Time `json:"builtAt"`
+	Source        string    `json:"source"`
+	Titles        []Title   `json:"titles"`
 }
 
 func (c *Catalog) Validate() error {
@@ -38,8 +56,25 @@ func (c *Catalog) Validate() error {
 	if _, ok := ProfileByID(c.Profile); c.Profile != "" && !ok {
 		return fmt.Errorf("unsupported catalogue profile")
 	}
+	// Unknown alias languages are tolerated so a snapshot from a newer build
+	// still loads; they only label the snapshot.
+	if len(c.AliasLanguage) > 16 || len(c.AliasRegion) > 16 {
+		return fmt.Errorf("invalid alternative-title selection")
+	}
 	seen := make(map[string]bool, len(c.Titles))
+	aliases := 0
 	for _, t := range c.Titles {
+		if len(t.Aliases) > MaxAliasesPerTitle {
+			return fmt.Errorf("too many alternative titles for one entry")
+		}
+		for _, alias := range t.Aliases {
+			if len(alias) == 0 || len(alias) > maxAliasBytes {
+				return fmt.Errorf("invalid alternative title")
+			}
+		}
+		if aliases += len(t.Aliases); aliases > MaxAliases {
+			return fmt.Errorf("catalogue exceeds %d alternative titles", MaxAliases)
+		}
 		if len(t.ID) < 3 || len(t.ID) > 20 || t.ID[:2] != "tt" || len(t.Name) == 0 || len(t.Name) > 1000 || (t.Type != "movie" && t.Type != "series") {
 			return fmt.Errorf("invalid catalogue entry")
 		}
@@ -55,6 +90,20 @@ func (c *Catalog) Validate() error {
 		seen[key] = true
 	}
 	return nil
+}
+
+// Options reports the alternative-title selection stored with the snapshot.
+func (c *Catalog) Options() AliasOptions {
+	return AliasOptions{Language: c.AliasLanguage, Region: c.AliasRegion}
+}
+
+// AliasCount is the number of stored alternative titles.
+func (c *Catalog) AliasCount() int {
+	n := 0
+	for _, t := range c.Titles {
+		n += len(t.Aliases)
+	}
+	return n
 }
 
 func Load(path string) (*Catalog, error) {
