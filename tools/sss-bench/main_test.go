@@ -3,10 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -427,12 +429,24 @@ func TestRunEndToEnd(t *testing.T) {
 	if left, _ := os.ReadDir(work); len(left) != 0 {
 		t.Errorf("left in the work folder: %v", left)
 	}
-	// The Go toolchain keeps its own settings in the config folder; nothing else may.
-	reached, _ := os.ReadDir(sentinel)
-	for _, entry := range reached {
-		if entry.Name() != "go" {
-			t.Errorf("wrote to the user's folders: %s", entry.Name())
+	// The Go toolchain keeps its own settings in a "go" folder under the user's config
+	// folder, which on macOS is Library/Application Support. Check every file rather
+	// than the top level: the installed helper's data lives in that same parent.
+	err = filepath.WalkDir(sentinel, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil || entry.IsDir() {
+			return err
 		}
+		relative, err := filepath.Rel(sentinel, path)
+		if err != nil {
+			return err
+		}
+		if !slices.Contains(strings.Split(filepath.ToSlash(relative), "/"), "go") {
+			t.Errorf("wrote to the user's folders: %s", relative)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	// The report must be safe to paste publicly.
