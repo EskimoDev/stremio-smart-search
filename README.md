@@ -19,14 +19,30 @@
 
 </div>
 
-## What it does
+## Why Smart Search
 
-- **Forgiving search.** `interstelar` finds *Interstellar*, `HOTD` finds *House of the Dragon*, `strangerthings` finds *Stranger Things*.
-- **Measured accuracy.** On 248 test searches with checked answers, the Expanded catalogue puts the right title first 97.9% of the time and in the top five 99.5%. See [search quality](docs/SEARCH-QUALITY.md).
-- **Add a year to pick a version.** `dune 1984` finds the 1984 film, `the lion king 2019` the remake.
-- **Regional titles, if you want them.** Turn on one language and `La Reine des neiges` finds *Frozen*.
-- **Runs on your computer.** Matching uses a local index in memory, with no AI service, hosted backend, account or API key. A search takes a couple of milliseconds, and the helper sits idle between searches.
-- **Plays nicely.** It adds search rows only. Your other addons keep supplying streams, metadata and their own results.
+Without it, an abbreviation or a small misspelling often brings back unrelated titles, as in the screenshot above. Smart Search adds a Movies row and a Series row to your normal search results that work out what you meant.
+
+| You type | You get |
+|---|---|
+| `hotd` | *House of the Dragon* |
+| `strangerthings` | *Stranger Things* |
+| `game of thornes` | *Game of Thrones* |
+| `dune 1984` | *Dune* (1984), not the 2021 film |
+| `les miserables` | *Les Misérables*, with or without accents |
+| `la rene des neige` (with French titles on) | *Frozen* |
+
+Each of these returns the expected title first in the [search-quality cases](docs/SEARCH-QUALITY.md).
+
+### At a glance
+
+| | |
+|---|---|
+| 🎯 **Accurate** | Right title first in **97.9%** of 248 checked searches, and in the top five in **99.5%** (Expanded catalogue) |
+| ⚡ **Fast** | **0.8 ms** for 95% of searches on the largest catalogue, measured over real HTTP on a desktop PC |
+| 🪶 **Light** | About **97 MiB** of memory for 390,000 titles, no measurable CPU while idle, and a single 3 to 8 MB download with no runtime to install |
+| 🔒 **Private** | No account, no Stremio login, no AI or search service. Matching runs on your computer |
+| 🤝 **Plays nicely** | Adds search rows only. Your other addons keep supplying streams, metadata and their own results |
 
 ## Installation
 
@@ -72,13 +88,36 @@ Moving only Smart Search keeps your other addons in the same order, and your str
 
 ## Catalogue sizes
 
-| Size | Movies | Series | Minimum IMDb votes |
-|---|---:|---:|---:|
-| Compact | up to 25,000 | up to 25,000 | 250 |
-| **Standard** (default) | up to 100,000 | up to 100,000 | 25 |
-| Expanded | up to 250,000 | up to 250,000 | 5 |
+Pick how many titles to search. You can change it later, and search keeps working while the new catalogue is built.
 
-Larger sizes use more memory. Compare them in [performance](docs/PERFORMANCE.md), and read how titles are chosen and updated in [the catalogue guide](docs/CATALOGUE.md).
+| Size | Titles kept | Minimum IMDb votes | Memory after startup | 95% of searches under | Right title first |
+|---|---:|---:|---:|---:|---:|
+| Compact | 50,000 | 250 | 23 MiB | 0.44 ms | 99.5% |
+| **Standard** (default) | 184,606 | 25 | 53 MiB | 0.60 ms | 99.0% |
+| Expanded | 390,470 | 5 | 97 MiB | 0.77 ms | 97.9% |
+
+Titles kept are from the 2026-11-01 IMDb data; each size allows up to 25k, 100k or 250k each of movies and series. Larger catalogues find more obscure titles, so a few common typos have more look-alikes to compete with. How titles are chosen and updated is in [the catalogue guide](docs/CATALOGUE.md).
+
+## Benchmarks
+
+Measured on real IMDb data on one Windows PC (Ryzen 5 5600X, 32 GiB RAM), with 750 real HTTP requests per run mixing exact titles, acronyms, typos, accents, non-Latin text and no-result searches. Medians of three fresh runs.
+
+**The index rewrite in this release**, Expanded catalogue:
+
+| | Before | After |
+|---|---:|---:|
+| Memory after startup | 276 MiB | **97 MiB** |
+| 95th-percentile search | 9.86 ms | **0.77 ms** |
+| 99th-percentile search | 17.87 ms | **1.15 ms** |
+| Load and build the index | 4.45 s | **1.85 s** |
+| Live catalogue refresh | 32.8 s | **6.2 s** |
+| Peak memory during refresh | 539 MiB | **275 MiB** |
+
+Search results did not change: about 96,000 generated queries returned identical result lists before and after.
+
+**Accuracy** is scored with 248 hand-checked searches in 15 categories, from exact titles and acronyms to typos, years, accents, Japanese titles and regional titles in five languages. Every expected answer is verified against IMDb's own data before scoring. Exact titles, acronyms, joined words, punctuation, accents and Japanese titles all score 100%.
+
+Full tables, method and caveats: [performance](docs/PERFORMANCE.md) and [search quality](docs/SEARCH-QUALITY.md). Both can be reproduced with the tools in this repository.
 
 ## Privacy and data
 
@@ -88,6 +127,14 @@ Larger sizes use more memory. Compare them in [performance](docs/PERFORMANCE.md)
 - Settings are only reachable from your own computer. No telemetry, no background crawling.
 
 IMDb data is downloaded by each user for personal, non-commercial use under [IMDb's terms](https://developer.imdb.com/non-commercial-datasets/), and is not included in this repository or the downloads. See [DATA.md](DATA.md).
+
+## Is it right for you?
+
+Smart Search is a good fit if you search Stremio on a Windows, Mac or Linux computer and often misspell, abbreviate or half-remember titles. It may not be, yet, if:
+
+- **You watch on a TV, phone or Fire TV only.** The helper has to run on a computer. Home-server options are in [other devices](docs/OTHER-DEVICES.md).
+- **You need signed installers.** Preview builds are not code-signed, so Windows and macOS show a warning the first time.
+- **You type sounds, not letters.** `incepshun` is too far from *Inception* to match. When a real but obscure film has the exact name you typed, such as *Interstelar* (2016), it ranks first and the famous title second. Known gaps are listed in [search quality](docs/SEARCH-QUALITY.md#remaining-weaknesses).
 
 ## FAQ
 
@@ -106,7 +153,7 @@ In settings, choose a language under **Alternative titles**, optionally a region
 <details>
 <summary>Will it slow down my computer?</summary>
 
-The helper does no background work between searches, and its memory use is bounded by the catalogue size you pick. The **Storage** card in settings shows its current memory and disk use. Measured numbers are in [performance](docs/PERFORMANCE.md).
+Unlikely. The helper does no background work between searches: a 10-second quiet sample measured no CPU use for any size. It uses 23 to 97 MiB of memory depending on the catalogue size, and a refresh briefly peaks at up to 275 MiB. The **Storage** card in settings shows its current memory and disk use. Measured numbers are in [performance](docs/PERFORMANCE.md).
 </details>
 
 <details>
