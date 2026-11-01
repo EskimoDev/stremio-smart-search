@@ -10,13 +10,17 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 
 - Automatic catalogue updates, on by default for new installations. While the helper runs, it checks IMDb every 2 days (or every day, 3 days or week) with conditional `HEAD` requests and rebuilds only when the files changed. Start-up and search never wait for it, the current catalogue stays until the new one is validated, failures back off from 1 to 24 hours across restarts, Windows metered connections are skipped, and **Refresh now** joins a running update. With alternative titles on, routine updates keep the existing ones and download IMDb's 520 MB alternative-title file only weekly. Existing installations stay manual until switched on. Details in [docs/CATALOGUE.md](docs/CATALOGUE.md#automatic-updates).
 - Dark mode for the settings page. It follows your system's light or dark setting, and a header toggle switches between Auto, Light and Dark and remembers your choice. The logo, buttons, inputs, status text and storage bar all switch with it.
-- Sound-alike matching as a last resort: a word spelled the way it sounds, such as `incepshun`, `pulp fikshun` or `nite at the museum`, can now find the title. It uses a precomputed Double Metaphone index for ASCII words, ranks below every spelling match and never displaces an exact title. On the Expanded catalogue it finds 84.6% of curated phonetic searches first (was 28.2%), 73.3% of a held-out set (was 43.3%) and 76.8% of a blind validation set (was 41.1%), with no regressions on any of eleven real catalogues, for 1.6 MiB of memory. Codes one sound away (`brekin bad`, `back to the fucher`) also match, and a loose sound-alike needs a popular title, which cuts results for random pronounceable strings from 37% to 13%. Details in [docs/SEARCH-QUALITY.md](docs/SEARCH-QUALITY.md#sound-alike-fallback-2026-11-01).
-- A `phonetic` category of 39 search-quality cases, and a separate held-out phonetic file that was not used for tuning.
+- Sound-alike matching as a last resort for ASCII words, including `incepshun` and `pulp fikshun`. Same-code and near-code candidates have lower word-match weights than spelling matches; exact-title score bands are unchanged. Popularity and edit-distance checks limit loose matches. Measured gains, costs and remaining false positives are recorded in [search quality](docs/SEARCH-QUALITY.md#sound-alike-follow-up-near-codes-and-confidence-2026-11-01).
+- A `phonetic` category of 39 search-quality cases, plus separate held-out and blind-validation files.
+- SSS branding in the README, settings header, browser tab, Windows executable/installer and macOS app bundles. These icon changes are not in preview.3.
 
 ### Changed
 
+- Local packages default to 0.1.0-dev; release preparation requires an explicit version. Portable archive documentation links to bundled offline setup and online guides instead of missing repository files.
+- Added a dependency-free Markdown link/image check to CI and release preparation, and ignored local storage/update-state files.
 - Reorganized the README around installation, example searches and catalogue choices, preserving the before/after screenshots. Detailed setup, measurements and development instructions live in the linked guides.
 - Corrected documentation of accuracy denominators, temporary recovery files, the Storage memory estimate, platform testing and benchmark provenance.
+- Distinguished public preview.3 behavior from newer main features, retained historical performance and quality records, and clarified automatic-update downloads and optional real-data tests.
 - Trimmed the docs: PERFORMANCE.md leads with current results and one before/after table, DESIGN.md keeps only the rules that apply to the setup page, and maintainer notes moved from INSTALLATION.md to CONTRIBUTING.md.
 
 ## [0.1.0-preview.3] - 2026-11-01

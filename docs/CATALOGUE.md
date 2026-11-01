@@ -20,7 +20,7 @@ On the 2026-11-01 IMDb data, the three sizes held **50,000, 184,606 and 390,470 
 
 Under **Catalogue → Alternative titles**, choose a language. Where titles commonly differ by country, you can also choose a **Regional preference**, such as Spain or Mexico for Spanish, or France or Canada for French. Then choose **Apply titles & rebuild**. Search then also matches those titles, including misspellings and missing accents. Results keep their normal IMDb identifiers and names, and English and original titles keep working. Off is the default, and existing catalogues keep their current behaviour until you change it.
 
-This adds IMDb's alternative-title file to each preparation: about 520 MB more to download (2026-11-01), streamed and discarded like the other files. Preparation takes about 7 seconds longer. With French titles, Standard uses 58 MiB instead of 53 MiB and Expanded 105 MiB instead of 97 MiB, with search speed about the same; see [performance](PERFORMANCE.md#alternative-titles). Only the chosen language is kept, and no translation or other service is involved.
+A manual preparation or refresh adds IMDb's alternative-title file: about 520 MB more to download (2026-11-01), streamed and discarded like the other files. The recorded preview.3 Windows run took about 7 seconds longer, excluding the download. With French titles, Standard used 58 MiB instead of 53 MiB and Expanded 105 MiB instead of 97 MiB, with search speed about the same; see [performance](PERFORMANCE.md#alternative-titles). Only the chosen language is kept, and no translation or other service is involved.
 
 ## Matching and ranking
 
@@ -48,9 +48,13 @@ Uninstalling leaves the catalogue where it is. Delete the folder yourself if you
 
 ## Updating and changing size
 
-To change size, select the option and choose **Apply size & rebuild**. If you also change alternative titles, the button reads **Apply changes & rebuild**. **Refresh now** downloads the latest IMDb data with your current choices. The current index keeps serving during preparation; new choices are saved with the replacement catalogue only after success. A failed refresh keeps the previous working catalogue. Existing catalogues retain their saved size. Legacy catalogues without a size field are treated as Compact.
+The public preview.3 download updates manually through **Refresh catalogue**. In unreleased main, that button is **Refresh now**, and optional automatic updates are described below.
+
+To change size, select the option and choose **Apply size & rebuild**. If you also change alternative titles, the button reads **Apply changes & rebuild**. On main, **Refresh now** downloads the latest IMDb data with your current choices. The current index keeps serving during preparation; new choices are saved with the replacement catalogue only after success. A failed refresh keeps the previous working catalogue. Existing catalogues retain their saved size. Legacy catalogues without a size field are treated as Compact.
 
 ### Automatic updates
+
+**Unreleased main only; absent from the preview.3 download.**
 
 **Update automatically** keeps the catalogue current without you thinking about it. It is on for new installations; an installation that already had a catalogue before this option existed stays manual until you switch it on, so nobody's data use changes unannounced. Choose how often under **Check for new titles**: every day, every 2 days (default), every 3 days or every week.
 
@@ -61,10 +65,10 @@ How it behaves:
 - When the chosen interval has passed since the last successful update, Smart Search sends one `HEAD` request per IMDb file with the validators it saved last time (`If-None-Match`, `If-Modified-Since`). If nothing changed, it downloads nothing and asks again no sooner than six hours later. If IMDb's reply has no validators to compare, it falls back to the schedule alone: one download per interval.
 - IMDb normally publishes new files every day, so at the default 2-day interval most checks do lead to a download: about 240 MB (ratings 9 MB, titles 230 MB in the 1 November 2026 snapshot). IMDb only publishes whole files, so there is no smaller "changes only" download.
 - With alternative titles on, routine updates keep the alternative titles you already have, matched by IMDb ID, and download IMDb's 520 MB alternative-title file only once it is a week old. A title that is new since then is still found by its main and original titles, and gets its regional names at the next weekly download. **Refresh now** and any size or language change always download everything.
-- Roughly per month: every 2 days 3.6 GB, or 5.8 GB with alternative titles; every day 7.1 GB, or 9.4 GB; every week 1 GB, or 3.3 GB. The settings page shows the estimate for your choices.
-- Only one update runs at a time. Pressing **Refresh now** during an automatic update joins it rather than starting another download.
+- Roughly per month: every 2 days 3.6 GB, or 5.8 GB with alternative titles; every day 7.1 GB, or 9.4 GB; every week 1 GB, or 3.3 GB. These are rough transfer estimates, not a cap; unchanged files, retries, time offline and manual refreshes change the total.
+- Only one update runs at a time. **Refresh now** with the same size and language joins an automatic update while it can still request fresh alternative titles. If that update has already carried the old alternatives forward and is finishing, settings ask you to choose **Refresh now** again shortly.
 - The new catalogue replaces the old one only after it has been completely downloaded, parsed, validated and saved. An automatic update also refuses a replacement with less than half the current number of titles, which would point to a partial file from IMDb.
-- After a failure (offline, IMDb unavailable, a cut-off or damaged download), the next attempt waits 1 hour, then 2, 4, 8, 16 and at most 24 hours. This is saved, so restarting the helper does not repeat a large download straight away. An update cut short by a crash or forced close counts as a failure too.
+- After a failure (offline, IMDb unavailable, a cut-off or damaged download), retries back off by 1 hour, then 2, 4, 8, 16 and at most 24 hours; the next check also respects the selected update interval. This is saved, so restarting the helper does not repeat a large download straight away. An update cut short by a crash or forced close counts as a failure too.
 - Saved times that lie in the future, for example after the clock was set back, are treated as now, so a clock change cannot pause updates for long or cause more than one extra update.
 - On Windows, a connection marked as metered (Settings → Network → Metered connection) pauses automatic updates. macOS and Linux have no detection here, so updates follow the schedule on any connection; turn them off if you are on a capped connection. **Refresh now** always works.
 

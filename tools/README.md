@@ -12,4 +12,6 @@ Run these from the repository root. None is included in the installed helper.
 
 Keep raw IMDb files, generated catalogues and evaluation reports in a directory outside this repository. Label synthetic results as synthetic; they do not establish accuracy on real titles.
 
-`scripts/build.ps1` calls the packager. Windows installers and macOS DMGs are produced by additional native steps in the release workflow, not by the packager itself.
+`scripts/build.ps1` calls the packager. Local versions default to `0.1.0-dev`; pass an explicit version for release artifacts. Portable archives include small README/installation entry points linking to bundled offline setup and the online guides, rather than copying repository documents whose images and relative links are absent.
+
+Windows installers and macOS DMGs are produced by additional native steps in the release workflow, not by the packager itself. The checked-in `.syso` files are intentional build inputs: regenerate them from `assets/icon.ico` using `tools/icons`. macOS uses the separately supplied `assets/icon.icns`. No production catalogue is a build input.

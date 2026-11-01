@@ -1,10 +1,20 @@
 # Architecture
 
-The application is a single Go executable with an embedded local setup page. There are no native media hooks, Stremio patches, browser extensions or runtime package downloads.
+The application is a single Go executable with an embedded local setup page. This document describes **current main**; phonetic search, automatic updates and theme controls are unreleased relative to the public preview.3 download. There are no native media hooks, Stremio patches, browser extensions or runtime package downloads.
+
+## Package boundaries
+
+- `cmd/smart-search`: flags, process reuse, HTTP-server lifetime and runtime limits.
+- `internal/catalog`: snapshot validation/storage, streamed IMDb parsing, source freshness and alias carry-over.
+- `internal/search`: the read-only in-memory index and ranking; no network calls.
+- `internal/textnorm`: shared title normalization for catalogue building and search.
+- `internal/app`: local management API/UI, client launching, storage moves and the update schedule.
+- `internal/quality`: developer-only evaluation against curated cases.
+- `tools/` and `scripts/`: builds, packaging, icons and measurement utilities; not runtime dependencies.
 
 ## Search
 
-The read-only index contains exact normalized titles, joined-title forms, acronym variants, token postings and a trigram-to-vocabulary index. A fuzzy query first selects bounded candidate words and confirms them with bounded Damerau-Levenshtein distance, including adjacent transpositions. Query terms are intersected. Exact canonical names and longer regional names outrank acronyms and fuzzy hits; short Latin regional names use the acronym band. Among close word matches, a title whose significant words the query covers gets up to 10 of 100 extra points, so "the terminater" prefers *The Terminator* over *Terminator 2*. Vote counts rank otherwise similar matches. A four-digit year (1880–2099) typed with other words is matched by a title's start year or by a title word, so "dune 1984" picks that film; if no candidate matches, the year is ignored. A single word of up to five letters that is some title's acronym gets exact and prefix matches only, no typo variants, so "hotd" does not also list "Hot Fuzz" or "Robin Hood". As a last resort, a query word spelled the way it sounds ("incepshun", "nite") is matched to indexed words with the same Double Metaphone code, for ASCII words only, at most eight per query word and at less than half the weight of a one-letter typo, so it never displaces an exact title. Accuracy is measured with [curated cases](SEARCH-QUALITY.md).
+The read-only index contains exact normalized titles, joined-title forms, acronym variants, token postings and a trigram-to-vocabulary index. A fuzzy query first selects bounded candidate words and confirms them with bounded Damerau-Levenshtein distance, including adjacent transpositions. Query terms are intersected. Exact canonical names and longer regional names outrank acronyms and fuzzy hits; short Latin regional names use the acronym band. Among close word matches, a title whose significant words the query covers gets up to 10 of 100 extra points, so "the terminater" prefers *The Terminator* over *Terminator 2*. Vote counts rank otherwise similar matches. A four-digit year (1880–2099) typed with other words is matched by a title's start year or by a title word, so "dune 1984" picks that film; if no candidate matches, the year is ignored. A single word of up to five letters that is some title's acronym gets exact and prefix matches only, no typo variants, so "hotd" does not also list "Hot Fuzz" or "Robin Hood". As a last resort, ASCII query words can gain up to eight same-code Double Metaphone matches at weight 0.4 and eight near-code matches at weight 0.3, below spelling terms (0.76 or 0.6). Query words must have at least four letters, be pronounceable and appear in fewer than 50 indexed titles. Length/edit-distance and popularity checks limit loose matches, and a one-word query has a stricter limit. Exact-title score bands remain unchanged. Accuracy is measured with [curated cases](SEARCH-QUALITY.md).
 
 Optional alternative titles extend the same index; they are not a separate engine. Their normalized forms live in one sorted key array with 32-bit title references. A second ordering of the same keys, which ignores spaces, serves joined queries such as "lareinedesneiges" without storing another copy. Their words have separate postings, but share the vocabulary and trigram index, and therefore all typo handling. Score bands are: exact 2200 and joined 2100, canonical and alternative alike, so popularity decides between them; acronym 1200; then word matches. Alternative-title word matches are weighted ×0.9, so canonical words win ties. Acronyms are never generated from alternative titles. Short Latin alternative titles (five letters or fewer once spaces are removed, e.g. "H.O.T.D.") rank in the acronym band, so popularity decides between titles that share them. Aliases are search keys only: results return the canonical ID and name, and a title appears once however many of its names match. Very short Latin aliases are not indexed. Normalization (`internal/textnorm`) folds accents and common Latin letters such as ß, æ, œ, ł, š and ř, and keeps non-Latin scripts. The catalogue builder and the index use it identically. For 4–6 letter ASCII terms, the matcher also probes every interior single-edit variant against the vocabulary. Trigram candidates miss central typos in short words ("rene" for "reine", "alein" for "alien"). For 7–20 letter ASCII terms it probes every deletion and adjacent transposition, which can break up to four trigrams ("thornes" for "thrones").
 
@@ -62,7 +72,9 @@ Run the platform's helper executable with `--help` for its options.
 
 Portable and installed builds use the same default OS settings folder. Use both a
 separate `--data-dir` and a different port to run an isolated development instance.
-The listen address is a launch option, not a saved setting.
+The listen address is a launch option, not a saved setting. A `--catalog` run
+disables scheduled updates for that run so the imported catalogue is not
+replaced automatically.
 
 ## Performance claims
 

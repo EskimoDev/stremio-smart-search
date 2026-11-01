@@ -4,10 +4,16 @@ Memory, speed and disk use for each catalogue size, measured on real IMDb data.
 Standard is the default for new setups. Existing installations keep their size
 until you rebuild.
 
-All figures come from one Windows x64 PC: Ryzen 5 5600X, 32 GiB RAM, two Go
-execution threads and the helper's 256 MiB Go soft memory target. That target is
-not a hard ceiling on process memory. macOS, Linux, ARM and TV hardware have not
-been measured with a full catalogue.
+The main size-comparison tables below are the **preview.3 Windows baseline**:
+Ryzen 5 5600X, 32 GiB RAM, two Go execution threads and a 256 MiB Go soft memory
+target. That target is not a hard ceiling on process memory. These tables have
+not been remeasured after phonetic search and automatic updates were merged.
+
+Unreleased phonetic-search measurements used real catalogues on a Linux VM;
+see [search quality](SEARCH-QUALITY.md#costs). Separate Windows and Linux update
+measurements appear below. Do not compare Go heap, Linux RSS and Windows working
+set as though they were the same counter. Mac, ARM and TV performance still need
+measurements.
 
 ## Results
 
@@ -56,8 +62,9 @@ while saving. A successful save removes the recovery copy.
 ## Alternative titles
 
 Alternative titles are off by default and cost nothing when off. Turning them on
-adds IMDb's `title.akas` file, 520 MB in this snapshot, to each preparation. It is
-streamed and never stored.
+adds IMDb's `title.akas` file, 520 MB in this snapshot, to manual preparations and
+refreshes. It is streamed and never stored. Unreleased automatic updates can
+carry the existing aliases forward until the weekly refresh is due.
 
 Measured with French titles in the same run as the tables above:
 
@@ -73,12 +80,13 @@ Standard: English 54,950, French 55,722, German 55,288, Japanese 55,910, Spanish
 
 ## Automatic updates
 
-Measured on 2026-11-01 on Windows x64 with the opt-in tests in
-`internal/app`. Both used a temporary data folder, so no installed catalogue was
-involved.
+**Unreleased main; not present in preview.3.** Recorded on 2026-11-01 with the
+opt-in tests in `internal/app`: one against IMDb on Windows and one using cached
+real files over loopback on a Linux VM. Both used temporary data folders, so no
+installed catalogue was involved.
 
 **Real IMDb server** (`TestRealIMDbAutomaticUpdate`, commit 598c918). The test
-starts from a small catalogue that is two days old, runs the scheduled check
+starts from a small catalogue recorded as three days old, runs the scheduled check
 against `datasets.imdbws.com`, lets the update build, then restarts on the same
 folder. Only the ratings and basics files are allowed.
 
@@ -161,7 +169,7 @@ builds can be compared for identical output.
 
 ## Measurement records
 
-The current Windows tables summarize the measurements recorded in
+The preview.3 Windows baseline tables summarize the measurements recorded in
 [commit b438f3b](https://github.com/EskimoDev/stremio-smart-search/commit/b438f3ba0d0fcc1d82a37e065778322efa660f3e).
 Their individual post-rewrite reports are not checked into this repository.
 The retained JSON files support these earlier comparisons:

@@ -38,14 +38,20 @@ Next time, use the Stremio + Smart Search shortcut to start both together.
 Portable users: run the executable with --launch to open Stremio too.
 
 You may close the browser page. The helper stays available in the background.
-To stop it, reopen settings and click Quit helper.
+To stop it, reopen settings and click Quit helper, then click again to confirm.
 
 No API key, AI subscription, account login or programming tools are needed.
 The title data download is separate from the software and is subject to IMDb's
 personal/non-commercial dataset terms. See DATA.md.
 
-This preview is unsigned. Platform approval prompts may appear. Read the
-installation notes for the platform's verification status and limitations.
+Builds are not developer-signed or notarized. Platform approval prompts may appear.
+Platform guide: https://github.com/EskimoDev/stremio-smart-search/blob/main/docs/INSTALLATION.md
+That guide distinguishes the public preview.3 download from unreleased main.
+If your build shows Update automatically, new installations default to checks
+every 2 days; existing catalogues stay manual until enabled. A routine download
+is about 240 MB, plus about 520 MB weekly with alternative titles. Turn automatic
+updates off in settings if you want manual downloads only. The public preview.3
+has no automatic-update controls.
 
 The local addon address works on the computer running this helper. Installing
 it on your Stremio account does not install the helper on your other devices.

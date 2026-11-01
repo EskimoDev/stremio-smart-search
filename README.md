@@ -26,7 +26,9 @@
 
 ## Installation
 
-[Download the current preview](https://github.com/EskimoDev/stremio-smart-search/releases), then choose the package for your computer:
+**Latest public download: [0.1.0-preview.3](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.3).** It includes typo, abbreviation and regional-title search. Sound-alike matching, automatic catalogue updates, dark mode and the new app icons are merged into `main` but **not released yet**. See [Unreleased](CHANGELOG.md#unreleased).
+
+Choose the package for your computer:
 
 | Your computer | Package | Testing |
 |---|---|---|
@@ -60,14 +62,14 @@ Next time, use **Stremio + Smart Search** to start both together. You can close 
 | `hotd` | *House of the Dragon* |
 | `strangerthings` | *Stranger Things* |
 | `game of thornes` | *Game of Thrones* |
-| `pulp fikshun` | *Pulp Fiction* |
+| `pulp fikshun` | *Pulp Fiction* — unreleased `main` only |
 | `dune 1984` | *Dune* (1984) |
 | `les miserables` | *Les Misérables* |
 | `la rene des neige` | *Frozen*, with French alternative titles enabled |
 
 For translated or regional names, choose a language under **Alternative titles** in settings, then rebuild. This adds another data download. [Alternative-title setup →](docs/CATALOGUE.md#alternative-titles-optional)
 
-Matching has limits: an exact title can rank above the similar title you meant, and only some sound-alike spellings match. `incepshun` and `back to the fucher` work, but `rattatooey` does not. See [tested search quality and known gaps](docs/SEARCH-QUALITY.md).
+Matching has limits: an exact title can rank above the similar title you meant. The unreleased sound-alike matcher finds `incepshun` and `back to the fucher`, but still misses `rattatooey`. See [tested search quality and known gaps](docs/SEARCH-QUALITY.md).
 
 ## Choose a catalogue
 
@@ -79,9 +81,9 @@ Standard is the default. Choose Compact to use less memory, or Expanded to inclu
 | **Standard** | 184,606 | 53 MiB |
 | Expanded | 390,470 | 97 MiB |
 
-These are measurements from one Windows PC with IMDb data from 2026-11-01, with alternative titles off. Counts and memory vary. Each size keeps up to 25,000, 100,000 or 250,000 **each** of movies and series, subject to its vote threshold.
+These are the **preview.3 Windows baseline**, recorded on one PC with IMDb data from 2026-11-01 and alternative titles off. They have not been remeasured on the newer main build. Counts and memory vary. Each size keeps up to 25,000, 100,000 or 250,000 **each** of movies and series, subject to its vote threshold.
 
-Matching runs locally. On that PC, 95% of Expanded search requests finished within **0.77 ms**, including the local HTTP request and response. This measures SSS, not the time for Stremio to load artwork or other addons' results. [Measurements and method →](docs/PERFORMANCE.md)
+Matching runs locally. In that baseline, 95% of Expanded search requests finished within **0.77 ms**, including the local HTTP request and response. This measures SSS, not the time for Stremio to load artwork or other addons' results. [Measurements and method →](docs/PERFORMANCE.md)
 
 [Title selection, updates and storage →](docs/CATALOGUE.md)
 
@@ -90,7 +92,7 @@ Matching runs locally. On that PC, 95% of Expanded search requests finished with
 - SSS needs no account, Stremio password, API key or AI subscription.
 - Matching happens on your computer. SSS does not send your searches to a search service; Stremio still queries your other installed search addons as usual.
 - IMDb is contacted when you prepare or refresh the catalogue, and by automatic updates. Posters come from MetaHub; your other addons provide metadata and playback.
-- Automatic updates are on for new installations: about every 2 days SSS asks IMDb whether its files changed and downloads them again (about 240 MB, plus 520 MB once a week with alternative titles) only when they have. Turn them off or change how often in settings. Existing installations stay manual until you switch them on.
+- The public preview updates manually. **Unreleased main:** automatic updates default to every 2 days on new installations; existing catalogues stay manual until enabled. A routine download is about 240 MB, plus about 520 MB weekly with alternative titles. See [update controls and bandwidth](docs/CATALOGUE.md#automatic-updates).
 - No telemetry. Settings are accessible from the host computer only.
 
 The software is MIT licensed. IMDb data has [separate personal, non-commercial terms](DATA.md) and is downloaded by each user; it is not bundled in the app.
