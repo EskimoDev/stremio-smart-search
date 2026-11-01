@@ -43,6 +43,8 @@ The optional **Start helper when I sign in** component keeps the helper availabl
 
 Unsigned development installers can show Windows publisher/reputation prompts. Signing is a separate release task, not something GitHub Releases automatically provides. Do not claim a verified publisher without a signing certificate.
 
+Running an older installer over a newer version installs the older app; it does not warn first. Your catalogue and settings are kept either way.
+
 Uninstall removes the app and shortcuts, leaving the local catalogue in `%AppData%\StremioSmartSearch`, or in the folder chosen with **Change location…**. No Stremio settings or other addons are removed. See [where the catalogue is stored](CATALOGUE.md#where-the-catalogue-is-stored).
 
 ## macOS

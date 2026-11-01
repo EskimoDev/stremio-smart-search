@@ -31,7 +31,7 @@
 ## Installation
 
 > [!NOTE]
-> Smart Search is in preview. No public release is published yet; preview builds are prepared as draft releases.
+> Smart Search is in preview. Download it from the [latest release](https://github.com/EskimoDev/stremio-smart-search/releases). Builds are not code-signed yet, and only Windows x64 and Linux x64 have been tested on real machines.
 
 | Your computer | Download | Tested |
 |---|---|---|
