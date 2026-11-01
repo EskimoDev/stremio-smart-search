@@ -17,48 +17,45 @@
 
   <main class="utility">
     <aside class="catalogue" aria-labelledby="catalogue-title">
-      <div>
-        <h2 id="catalogue-title">Title catalogue</h2>
-        <p id="connection" class="connection" role="status">Connecting…</p>
-        <dl id="catalog-stats" class="catalog-stats" hidden>
-          <div><dt>Movies</dt><dd id="movie-count">—</dd></div>
-          <div><dt>Series</dt><dd id="series-count">—</dd></div>
-        </dl>
-        <p id="catalog-info" class="catalog-info" aria-live="polite">Checking your catalogue…</p>
-        <div class="profile-settings">
-          <label for="catalog-profile">Catalogue size</label>
-          <select id="catalog-profile" aria-describedby="profile-info" disabled>
-            <option value="compact">Compact</option>
-            <option value="standard" selected>Standard</option>
-            <option value="expanded">Expanded</option>
+      <h2 id="catalogue-title">Title catalogue</h2>
+      <p id="connection" class="connection" role="status">Connecting…</p>
+      <dl id="catalog-stats" class="catalog-stats" hidden>
+        <div><dt>Movies</dt><dd id="movie-count">—</dd></div>
+        <div><dt>Series</dt><dd id="series-count">—</dd></div>
+      </dl>
+      <p id="catalog-info" class="catalog-info" aria-live="polite">Checking your catalogue…</p>
+      <div class="profile-settings">
+        <label for="catalog-profile">Catalogue size</label>
+        <select id="catalog-profile" aria-describedby="profile-info" disabled>
+          <option value="compact">Compact</option>
+          <option value="standard" selected>Standard</option>
+          <option value="expanded">Expanded</option>
+        </select>
+        <p id="profile-info" class="fine" aria-live="polite">Loading catalogue options…</p>
+        <a class="comparison-link" href="https://github.com/EskimoDev/stremio-smart-search/blob/main/docs/PERFORMANCE.md" target="_blank" rel="noreferrer">Compare memory & speed <span aria-hidden="true">↗</span></a>
+        <div class="alias-settings">
+          <label for="alias-language">Alternative titles</label>
+          <select id="alias-language" aria-describedby="alias-info" disabled>
+            <option value="" selected>Off</option>
           </select>
-          <p id="profile-info" class="fine" aria-live="polite">Loading catalogue options…</p>
-          <a class="comparison-link" href="https://github.com/EskimoDev/stremio-smart-search/blob/main/docs/PERFORMANCE.md" target="_blank" rel="noreferrer">Compare memory & speed <span aria-hidden="true">↗</span></a>
-          <div class="alias-settings">
-            <label for="alias-language">Alternative titles</label>
-            <select id="alias-language" aria-describedby="alias-info" disabled>
-              <option value="" selected>Off</option>
-            </select>
-            <label for="alias-region" id="alias-region-label" hidden>Regional preference</label>
-            <select id="alias-region" aria-describedby="alias-info" hidden disabled>
-              <option value="" selected>All regions</option>
-            </select>
-            <p id="alias-info" class="fine" aria-live="polite">Also find movies and series by their title in another language or region.</p>
-          </div>
+          <label for="alias-region" id="alias-region-label" hidden>Regional preference</label>
+          <select id="alias-region" aria-describedby="alias-info" hidden disabled>
+            <option value="" selected>All regions</option>
+          </select>
+          <p id="alias-info" class="fine" aria-live="polite">Also find movies and series by their title in another language or region.</p>
         </div>
-        <button id="build" class="catalogue-button" disabled>Prepare catalogue</button>
-        <div id="progress" class="progress" hidden>
-          <span class="spinner" aria-hidden="true"></span><span id="stage">Starting…</span>
-        </div>
-        <details class="download-help">
-          <summary>About the title data</summary>
-          <p>The first download from IMDb can be a few hundred MB and take several minutes. Smart Search then builds a compact local index.</p>
-          <p>All sizes download the same source files. Larger options retain more titles and use more memory. Changing size takes effect after a successful rebuild; your current catalogue stays available while it runs.</p>
-          <p>Alternative titles add IMDb's regional title list to the download and keep only titles in your chosen language for movies and series already in your catalogue. English, original and translated names all keep working.</p>
-          <p>IMDb data is for personal, non-commercial use. <a href="https://developer.imdb.com/non-commercial-datasets/" target="_blank" rel="noreferrer">Data terms <span aria-hidden="true">↗</span></a></p>
-        </details>
       </div>
-
+      <button id="build" class="catalogue-button" disabled>Prepare catalogue</button>
+      <div id="progress" class="progress" hidden>
+        <span class="spinner" aria-hidden="true"></span><span id="stage">Starting…</span>
+      </div>
+      <details class="download-help">
+        <summary>About the title data</summary>
+        <p>The first download from IMDb can be a few hundred MB and take several minutes. Smart Search then builds a compact local index.</p>
+        <p>All sizes download the same source files. Larger options retain more titles and use more memory. Changing size takes effect after a successful rebuild; your current catalogue stays available while it runs.</p>
+        <p>Alternative titles add IMDb's regional title list to the download and keep only titles in your chosen language for movies and series already in your catalogue. English, original and translated names all keep working.</p>
+        <p>IMDb data is for personal, non-commercial use. <a href="https://developer.imdb.com/non-commercial-datasets/" target="_blank" rel="noreferrer">Data terms <span aria-hidden="true">↗</span></a></p>
+      </details>
     </aside>
 
     <div class="workspace">
@@ -136,7 +133,7 @@
           <details>
             <summary>How search works</summary>
             <p>Titles are matched in memory on this computer, so there is no remote search server to wait for. Posters and playback still use your online providers.</p>
-            <p>No AI service, account passwords or watch history are used. This local link works on this computer; a TV or phone needs its own reachable helper.</p>
+            <p>No AI service, account passwords or watch history are used. The addon link above only works on this computer. <a href="https://github.com/EskimoDev/stremio-smart-search/blob/main/docs/OTHER-DEVICES.md" target="_blank" rel="noreferrer">Using a TV or phone <span aria-hidden="true">↗</span></a></p>
           </details>
         </section>
         <section class="support" aria-labelledby="support-title">
@@ -153,7 +150,7 @@
     </div>
     <aside class="storage" aria-labelledby="storage-title">
       <div class="storage-summary">
-        <h3 id="storage-title">Storage</h3>
+        <h2 id="storage-title">Storage</h2>
         <p class="storage-total"><span id="storage-total">—</span> <span class="storage-total-label">used by Smart Search</span></p>
         <div id="storage-bar" class="storage-bar" role="img" aria-label="Storage used by Smart Search">
           <span class="seg seg-catalogue" id="seg-catalogue"></span><span class="seg seg-backup" id="seg-backup"></span><span class="seg seg-other" id="seg-other"></span>
