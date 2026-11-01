@@ -3,21 +3,22 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 const source = await readFile(new URL('../internal/app/web/app.js', import.meta.url), 'utf8');
-const ids = ['manifest','message','connection','build','progress','stage','catalog-info','catalog-stats','movie-count','series-count','catalog-profile','profile-info','web-install','launch','version','copy','quit','install-help','alias-language','alias-region','alias-region-label','alias-info','install-stremio','install-dxbi','install-enhanced','client-status-stremio','client-status-dxbi','client-status-enhanced'];
-const nodes = Object.fromEntries(ids.map(id => [id, { value:'', disabled:false, dataset:{}, classList:{toggle(){}}, setAttribute(){}, removeAttribute(name){delete this[name];}, addEventListener(event,callback){this[event]=callback;}, options:[], append(...items){this.options.push(...items);}, replaceChildren(...items){this.options=[...items];}, focus(){}, select(){this.selected=true;} }]));
+const ids = ['manifest','message','connection','build','progress','stage','catalog-info','catalog-stats','movie-count','series-count','catalog-profile','profile-info','web-install','launch','version','copy','quit','install-help','alias-language','alias-region','alias-region-label','alias-info','install-stremio','install-dxbi','install-enhanced','client-status-stremio','client-status-dxbi','client-status-enhanced','storage-total','storage-bar','seg-catalogue','seg-backup','seg-other','storage-catalogue','storage-backup-row','storage-backup','storage-other','storage-disk','storage-memory','storage-path','open-folder','storage-info'];
+const nodes = Object.fromEntries(ids.map(id => [id, { value:'', disabled:false, style:{}, dataset:{}, classList:{toggle(){}}, setAttribute(){}, removeAttribute(name){delete this[name];}, addEventListener(event,callback){this[event]=callback;}, options:[], append(...items){this.options.push(...items);}, replaceChildren(...items){this.options=[...items];}, focus(){}, select(){this.selected=true;} }]));
 const buttons = ['stremio','dxbi','enhanced'].map(id => { const node=nodes[`install-${id}`];node.dataset.client=id;return node; });
 const manifest = 'http://127.0.0.1:11479/manifest.json';
 const webInstall = `https://web.stremio.com/#/addons?addon=${encodeURIComponent(manifest)}`;
 let copied, clipboardBlocked=false;
 let nextRefresh;
 let status = {ready:true,building:false,profile:'compact',profiles:[{id:'compact',name:'Compact',movies:25000,series:25000,minVotes:250},{id:'standard',name:'Standard',movies:100000,series:100000,minVotes:25},{id:'expanded',name:'Expanded',movies:250000,series:250000,minVotes:5}],movies:25000,series:12500,builtAt:'2026-10-31',manifest,webInstall,preferredClient:'system',product:'Smart Search',version:'test'};
+const storage={path:'C:\\Users\\me\\AppData\\Roaming\\StremioSmartSearch',total:300*1024*1024,catalogue:200*1024*1024,backup:100*1024*1024-64,other:64,files:3,memory:180*1024*1024,diskFree:50*1024**3,diskSize:500*1024**3,canOpen:true};
 const requests=[];
 const context = {
   document:{getElementById:id=>nodes[id],querySelectorAll:()=>buttons,createElement:()=>({})},
   window:{smartSearch:{baseURL:'http://127.0.0.1:11479',token:'fixture'}},
   navigator:{clipboard:{async writeText(value){if(clipboardBlocked)throw Error('blocked');copied=value;}}},
   setTimeout(callback){nextRefresh=callback;},clearTimeout(){},
-  async fetch(path,options){requests.push({path,options});if(path==='/api/build')status={...status,building:true,buildProfile:JSON.parse(options.body).profile};const value = path==='/api/status'||path==='/api/build' ? status : path==='/api/clients' ? {clients:buttons.map(node=>({id:node.dataset.client,name:node.dataset.client,available:true}))} : {name:'dx.bi'};return {ok:true,async json(){return value;}};},
+  async fetch(path,options){requests.push({path,options});if(path==='/api/build')status={...status,building:true,buildProfile:JSON.parse(options.body).profile};const value = path==='/api/status'||path==='/api/build' ? status : path==='/api/storage' ? storage : path==='/api/storage/open' ? {ok:true} : path==='/api/clients' ? {clients:buttons.map(node=>({id:node.dataset.client,name:node.dataset.client,available:true}))} : {name:'dx.bi'};return {ok:true,async json(){return value;}};},
 };
 vm.runInNewContext(source,context);
 await new Promise(resolve=>setImmediate(resolve));
@@ -28,6 +29,18 @@ assert.equal(nodes['catalog-stats'].hidden,false);
 assert.equal(nodes['movie-count'].textContent,(25000).toLocaleString());
 assert.equal(nodes['series-count'].textContent,(12500).toLocaleString());
 assert.match(nodes['client-status-stremio'].textContent,/Detected on this computer/);
+// Storage: segmented bar, legend, free space and the local open-folder button.
+assert.equal(nodes['seg-catalogue'].style.width,'66.67%');
+assert.equal(nodes['seg-other'].style.minWidth,'3px','tiny segments stay visible');
+assert.equal(nodes['storage-catalogue'].textContent,'200.0 MB');
+assert.equal(nodes['storage-backup-row'].hidden,false);
+assert.equal(nodes['storage-disk'].textContent,'50.0 GB free of 500 GB on this drive');
+assert.equal(nodes['storage-memory'].textContent,'180.0 MB');
+assert.equal(nodes['storage-path'].value,storage.path);
+assert.equal(nodes['open-folder'].disabled,false);
+await nodes['open-folder'].click();
+assert.equal(requests.find(request=>request.path==='/api/storage/open').options.method,'POST');
+assert.match(nodes['storage-info'].textContent,/Opened/);
 await nodes['install-dxbi'].click();
 assert.equal(copied,manifest);
 assert.deepEqual(JSON.parse(requests.find(request=>request.path==='/api/install').options.body),{client:'dxbi'});
