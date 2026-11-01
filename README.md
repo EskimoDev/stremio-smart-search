@@ -11,6 +11,14 @@
 ![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-informational)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
+<table>
+<tr><th>Searching <code>hotd</code> without Smart Search</th><th>With Smart Search</th></tr>
+<tr>
+<td><img src="docs/images/search-before.jpg" alt="dx.bi search for hotd without Smart Search: hot dog films and unrelated series" width="420"></td>
+<td><img src="docs/images/search-after.jpg" alt="dx.bi search for hotd with Smart Search: House of the Dragon is the first series result" width="420"></td>
+</tr>
+</table>
+
 </div>
 
 ## What it does
