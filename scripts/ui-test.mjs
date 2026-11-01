@@ -3,14 +3,14 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 const source = await readFile(new URL('../internal/app/web/app.js', import.meta.url), 'utf8');
-const ids = ['manifest','message','connection','build','progress','stage','catalog-info','catalog-stats','movie-count','series-count','catalog-profile','profile-info','web-install','launch','version','copy','quit','install-help','alias-language','alias-region','alias-region-label','alias-info','install-stremio','install-dxbi','install-enhanced','client-status-stremio','client-status-dxbi','client-status-enhanced','storage-total','storage-bar','seg-catalogue','seg-backup','seg-other','storage-catalogue','storage-backup-row','storage-backup','storage-other','storage-disk','storage-memory','storage-path','open-folder','storage-info','change-folder','reset-folder','reset-sep','move-panel','move-path','move-info','move-cancel','move-confirm'];
+const ids = ['manifest','message','connection','build','progress','stage','catalog-info','catalog-stats','movie-count','series-count','catalog-profile','profile-info','web-install','launch','version','copy','quit','install-help','alias-language','alias-region','alias-region-label','alias-info','install-stremio','install-dxbi','install-enhanced','client-status-stremio','client-status-dxbi','client-status-enhanced','storage-total','storage-bar','seg-catalogue','seg-backup','seg-other','storage-catalogue','storage-backup-row','storage-backup','storage-other','storage-disk','storage-memory','storage-path','open-folder','storage-info','change-folder','reset-folder','reset-sep','move-panel','move-path','move-info','move-cancel','move-confirm','auto-update','update-frequency','update-info'];
 const nodes = Object.fromEntries(ids.map(id => [id, { value:'', disabled:false, style:{}, dataset:{}, classList:{toggle(){}}, setAttribute(){}, removeAttribute(name){delete this[name];}, addEventListener(event,callback){this[event]=callback;}, options:[], append(...items){this.options.push(...items);}, replaceChildren(...items){this.options=[...items];}, focus(){}, select(){this.selected=true;} }]));
 const buttons = ['stremio','dxbi','enhanced'].map(id => { const node=nodes[`install-${id}`];node.dataset.client=id;return node; });
 const manifest = 'http://127.0.0.1:11479/manifest.json';
 const webInstall = `https://web.stremio.com/#/addons?addon=${encodeURIComponent(manifest)}`;
 let copied, clipboardBlocked=false;
 let nextRefresh;
-let status = {ready:true,building:false,profile:'compact',profiles:[{id:'compact',name:'Compact',movies:25000,series:25000,minVotes:250},{id:'standard',name:'Standard',movies:100000,series:100000,minVotes:25},{id:'expanded',name:'Expanded',movies:250000,series:250000,minVotes:5}],movies:25000,series:12500,builtAt:'2026-10-31',manifest,webInstall,preferredClient:'system',product:'Smart Search',version:'test'};
+let status = {ready:true,building:false,profile:'compact',profiles:[{id:'compact',name:'Compact',movies:25000,series:25000,minVotes:250},{id:'standard',name:'Standard',movies:100000,series:100000,minVotes:25},{id:'expanded',name:'Expanded',movies:250000,series:250000,minVotes:5}],movies:25000,series:12500,builtAt:'2026-10-31',manifest,webInstall,preferredClient:'system',product:'Smart Search',version:'test',updates:{auto:true,intervalHours:48,intervals:[24,48,72,168],state:'waiting',lastSuccess:'2026-10-31T09:00:00Z',nextCheck:'2999-01-01T09:00:00Z',downloadBytes:238268411,network:'unknown',failures:0}};
 const storage={path:'C:\\Users\\me\\AppData\\Roaming\\StremioSmartSearch',total:300*1024*1024,catalogue:200*1024*1024,backup:100*1024*1024-64,other:64,files:3,memory:180*1024*1024,diskFree:50*1024**3,diskSize:500*1024**3,canOpen:true,canChoose:true,custom:false,defaultPath:'C:\\Users\\me\\AppData\\Roaming\\StremioSmartSearch'};
 const requests=[];
 const context = {
@@ -18,7 +18,7 @@ const context = {
   window:{smartSearch:{baseURL:'http://127.0.0.1:11479',token:'fixture'}},
   navigator:{clipboard:{async writeText(value){if(clipboardBlocked)throw Error('blocked');copied=value;}}},
   setTimeout(callback){nextRefresh=callback;},clearTimeout(){},
-  async fetch(path,options){requests.push({path,options});if(path==='/api/build')status={...status,building:true,buildProfile:JSON.parse(options.body).profile};const value = path==='/api/status'||path==='/api/build' ? status : path==='/api/storage' ? storage : path==='/api/storage/open' ? {ok:true} : path==='/api/storage/choose' ? {path:'D:\\Media',cancelled:false} : path==='/api/storage/move' ? {path:'D:\\Media\\Stremio Smart Search'} : path==='/api/clients' ? {clients:buttons.map(node=>({id:node.dataset.client,name:node.dataset.client,available:true}))} : {name:'dx.bi'};return {ok:true,async json(){return value;}};},
+  async fetch(path,options){requests.push({path,options});if(path==='/api/build')status={...status,building:true,buildProfile:JSON.parse(options.body).profile};if(path==='/api/updates')status={...status,updates:{...status.updates,...JSON.parse(options.body)}};const value = path==='/api/status'||path==='/api/build'||path==='/api/updates' ? status : path==='/api/storage' ? storage : path==='/api/storage/open' ? {ok:true} : path==='/api/storage/choose' ? {path:'D:\\Media',cancelled:false} : path==='/api/storage/move' ? {path:'D:\\Media\\Stremio Smart Search'} : path==='/api/clients' ? {clients:buttons.map(node=>({id:node.dataset.client,name:node.dataset.client,available:true}))} : {name:'dx.bi'};return {ok:true,async json(){return value;}};},
 };
 vm.runInNewContext(source,context);
 await new Promise(resolve=>setImmediate(resolve));
@@ -82,7 +82,7 @@ await nextRefresh();
 status={...status,building:false,profile:'expanded',buildProfile:''};
 await nextRefresh();
 assert.match(nodes['catalog-info'].textContent,/Expanded/);
-assert.equal(nodes.build.textContent,'Refresh catalogue');
+assert.equal(nodes.build.textContent,'Refresh now');
 status={...status,ready:false,movies:0,series:0};
 await nextRefresh();
 assert.equal(nodes['catalog-stats'].hidden,true);
@@ -103,7 +103,7 @@ await nextRefresh();
 assert.equal(nodes['alias-language'].value,'');
 assert.equal(nodes['alias-language'].options.length,3);
 assert.equal(nodes['alias-region'].hidden,true);
-assert.equal(nodes.build.textContent,'Refresh catalogue','existing users keep their behaviour');
+assert.equal(nodes.build.textContent,'Refresh now','existing users keep their behaviour');
 nodes['alias-language'].value='fr';
 nodes['alias-language'].change();
 assert.equal(nodes.build.textContent,'Apply titles & rebuild');
@@ -123,7 +123,7 @@ assert.deepEqual(aliasBuild,{profile:'expanded',language:'fr',region:'CA'});
 assert.equal(nodes['alias-language'].disabled,true);
 status={...status,building:false,buildProfile:'',buildLanguage:'',buildRegion:'',language:'fr',region:'CA',aliases:1234};
 await nextRefresh();
-assert.equal(nodes.build.textContent,'Refresh catalogue');
+assert.equal(nodes.build.textContent,'Refresh now');
 assert.match(nodes['catalog-info'].textContent,/French titles/);
 assert.match(nodes['alias-info'].textContent,/1,234 alternative titles/);
 nodes['alias-language'].value='it';
@@ -142,6 +142,44 @@ nodes['alias-language'].change();
 nodes['alias-region'].value='CA';
 nodes['alias-region'].change();
 assert.equal(nodes.build.textContent,'Apply size & rebuild');
+// Automatic updates: on/off, frequency, and every status line.
+status={...status,building:false,buildProfile:'',updates:{...status.updates,auto:true,state:'waiting',checkResult:''}};
+await nextRefresh();
+assert.equal(nodes['auto-update'].checked,true);
+assert.equal(nodes['update-frequency'].value,'48');
+assert.equal(nodes['update-frequency'].disabled,false);
+assert.match(nodes['update-info'].textContent,/Downloads about 238 MB only when IMDb has new data\. Next check/);
+nodes['update-frequency'].value='168';
+await nodes['update-frequency'].change();
+await new Promise(resolve=>setImmediate(resolve));
+assert.deepEqual(JSON.parse(requests.filter(request=>request.path==='/api/updates').at(-1).options.body),{intervalHours:168});
+assert.equal(nodes['update-frequency'].value,'168');
+nodes['auto-update'].checked=false;
+await nodes['auto-update'].change();
+await new Promise(resolve=>setImmediate(resolve));
+assert.deepEqual(JSON.parse(requests.filter(request=>request.path==='/api/updates').at(-1).options.body),{auto:false});
+assert.equal(nodes['update-frequency'].disabled,true,'frequency only matters when on');
+assert.match(nodes['update-info'].textContent,/off\. Choose Refresh now/);
+status={...status,updates:{...status.updates,auto:true,state:'checking'}};
+await nextRefresh();
+assert.match(nodes['update-info'].textContent,/Checking IMDb/);
+status={...status,updates:{...status.updates,state:'waiting',checkResult:'unchanged',lastCheck:new Date().toISOString()}};
+await nextRefresh();
+assert.match(nodes['update-info'].textContent,/Up to date: IMDb had no new data at today/);
+status={...status,updates:{...status.updates,state:'retrying',checkResult:'failed',lastError:'Could not reach IMDb',failures:2}};
+await nextRefresh();
+assert.match(nodes['update-info'].textContent,/didn’t finish \(Could not reach IMDb\).*unchanged/);
+status={...status,updates:{...status.updates,state:'metered'}};
+await nextRefresh();
+assert.match(nodes['update-info'].textContent,/metered/);
+status={...status,building:true,buildProfile:'expanded',updates:{...status.updates,state:'updating',automatic:true}};
+await nextRefresh();
+assert.match(nodes['update-info'].textContent,/Updating automatically/);
+assert.equal(nodes['catalog-stats'].hidden,false,'automatic updates keep the catalogue visible');
+status={...status,building:false,ready:false,buildProfile:'',updates:{...status.updates,state:'waiting',automatic:false}};
+await nextRefresh();
+assert.match(nodes['update-info'].textContent,/After setup, Smart Search checks IMDb every week and downloads about 238 MB only when there is new data/,'first run discloses the download size');
+status={...status,ready:true};
 // The move panel answers Enter and Escape; Quit needs a second click.
 nodes['move-panel'].hidden=false;
 nodes['move-path'].keydown({key:'Escape'});
@@ -152,4 +190,4 @@ assert.equal(requests.filter(request=>request.path==='/api/quit').length,quitsBe
 assert.match(nodes.quit.textContent,/again/);
 await nodes.quit.click();
 assert.equal(requests.filter(request=>request.path==='/api/quit').length,quitsBefore+1);
-console.log('Setup UI checks passed: HTTP install, clipboard fallback, profile and alternative-title selection, refresh and failure states.');
+console.log('Setup UI checks passed: HTTP install, clipboard fallback, profile and alternative-title selection, refresh and failure states, automatic updates.');

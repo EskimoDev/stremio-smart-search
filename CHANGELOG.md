@@ -8,6 +8,7 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 
 ### Added
 
+- Automatic catalogue updates, on by default for new installations. While the helper runs, it checks IMDb every 2 days (or every day, 3 days or week) with conditional `HEAD` requests and rebuilds only when the files changed. Start-up and search never wait for it, the current catalogue stays until the new one is validated, failures back off from 1 to 24 hours across restarts, Windows metered connections are skipped, and **Refresh now** joins a running update. Existing installations stay manual until switched on. Details in [docs/CATALOGUE.md](docs/CATALOGUE.md#automatic-updates).
 - Dark mode for the settings page. It follows your system's light or dark setting, and a header toggle switches between Auto, Light and Dark and remembers your choice. The logo, buttons, inputs, status text and storage bar all switch with it.
 
 ### Changed

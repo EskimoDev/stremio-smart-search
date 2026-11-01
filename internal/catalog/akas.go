@@ -13,7 +13,7 @@ import (
 	"github.com/EskimoDev/stremio-smart-search/internal/textnorm"
 )
 
-const AkasURL = "https://datasets.imdbws.com/title.akas.tsv.gz"
+const AkasURL = "https://datasets.imdbws.com/" + AkasFile
 
 // Candidates retained per title while streaming, before ranking and dedup.
 // Popular titles have well over a hundred akas rows; one language rarely has

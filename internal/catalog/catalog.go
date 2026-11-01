@@ -47,6 +47,10 @@ type Catalog struct {
 	BuiltAt       time.Time `json:"builtAt"`
 	Source        string    `json:"source"`
 	Titles        []Title   `json:"titles"`
+	// Sources records the HTTP validators of the dataset files this catalogue
+	// was built from. It is filled by a download, kept by the caller in its
+	// update state, and never written to the snapshot.
+	Sources []SourceFile `json:"-"`
 }
 
 func (c *Catalog) Validate() error {

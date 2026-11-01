@@ -115,6 +115,10 @@ func run() error {
 	}
 	server := &http.Server{Handler: a.Handler(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 16 << 10}
 	a.Quit = cancel
+	if *importCatalog == "" {
+		// Automatic updates replace the managed catalogue, never a --catalog file.
+		a.StartUpdates(ctx)
+	}
 	go func() {
 		<-ctx.Done()
 		shutdownCtx, done := context.WithTimeout(context.Background(), 3*time.Second)

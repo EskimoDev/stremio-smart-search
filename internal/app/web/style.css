@@ -141,6 +141,12 @@ strong { font-weight: 550; color: var(--ink); }
 .alias-settings { padding-top: 16px; border-top: 1px solid var(--line); margin-bottom: 18px; }
 .alias-settings select + label { margin-top: 12px; }
 #alias-info { margin: 10px 0 0; }
+.update-settings { padding-top: 16px; margin-top: 18px; border-top: 1px solid var(--line); }
+.update-toggle { display: flex; align-items: center; gap: 8px; min-height: 24px; font-size: 13px; font-weight: 500; cursor: pointer; }
+.update-toggle input { width: 16px; height: 16px; margin: 0; accent-color: var(--ink); cursor: pointer; }
+.update-frequency-label { display: block; font-size: 12px; font-weight: 500; margin: 12px 0 8px; }
+.update-settings select { display: block; width: 100%; min-height: 38px; border: 0; box-shadow: var(--ring); border-radius: 5px; padding: 8px 10px; color: var(--ink); background: var(--field); cursor: pointer; }
+#update-info { margin: 10px 0 0; font-variant-numeric: tabular-nums; }
 .comparison-link { display: inline-block; font-size: 11px; color: var(--muted); margin-bottom: 18px; }
 button, .button { min-height: 36px; border: 0; border-radius: 5px; padding: 8px 14px; font-size: 12px; font-weight: 500; background: var(--ink); color: var(--surface); text-decoration: none; transition: background .12s, box-shadow .12s; }
 :where(button, .button):hover { background: var(--primary-hover); }

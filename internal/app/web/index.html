@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0a0a0a" data-scheme="dark" media="(prefers-color-scheme: dark)">
   <title>Stremio Smart Search (SSS)</title>
   <link rel="icon" href="/icon.svg?v=sss-logo">
-  <link rel="stylesheet" href="/style.css?v=theme">
+  <link rel="stylesheet" href="/style.css?v=updates">
   <script src="/theme.js?v=theme"></script>
   <link rel="preload" href="/fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
 </head>
@@ -60,9 +60,21 @@
       <div id="progress" class="progress" hidden>
         <span class="spinner" aria-hidden="true"></span><span id="stage">Starting…</span>
       </div>
+      <div class="update-settings">
+        <label class="update-toggle" for="auto-update"><input id="auto-update" type="checkbox" aria-describedby="update-info" disabled> Update automatically</label>
+        <label for="update-frequency" class="update-frequency-label">Check for new titles</label>
+        <select id="update-frequency" aria-describedby="update-info" disabled>
+          <option value="24">Every day</option>
+          <option value="48" selected>Every 2 days</option>
+          <option value="72">Every 3 days</option>
+          <option value="168">Every week</option>
+        </select>
+        <p id="update-info" class="fine" aria-live="polite">Checking update settings…</p>
+      </div>
       <details class="download-help">
         <summary>About the title data</summary>
         <p>The first download from IMDb can be a few hundred MB and take several minutes. Smart Search then builds a compact local index.</p>
+        <p>With automatic updates on, Smart Search asks IMDb whether its files changed (a few bytes) and downloads them again only when they have. IMDb usually publishes new files daily, so most scheduled checks lead to a download. Updates run in the background while Smart Search is open; search keeps working, and the current catalogue stays until the new one is ready. Windows connections set as metered are skipped.</p>
         <p>All sizes download the same source files. Larger options retain more titles and use more memory. Changing size takes effect after a successful rebuild; your current catalogue stays available while it runs.</p>
         <p>Alternative titles add IMDb's regional title list to the download and keep only titles in your chosen language for movies and series already in your catalogue. English, original and translated names all keep working.</p>
         <p>IMDb data is for personal, non-commercial use. <a href="https://developer.imdb.com/non-commercial-datasets/" target="_blank" rel="noreferrer">Data terms <span aria-hidden="true">↗</span></a></p>
@@ -199,6 +211,6 @@
     <span id="version">Stremio Smart Search</span>
     <span><a href="/fonts/OFL.txt" target="_blank" rel="noreferrer">Font licence</a> <span class="footer-divider" aria-hidden="true">/</span> <button id="quit" class="text-button">Quit helper</button></span>
   </footer>
-  <!--BOOTSTRAP--><script src="/app.js" defer></script>
+  <!--BOOTSTRAP--><script src="/app.js?v=updates" defer></script>
 </body>
 </html>

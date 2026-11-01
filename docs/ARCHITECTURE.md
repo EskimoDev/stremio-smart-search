@@ -22,7 +22,7 @@ The loader accepts at most 500,000 titles, 600,000 alternative titles (eight per
 
 ## Storage
 
-Settings, the private control key and, by default, the catalogue live in the OS configuration folder (`os.UserConfigDir()/StremioSmartSearch`, or `--data-dir`). The catalogue is `catalog.json.gz`. Saving temporarily renames the old file to `catalog.json.gz.previous`; the loader can recover from it after an interrupted replacement. A successful save removes it, so it is not a permanent backup.
+Settings, update state, the private control key and, by default, the catalogue live in the OS configuration folder (`os.UserConfigDir()/StremioSmartSearch`, or `--data-dir`). The catalogue is `catalog.json.gz`. Saving temporarily renames the old file to `catalog.json.gz.previous`; the loader can recover from it after an interrupted replacement. A successful save removes it, so it is not a permanent backup.
 
 A custom catalogue folder is recorded in `storage.json` in the settings folder. Settings never move, so launches using that same data folder and port can authenticate and reuse the helper. A move copies the catalogue through temporary names, records the new folder, swaps it in and only then removes the old copies. It is refused during a build and checks free space first.
 
@@ -41,6 +41,8 @@ Protocol responses include CORS headers for Stremio clients. `/api/*` management
 ## Lifecycle
 
 The launcher starts the companion and opens the client chosen in setup. With no saved preference, it opens the registered Stremio URL handler. An authenticated existing instance is reused instead of starting another engine. The service remains available without polling Stremio's processes. The browser page may be closed. Quit and OS shutdown cancel any active data preparation.
+
+Automatic catalogue updates run inside the helper (`internal/app/updates.go`); there is no separate service. One goroutine wakes three minutes after start-up and then every 30 minutes. A wake-up that is not due compares a few persisted timestamps and does no I/O. When the interval has passed since the last success (and no backoff or six-hour re-check spacing applies), it sends conditional `HEAD` requests for the dataset files and, if a file changed or the server gives nothing to compare, starts the same build as a manual refresh. User settings (`updates.json`) are kept apart from bookkeeping (`update-state.json`: last success, last check and result, failures, retry time, an in-progress marker and per-file `ETag`, `Last-Modified` and size). Persisted times in the future are clamped to now. On Windows the machine-wide connection cost comes from the Network List Manager (`INetworkCostManager`) through COM; other systems report it as unknown. See [CATALOGUE.md](CATALOGUE.md#automatic-updates) for the user-facing behaviour.
 
 The helper is loopback-only by default. An advanced `--listen` option permits server hosting, but remote settings remain blocked. Cross-device use requires client-compatible transport, commonly HTTPS through a reverse proxy. These paths require separate verification from a local desktop install.
 

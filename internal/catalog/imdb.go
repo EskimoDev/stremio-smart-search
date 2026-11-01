@@ -2,19 +2,24 @@ package catalog
 
 import (
 	"bufio"
-	"compress/gzip"
 	"container/heap"
 	"context"
 	"fmt"
 	"io"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
 )
 
-const RatingsURL = "https://datasets.imdbws.com/title.ratings.tsv.gz"
-const BasicsURL = "https://datasets.imdbws.com/title.basics.tsv.gz"
+// Dataset file names on IMDb's server; see Source.
+const (
+	RatingsFile = "title.ratings.tsv.gz"
+	BasicsFile  = "title.basics.tsv.gz"
+	AkasFile    = "title.akas.tsv.gz"
+)
+
+const RatingsURL = "https://datasets.imdbws.com/" + RatingsFile
+const BasicsURL = "https://datasets.imdbws.com/" + BasicsFile
 
 type Progress func(stage string, bytes int64)
 type rating struct {
@@ -225,109 +230,19 @@ func parseBasics(ctx context.Context, reader io.Reader, ratings map[uint32]ratin
 	return c, c.Validate()
 }
 
-type countingReader struct {
-	reader   io.Reader
-	total    int64
-	last     time.Time
-	stage    string
-	progress Progress
-}
-
-func (c *countingReader) Read(p []byte) (int, error) {
-	n, err := c.reader.Read(p)
-	c.total += int64(n)
-	if time.Since(c.last) > 500*time.Millisecond {
-		c.last = time.Now()
-		if c.progress != nil {
-			c.progress(c.stage, c.total)
-		}
-	}
-	return n, err
-}
-
-func openDataset(ctx context.Context, url, stage string, maximum int64, progress Progress) (io.ReadCloser, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("User-Agent", "StremioSmartSearch/0.1 (+https://github.com/EskimoDev/stremio-smart-search)")
-	client := &http.Client{Timeout: 30 * time.Minute}
-	response, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	if response.StatusCode != http.StatusOK {
-		response.Body.Close()
-		return nil, fmt.Errorf("IMDb download returned HTTP %d; try again later", response.StatusCode)
-	}
-	if response.ContentLength > maximum {
-		response.Body.Close()
-		return nil, fmt.Errorf("dataset download exceeds its size limit")
-	}
-	counted := &countingReader{reader: io.LimitReader(response.Body, maximum+1), stage: stage, progress: progress}
-	z, err := gzip.NewReader(counted)
-	if err != nil {
-		response.Body.Close()
-		return nil, err
-	}
-	return &datasetReader{Reader: z, body: response.Body, gzip: z}, nil
-}
-
-type datasetReader struct {
-	io.Reader
-	body io.Closer
-	gzip io.Closer
-}
-
-func (d *datasetReader) Close() error { _ = d.gzip.Close(); return d.body.Close() }
-
 func DownloadIMDb(ctx context.Context, progress Progress) (*Catalog, error) {
 	profile, _ := ProfileByID(DefaultProfile)
 	return DownloadIMDbProfile(ctx, profile, progress)
 }
 
+// DownloadIMDbProfile builds a catalogue from IMDb's dataset server.
 func DownloadIMDbProfile(ctx context.Context, profile Profile, progress Progress) (*Catalog, error) {
-	if known, ok := ProfileByID(profile.ID); !ok || known != profile {
-		return nil, fmt.Errorf("unknown catalogue profile")
-	}
-	if progress != nil {
-		progress("Downloading title ratings", 0)
-	}
-	r, err := openDataset(ctx, RatingsURL, "Downloading title ratings", 128<<20, progress)
-	if err != nil {
-		return nil, err
-	}
-	ratings, err := parseRatings(ctx, r, profile.MinVotes)
-	_ = r.Close()
-	if err != nil {
-		return nil, err
-	}
-	if progress != nil {
-		progress("Downloading and selecting movie and TV titles", 0)
-	}
-	b, err := openDataset(ctx, BasicsURL, "Downloading and selecting movie and TV titles", 768<<20, progress)
-	if err != nil {
-		return nil, err
-	}
-	defer b.Close()
-	return parseBasics(ctx, b, ratings, profile)
+	return IMDb.DownloadProfile(ctx, profile, progress)
 }
 
 // DownloadIMDbAliases streams title.akas.tsv.gz and attaches the selected
 // language's alternative titles to c. Nothing is downloaded when options are
 // disabled. On failure c is unchanged and the caller keeps its previous snapshot.
 func DownloadIMDbAliases(ctx context.Context, c *Catalog, options AliasOptions, progress Progress) error {
-	if err := options.Validate(); err != nil || !options.Enabled() {
-		return err
-	}
-	const stage = "Downloading alternative titles"
-	if progress != nil {
-		progress(stage, 0)
-	}
-	a, err := openDataset(ctx, AkasURL, stage, 1536<<20, progress)
-	if err != nil {
-		return err
-	}
-	defer a.Close()
-	return ParseIMDbAliases(ctx, a, c, options)
+	return IMDb.DownloadAliases(ctx, c, options, progress)
 }
