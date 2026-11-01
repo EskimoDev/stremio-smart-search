@@ -27,8 +27,13 @@ func TestStorageReportsDataFolderUsage(t *testing.T) {
 	if err := json.Unmarshal(w.Body.Bytes(), &s); err != nil {
 		t.Fatal(err)
 	}
-	// control.key is created by New and counts as other data.
-	if s.Catalogue != 1000 || s.Backup != 400 || s.Other != 64 || s.Total != 1464 || s.Custom || s.Memory == 0 || !s.CanOpen || !filepath.IsAbs(s.Path) {
+	// control.key and updates.json are created by New and count as other data.
+	settings, err := os.Stat(filepath.Join(a.dataDir, updateSettingsFile))
+	if err != nil {
+		t.Fatal(err)
+	}
+	other := 64 + settings.Size()
+	if s.Catalogue != 1000 || s.Backup != 400 || s.Other != other || s.Total != 1400+other || s.Custom || s.Memory == 0 || !s.CanOpen || !filepath.IsAbs(s.Path) {
 		t.Fatalf("unexpected storage report: %+v", s)
 	}
 }

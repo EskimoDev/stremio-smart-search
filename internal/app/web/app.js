@@ -43,6 +43,44 @@
     $('alias-info').textContent = info;
     return changed;
   }
+  const megabytes = bytes => `${Math.round(bytes / 1e6).toLocaleString()} MB`;
+  const when = value => {
+    const date = new Date(value), now = new Date();
+    const day = date.toDateString() === now.toDateString() ? 'today' : date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+    return `${day}, ${date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
+  };
+  const frequencyNames = { 24: 'every day', 48: 'every 2 days', 72: 'every 3 days', 168: 'every week' };
+  let updateSaving = false;
+  function renderUpdates(status) {
+    const updates = status.updates;
+    if (!updates) return;
+    if (!updateSaving) {
+      $('auto-update').checked = updates.auto;
+      $('update-frequency').value = String(updates.intervalHours);
+    }
+    $('auto-update').disabled = updateSaving;
+    $('update-frequency').disabled = updateSaving || !updates.auto;
+    const size = `about ${megabytes(updates.downloadBytes)}`;
+    const weekly = updates.aliasBytes ? `, plus ${megabytes(updates.aliasBytes)} once a week for alternative titles` : '';
+    const next = updates.nextCheck && new Date(updates.nextCheck) > new Date() ? ` Next check ${when(updates.nextCheck)}.` : ' Next check soon.';
+    let info;
+    if (!status.ready) info = updates.auto
+      ? `After setup, Smart Search checks IMDb ${frequencyNames[updates.intervalHours]} and downloads ${size} only when there is new data. Turn this off to update only when you choose.`
+      : 'Automatic updates are off. Use Refresh now after setup to get new titles.';
+    else if (!updates.auto) info = 'Automatic updates are off. Choose Refresh now to get new titles.';
+    else if (status.building) info = updates.automatic ? 'Updating automatically. Search keeps working with your current catalogue.' : 'Refreshing now. Search keeps working with your current catalogue.';
+    else if (updates.state === 'checking') info = 'Checking IMDb for new data…';
+    else if (updates.state === 'metered') info = 'Paused on a metered connection. Refresh now still works.';
+    else if (updates.state === 'retrying') info = `The last update didn’t finish (${updates.lastError || 'unknown error'}). Your current catalogue is unchanged.${next}`;
+    else if (updates.checkResult === 'unchanged') info = `Up to date: IMDb had no new data at ${when(updates.lastCheck)}.${next}`;
+    else info = `Downloads ${size} only when IMDb has new data${weekly}.${next}`;
+    $('update-info').textContent = info;
+  }
+  async function saveUpdates(change) {
+    updateSaving = true; if (lastStatus) renderUpdates(lastStatus);
+    try { const status = await api('updates', 'POST', change); updateSaving = false; render(status); }
+    catch (error) { updateSaving = false; tell(error.message); if (lastStatus) renderUpdates(lastStatus); }
+  }
   function render(status) {
     if (!selectedProfile || (lastStatus?.building && !status.building && !status.error)) {
       selectedProfile = status.buildProfile || status.profile;
@@ -60,7 +98,7 @@
     $('build').disabled = status.building;
     const sizeChanged = selectedProfile !== status.profile, titlesChanged = renderAliases(status);
     $('build').textContent = status.building ? 'Preparing…' : !status.ready ? 'Prepare catalogue'
-      : sizeChanged && titlesChanged ? 'Apply changes & rebuild' : sizeChanged ? 'Apply size & rebuild' : titlesChanged ? 'Apply titles & rebuild' : 'Refresh catalogue';
+      : sizeChanged && titlesChanged ? 'Apply changes & rebuild' : sizeChanged ? 'Apply size & rebuild' : titlesChanged ? 'Apply titles & rebuild' : 'Refresh now';
     $('progress').hidden = !status.building;
     $('stage').textContent = `${status.stage}${status.bytes ? ` · ${(status.bytes / 1024 / 1024).toFixed(1)} MB downloaded` : ''}`;
     $('catalog-stats').hidden = !status.ready;
@@ -68,7 +106,9 @@
     $('series-count').textContent = status.series.toLocaleString();
     const activeProfile = status.profiles.find(profile => profile.id === status.profile);
     const activeLanguage = languageOf(status, status.language);
-    $('catalog-info').textContent = status.ready ? `${activeProfile?.name || 'Local'}${activeLanguage ? ` · ${activeLanguage.name} titles` : ''} · updated ${new Date(status.builtAt).toLocaleDateString()}` : 'Download IMDb title data to enable setup. A few hundred MB; allow several minutes.';
+    const updated = status.updates?.lastSuccess || status.builtAt;
+    $('catalog-info').textContent = status.ready ? `${activeProfile?.name || 'Local'}${activeLanguage ? ` · ${activeLanguage.name} titles` : ''} · updated ${when(updated)}` : 'Download IMDb title data to enable setup. A few hundred MB; allow several minutes.';
+    renderUpdates(status);
     for (const button of installButtons) {
       const client = clients.find(client => client.id === button.dataset.client);
       button.disabled = !status.ready || !client?.available;
@@ -142,6 +182,8 @@
     try { render(await api('build', 'POST', { profile: selectedProfile, language: selectedLanguage, region: selectedRegion })); } catch (error) { tell(error.message); }
     refresh();
   });
+  $('auto-update').addEventListener('change', () => saveUpdates({ auto: $('auto-update').checked }));
+  $('update-frequency').addEventListener('change', () => saveUpdates({ intervalHours: Number($('update-frequency').value) }));
   $('catalog-profile').addEventListener('change', () => {
     selectedProfile = $('catalog-profile').value;
     if (lastStatus) render(lastStatus);

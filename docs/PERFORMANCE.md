@@ -71,6 +71,40 @@ language sit well below the per-size budgets, so no titles were dropped. On
 Standard: English 54,950, French 55,722, German 55,288, Japanese 55,910, Spanish
 84,843 (Spain only: 48,906).
 
+## Automatic updates
+
+Measured on 2026-11-01 on Windows x64 with the opt-in tests in
+`internal/app`. Both used a temporary data folder, so no installed catalogue was
+involved.
+
+**Real IMDb server** (`TestRealIMDbAutomaticUpdate`, commit 598c918). The test
+starts from a small catalogue that is two days old, runs the scheduled check
+against `datasets.imdbws.com`, lets the update build, then restarts on the same
+folder. Only the ratings and basics files are allowed.
+
+| Measure | Result |
+|---|---|
+| Freshness check | Both files changed (IMDb's 00:45 UTC export); 164 ms |
+| Downloaded | 238,268,411 bytes (ratings 8,728,224 + basics 229,540,187) |
+| Update, check to activation | 4.8 s |
+| Peak working set | 69 MiB |
+| Searches during the update | 94, none missed |
+| Activated catalogue | Compact, 25,000 movies + 25,000 series |
+| After restart | 47 h of scheduled ticks made no requests; the next due check got 304 for both files and downloaded nothing |
+| Errors and retries | None |
+
+**Real files over loopback** (`TestRealDataAutomaticUpdate`, commit ff17e40, Linux
+VM, 2 vCPU). Standard size with French alternative titles. A first preparation
+downloaded 758 MB in 13.8 s with a peak of 187 MiB. A routine update that carried
+alternative titles over downloaded 238 MB in 6.0 s with a peak of 248 MiB. The
+weekly update that also downloaded alternative titles took 758 MB and 14.0 s, with
+a peak of 261 MiB. An unchanged check made no downloads.
+
+To repeat them, set `SMART_SEARCH_REAL_IMDB_UPDATE=1` (downloads about 238 MB) or
+`SMART_SEARCH_REAL_DATA=<folder with the IMDb files>` and run
+`go test ./internal/app -run 'TestReal(IMDb|Data)AutomaticUpdate' -v -timeout 60m`.
+Both tests skip by default.
+
 ## Index and preparation rewrite
 
 The 0.1.0-preview.3 release rebuilt the search index around sorted 32-bit arrays

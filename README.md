@@ -89,8 +89,9 @@ Matching runs locally. On that PC, 95% of Expanded search requests finished with
 
 - SSS needs no account, Stremio password, API key or AI subscription.
 - Matching happens on your computer. SSS does not send your searches to a search service; Stremio still queries your other installed search addons as usual.
-- IMDb is contacted when you prepare or refresh the catalogue. Posters come from MetaHub; your other addons provide metadata and playback.
-- No telemetry or automatic catalogue downloads. Settings are accessible from the host computer only.
+- IMDb is contacted when you prepare or refresh the catalogue, and by automatic updates. Posters come from MetaHub; your other addons provide metadata and playback.
+- Automatic updates are on for new installations: about every 2 days SSS asks IMDb whether its files changed and downloads them again (about 240 MB, plus 520 MB once a week with alternative titles) only when they have. Turn them off or change how often in settings. Existing installations stay manual until you switch them on.
+- No telemetry. Settings are accessible from the host computer only.
 
 The software is MIT licensed. IMDb data has [separate personal, non-commercial terms](DATA.md) and is downloaded by each user; it is not bundled in the app.
 

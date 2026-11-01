@@ -56,6 +56,7 @@ type Status struct {
 	Manifest        string             `json:"manifest"`
 	WebInstall      string             `json:"webInstall"`
 	PreferredClient string             `json:"preferredClient"`
+	Updates         UpdateStatus       `json:"updates"`
 }
 type App struct {
 	ctx             context.Context
@@ -77,6 +78,13 @@ type App struct {
 	// DownloadAliases adds alternative titles to a freshly built catalogue. It
 	// is only called when the build selected a language.
 	DownloadAliases func(context.Context, *catalog.Catalog, catalog.AliasOptions, catalog.Progress) error
+	// CheckSource asks IMDb whether the dataset files changed (HEAD only).
+	CheckSource func(context.Context, []string, []catalog.SourceFile) (catalog.Freshness, error)
+	// NetworkCost reports metered, unmetered or unknown; see netcost_*.go.
+	NetworkCost func() string
+	// now is the clock for the update schedule; tests replace it.
+	now     func() time.Time
+	updates updater // guarded by mu; see updates.go
 }
 
 func New(ctx context.Context, dataDir, baseURL, version string) (*App, error) {
@@ -95,7 +103,11 @@ func New(ctx context.Context, dataDir, baseURL, version string) (*App, error) {
 	a.catalogDir = loadCatalogDir(dataDir)
 	a.DownloadCatalog = catalog.DownloadIMDbProfile
 	a.DownloadAliases = catalog.DownloadIMDbAliases
+	a.CheckSource = catalog.IMDb.Check
+	a.NetworkCost = networkCost
+	a.now = time.Now
 	a.status = Status{Product: Product, Version: version, Profile: catalog.DefaultProfile, Profiles: catalog.Profiles(), Languages: catalog.Languages(), Stage: "Set up your local catalogue", Manifest: baseURL + "/manifest.json", WebInstall: "https://web.stremio.com/#/addons?addon=" + url.QueryEscape(baseURL+"/manifest.json"), PreferredClient: loadClientPreference(dataDir)}
+	a.loadUpdates()
 	return a, nil
 }
 
@@ -136,7 +148,13 @@ func controlToken(path string) ([]byte, error) {
 	}
 	return nil, fmt.Errorf("local control key was not ready; reopen Smart Search")
 }
-func (a *App) Status() Status { a.mu.Lock(); defer a.mu.Unlock(); return a.status }
+func (a *App) Status() Status {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	status := a.status
+	status.Updates = a.updateStatusLocked()
+	return status
+}
 func (a *App) setCatalog(c *catalog.Catalog) {
 	engine := search.New(c.Titles)
 	a.engine.Store(engine)
@@ -191,6 +209,14 @@ func (a *App) Restore() error {
 	return err
 }
 func (a *App) startBuild(profile catalog.Profile, aliases catalog.AliasOptions) bool {
+	return a.startBuildMode(profile, aliases, false, false)
+}
+
+// startBuildMode starts a rebuild unless one is running. Automatic builds use
+// the same path as manual ones; they differ only in how a failure is shown,
+// in one extra plausibility check, and in carryAliases: copy alternative
+// titles from the current snapshot instead of downloading title.akas.
+func (a *App) startBuildMode(profile catalog.Profile, aliases catalog.AliasOptions, automatic, carryAliases bool) bool {
 	a.mu.Lock()
 	if a.status.Building || a.moving {
 		a.mu.Unlock()
@@ -202,6 +228,16 @@ func (a *App) startBuild(profile catalog.Profile, aliases catalog.AliasOptions) 
 	a.status.Error = ""
 	a.status.Stage = "Connecting to IMDb"
 	a.status.Bytes = 0
+	active := a.status.Movies + a.status.Series
+	sameProfile := a.status.Ready && a.status.Profile == profile.ID
+	if a.beginBuildLocked(automatic, carryAliases) != nil && automatic {
+		a.status.Building = false
+		a.status.BuildProfile = ""
+		a.status.BuildLanguage, a.status.BuildRegion = "", ""
+		a.status.Stage = "Ready to search"
+		a.mu.Unlock()
+		return false
+	}
 	a.mu.Unlock()
 	go func() {
 		ctx, cancel := context.WithTimeout(a.ctx, 45*time.Minute)
@@ -213,28 +249,84 @@ func (a *App) startBuild(profile catalog.Profile, aliases catalog.AliasOptions) 
 			a.mu.Unlock()
 		}
 		c, err := a.DownloadCatalog(ctx, profile, progress)
+		if err == nil {
+			a.mu.Lock()
+			err = a.downgradeLocked(c.Sources)
+			a.mu.Unlock()
+		}
+		carried := false
 		if err == nil && aliases.Enabled() {
-			err = a.DownloadAliases(ctx, c, aliases, progress)
+			a.mu.Lock()
+			carry := a.updates.carry
+			a.mu.Unlock()
+			if carry {
+				progress("Keeping your alternative titles", 0)
+				carried = catalog.CarryAliases(a.catalogPath(), c, aliases) == nil
+				// Refresh now may have asked for fresh alternative titles
+				// meanwhile; past this point it can no longer.
+				a.mu.Lock()
+				carried = carried && a.updates.carry
+				a.updates.committed = carried
+				a.mu.Unlock()
+				if !carried {
+					// Unreadable, different selection, or Refresh now:
+					// download them instead.
+					for i := range c.Titles {
+						c.Titles[i].Aliases = nil
+					}
+					c.AliasLanguage, c.AliasRegion = "", ""
+				}
+			}
+			if !carried {
+				err = a.DownloadAliases(ctx, c, aliases, progress)
+				if err == nil {
+					a.mu.Lock()
+					err = a.downgradeLocked(c.Sources)
+					a.mu.Unlock()
+				}
+			}
+		}
+		if err == nil && automatic && sameProfile && len(c.Titles) < active/2 {
+			// A valid but much smaller file usually means IMDb published
+			// something partial. Keep the working catalogue; a manual
+			// refresh can still accept it.
+			err = fmt.Errorf("IMDb's files had %d titles instead of about %d; kept the current catalogue", len(c.Titles), active)
 		}
 		if err == nil {
 			err = catalog.Save(a.catalogPath(), c)
 		}
 		if err == nil {
+			// Record the saved snapshot before setCatalog clears Building,
+			// so the schedule never sees a finished build without its
+			// validators and starts a second download.
 			a.mu.Lock()
 			a.status.Stage = "Preparing fast local search"
+			a.finishBuildLocked(c, nil, carried)
 			a.mu.Unlock()
 			a.setCatalog(c)
 			// Return transient parsing memory after an explicit large download.
 			// This is not a timer or a per-search garbage collection request.
+			c = nil
 			debug.FreeOSMemory()
 			return
 		}
+		if a.ctx.Err() != nil {
+			err = errors.New("The update stopped when Smart Search closed.")
+		}
 		a.mu.Lock()
+		automatic := a.updates.automatic
+		a.finishBuildLocked(nil, err, false)
 		a.status.Building = false
 		a.status.BuildProfile = ""
 		a.status.BuildLanguage, a.status.BuildRegion = "", ""
-		a.status.Stage = "Catalogue update did not finish"
-		a.status.Error = err.Error()
+		if automatic && a.status.Ready {
+			// The schedule retries by itself; report it in the update
+			// status rather than as an error on the page.
+			a.status.Stage = "Ready to search"
+		} else {
+			a.status.Stage = "Catalogue update did not finish"
+			a.status.Error = err.Error()
+		}
 		a.mu.Unlock()
 	}()
 	return true
@@ -388,10 +480,34 @@ func (a *App) Handler() http.Handler {
 					return
 				}
 				if !a.startBuild(profile, aliases) {
+					switch a.adoptAutomaticBuild(profile, aliases) {
+					case joined:
+						writeJSON(w, 202, a.Status())
+						return
+					case finishing:
+						writeJSON(w, 409, map[string]string{"error": "An automatic update is just finishing. Choose Refresh now again in a moment to also download new alternative titles."})
+						return
+					}
 					writeJSON(w, 409, map[string]string{"error": "A catalogue update is already running."})
 					return
 				}
 				writeJSON(w, 202, a.Status())
+			case r.URL.Path == "/api/updates" && r.Method == http.MethodPost:
+				var request struct {
+					Auto          *bool `json:"auto"`
+					IntervalHours *int  `json:"intervalHours"`
+				}
+				decoder := json.NewDecoder(r.Body)
+				decoder.DisallowUnknownFields()
+				if decoder.Decode(&request) != nil {
+					writeJSON(w, 400, map[string]string{"error": "Send automatic updates on or off and a frequency."})
+					return
+				}
+				if err := a.SetUpdates(request.Auto, request.IntervalHours); err != nil {
+					writeJSON(w, 400, map[string]string{"error": "Choose every day, 2 days, 3 days or week, then try again."})
+					return
+				}
+				writeJSON(w, 200, a.Status())
 			case r.URL.Path == "/api/storage" && r.Method == http.MethodGet:
 				writeJSON(w, 200, a.Storage())
 			case r.URL.Path == "/api/storage/open" && r.Method == http.MethodPost:

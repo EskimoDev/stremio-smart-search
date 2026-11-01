@@ -47,6 +47,10 @@ type Catalog struct {
 	BuiltAt       time.Time `json:"builtAt"`
 	Source        string    `json:"source"`
 	Titles        []Title   `json:"titles"`
+	// Sources records the HTTP validators of the dataset files this catalogue
+	// was built from. It is filled by a download, kept by the caller in its
+	// update state, and never written to the snapshot.
+	Sources []SourceFile `json:"-"`
 }
 
 func (c *Catalog) Validate() error {
@@ -173,4 +177,55 @@ func Save(path string, c *Catalog) error {
 	}
 	_ = os.Remove(backup)
 	return nil
+}
+
+// CarryAliases copies the alternative titles stored in the snapshot at path
+// onto c's titles with the same type and ID, so a routine update can skip
+// re-downloading IMDb's 500 MB title.akas file. It decodes only IDs and
+// aliases, never the rest of the old snapshot. The snapshot must hold the
+// same alternative-title selection; titles new since it was made get none
+// until title.akas is next downloaded.
+func CarryAliases(path string, c *Catalog, options AliasOptions) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	buffer := bufio.NewReader(f)
+	var reader io.Reader = buffer
+	if magic, _ := buffer.Peek(2); len(magic) == 2 && magic[0] == 0x1f && magic[1] == 0x8b {
+		z, err := gzip.NewReader(buffer)
+		if err != nil {
+			return err
+		}
+		defer z.Close()
+		reader = z
+	}
+	var old struct {
+		Version       int    `json:"version"`
+		AliasLanguage string `json:"aliasLanguage"`
+		AliasRegion   string `json:"aliasRegion"`
+		Titles        []struct {
+			ID      string   `json:"id"`
+			Type    string   `json:"type"`
+			Aliases []string `json:"aliases"`
+		} `json:"titles"`
+	}
+	if err := json.NewDecoder(io.LimitReader(reader, 128<<20)).Decode(&old); err != nil {
+		return fmt.Errorf("could not read the previous alternative titles: %w", err)
+	}
+	if old.Version != 1 || old.AliasLanguage != options.Language || old.AliasRegion != options.Region {
+		return fmt.Errorf("the previous catalogue has a different alternative-title selection")
+	}
+	byKey := make(map[string][]string, len(old.Titles))
+	for _, t := range old.Titles {
+		if len(t.Aliases) > 0 {
+			byKey[t.Type+":"+t.ID] = t.Aliases
+		}
+	}
+	for i := range c.Titles {
+		c.Titles[i].Aliases = byKey[c.Titles[i].Type+":"+c.Titles[i].ID]
+	}
+	c.AliasLanguage, c.AliasRegion = options.Language, options.Region
+	return c.Validate()
 }
