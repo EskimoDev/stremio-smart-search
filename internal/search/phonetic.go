@@ -528,6 +528,9 @@ const (
 	// almost right: generated typo queries keep their accuracy. Popularity
 	// still lets "fite club" find Fight Club.
 	soundWeight = .4
+	// nearWeight is for a word whose code is one likely sound away from the
+	// query's (see nearSounds): below an exact sound-alike.
+	nearWeight = .3
 	// soundWords is how many sound-alike words one query word may expand to.
 	// They are added beyond the usual term limit, so typo matches cannot crowd
 	// them out.
@@ -538,6 +541,12 @@ const (
 	soundCommon = 50
 	// minSoundWord is the shortest query word given sound-alikes.
 	minSoundWord = 4
+	// soundVotes is how many votes a sound-alike's most popular title needs
+	// unless the word is also within a third of the query's letters by edit
+	// distance. People respell titles they have heard of; a random string's
+	// sound matching an obscure title's word was most of what the fallback
+	// returned for nonsense queries.
+	soundVotes = 20000
 )
 
 // soundIndex files vocabulary words under their Double Metaphone codes. Codes
@@ -678,46 +687,143 @@ func (e *Engine) titleCount(word int32) int {
 	return len(e.words.get(word)) + len(e.alternateWords.get(word))
 }
 
+// bestVotes is the vote count of the most popular title using a word.
+// Titles are numbered most-voted first, so that is each list's first title.
+func (e *Engine) bestVotes(word int32) int32 {
+	best := int32(-1)
+	for _, list := range [2][]int32{e.words.get(word), e.alternateWords.get(word)} {
+		if len(list) > 0 && (best < 0 || list[0] < best) {
+			best = list[0]
+		}
+	}
+	if best < 0 {
+		return 0
+	}
+	return e.titles[best].votes
+}
+
 // soundsLike returns up to soundWords vocabulary words that sound like query,
 // most used first, excluding query itself. Candidates must be within three
 // letters of its length and within about half its letters of it by edit
 // distance, so a shared consonant skeleton alone ("dorman", "truman") is
 // not enough.
-func (e *Engine) soundsLike(query string) []int32 {
-	if len(query) < minSoundWord || !speakable(query) {
-		return nil
-	}
-	self := e.word(query)
-	if self >= 0 && e.titleCount(self) >= soundCommon {
+func (e *Engine) soundsLike(query string, alone bool) []int32 {
+	self, ok := e.soundQuery(query)
+	if !ok {
 		return nil
 	}
 	codes, n := soundCodes(new(metaphone), query) // empty unless query is ASCII letters only
-	type candidate struct {
-		word  int32
-		count int
-	}
-	var candidates []candidate
+	var candidates []soundCandidate
 	for _, code := range codes[:n] {
-		for _, w := range e.sounds.lookup(code) {
-			if w != self && abs(int(e.runeLengths[w])-len(query)) <= 3 {
-				candidates = append(candidates, candidate{w, e.titleCount(w)})
+		candidates = e.soundCandidates(candidates, code, query, self, nil)
+	}
+	return e.closeSounds(candidates, query, len(query)/2+1, alone)
+}
+
+// nearSounds returns up to soundWords words, other than exact, whose code is
+// one likely sound away from query's: a dropped final K ("brekin" PRKN,
+// "breaking" PRKNK) or L ("wocking" AKNK, "walking" ALKNK), or X and T, S
+// or K heard as each other ("fucher" FXR, "future" FTR; "pinokkio" PNK,
+// "pinocchio" PNX). Only
+// codes of three or more sounds are varied, and candidates must be closer
+// in spelling than plain sound-alikes (half the query's letters), which
+// keeps random pronounceable strings from gaining matches. Dropping a
+// sound is not tried: shorter codes match too many common short words.
+func (e *Engine) nearSounds(query string, exact []int32, alone bool) []int32 {
+	self, ok := e.soundQuery(query)
+	if !ok {
+		return nil
+	}
+	m := new(metaphone)
+	if !m.run(query) {
+		return nil
+	}
+	own := [2]uint64{packCode(m.primary), packCode(m.alternat)}
+	var candidates []soundCandidate
+	var tried []uint64
+	var buf [maxCode + 1]byte
+	try := func(code []byte) {
+		packed := packCode(code)
+		if packed == 0 || packed == own[0] || packed == own[1] || slices.Contains(tried, packed) {
+			return
+		}
+		tried = append(tried, packed)
+		candidates = e.soundCandidates(candidates, packed, query, self, exact)
+	}
+	for _, code := range [2][]byte{m.primary, m.alternat} {
+		if len(code) < 3 {
+			continue
+		}
+		for i := 0; i <= len(code) && len(code) < maxCode; i++ {
+			for _, sound := range [...]byte{'K', 'L'} {
+				try(append(append(append(buf[:0], code[:i]...), sound), code[i:]...))
+			}
+		}
+		for i, c := range code {
+			if c == 'X' {
+				for _, sound := range [...]byte{'T', 'S', 'K'} {
+					v := append(buf[:0], code...)
+					v[i] = sound
+					try(v)
+				}
+			} else if c == 'T' || c == 'S' || c == 'K' {
+				v := append(buf[:0], code...)
+				v[i] = 'X'
+				try(v)
 			}
 		}
 	}
-	slices.SortFunc(candidates, func(a, b candidate) int {
+	return e.closeSounds(candidates, query, len(query)/2, alone)
+}
+
+// soundQuery reports whether query may be given sound-alikes, and its own
+// word number (or -1): it must be long and speakable, and not a common word.
+func (e *Engine) soundQuery(query string) (int32, bool) {
+	if len(query) < minSoundWord || !speakable(query) {
+		return -1, false
+	}
+	self := e.word(query)
+	return self, self < 0 || e.titleCount(self) < soundCommon
+}
+
+type soundCandidate struct {
+	word  int32
+	count int
+}
+
+// soundCandidates appends the words filed under code within three letters of
+// query's length, other than self and the words in exclude.
+func (e *Engine) soundCandidates(candidates []soundCandidate, code uint64, query string, self int32, exclude []int32) []soundCandidate {
+	for _, w := range e.sounds.lookup(code) {
+		if w != self && abs(int(e.runeLengths[w])-len(query)) <= 3 && !slices.Contains(exclude, w) {
+			candidates = append(candidates, soundCandidate{w, e.titleCount(w)})
+		}
+	}
+	return candidates
+}
+
+// closeSounds returns up to soundWords candidates within limit edits of
+// query, most used first. A word that is the whole query has no other word
+// to confirm it, so from five letters on it gets one edit less. A candidate
+// more than a third of the query's letters away must belong to a popular
+// title (see soundVotes).
+func (e *Engine) closeSounds(candidates []soundCandidate, query string, limit int, alone bool) []int32 {
+	if alone && len(query) >= 5 {
+		limit--
+	}
+	slices.SortFunc(candidates, func(a, b soundCandidate) int {
 		if a.count != b.count {
 			return cmp.Compare(b.count, a.count)
 		}
 		return cmp.Compare(a.word, b.word)
 	})
-	candidates = slices.Compact(candidates) // a word filed under both codes
-	limit := len(query)/2 + 1
+	candidates = slices.Compact(candidates) // a word filed under two codes
 	var result []int32
 	for _, c := range candidates {
 		if len(result) == soundWords {
 			break
 		}
-		if distance(query, e.vocabulary[c.word], limit) <= limit {
+		if d := distance(query, e.vocabulary[c.word], limit); d <= limit && (3*d <= len(query) || e.bestVotes(c.word) >= soundVotes) {
 			result = append(result, c.word)
 		}
 	}
