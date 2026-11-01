@@ -11,18 +11,25 @@ type fixed map[string][]catalog.Title
 
 func (f fixed) Search(_ context.Context, query, _ string, _ int) []catalog.Title { return f[query] }
 
-func TestCaseFileLoadsAndMatchesFixture(t *testing.T) {
-	cases, err := LoadCases("../../testdata/quality/cases.json")
-	if err != nil {
-		t.Fatal(err)
-	}
+func TestCaseFilesLoadAndMatchFixture(t *testing.T) {
 	c, err := catalog.Load("../../testdata/catalog.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, p := range Verify(c, cases) {
-		if p.Status == TruthError {
-			t.Errorf("%s: %s", p.Name, p.Detail)
+	names := map[string]bool{}
+	for _, file := range []string{"cases.json", "phonetic-holdout.json"} {
+		cases, err := LoadCases("../../testdata/quality/" + file)
+		if err != nil {
+			t.Fatal(file, err)
+		}
+		for _, p := range Verify(c, cases) {
+			if p.Status == TruthError {
+				t.Errorf("%s: %s", p.Name, p.Detail)
+			}
+			if names[p.Name] {
+				t.Errorf("%s: name used in both files", p.Name)
+			}
+			names[p.Name] = true
 		}
 	}
 }
