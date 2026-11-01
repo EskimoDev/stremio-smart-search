@@ -25,7 +25,7 @@ Planned as `0.1.0-preview.3`.
 
 - When several titles match a search equally well, the one the search covers best now ranks first: "the terminater" lists *The Terminator* before *Terminator 2*. Generated typo and prefix recall rose 1.3 to 5.2 points of top-1. See [docs/SEARCH-QUALITY.md](docs/SEARCH-QUALITY.md#follow-up-prefer-titles-the-query-covers).
 - Search accuracy on real catalogues: Expanded top-1 rose from 91.1% to 96.9% and recall@5 from 93.8% to 99.5% on the curated cases, with no case worse. A year typed after a title ("dune 1984") now picks that version instead of returning nothing. Swapped letters in long words ("game of thornes") and long translated titles are found. "hotd" no longer lists unrelated one-letter variants such as *Hot Fuzz*, and an exact regional title ranks by popularity alongside exact canonical names. See [docs/SEARCH-QUALITY.md](docs/SEARCH-QUALITY.md). ([#8](https://github.com/EskimoDev/stremio-smart-search/pull/8))
-- Rebuilt the search index around compact sorted arrays and faster catalogue parsing. On synthetic data, Expanded's memory after startup fell from about 276 to 92 MiB, its 95th-percentile search time from about 20 to 2 ms, and its live refresh from 50 to 14 s, with a peak of 270 MiB instead of 554 MiB. Search results are unchanged. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md#index-and-preparation-rewrite). ([#7](https://github.com/EskimoDev/stremio-smart-search/pull/7))
+- Rebuilt the search index around compact sorted arrays and faster catalogue parsing. Re-measured on real IMDb data on Windows, Expanded's memory after startup fell from about 276 to 97 MiB, its 95th-percentile search time from about 9.9 to 0.8 ms, and its live refresh from 33 to 6 s, with a peak of 275 MiB instead of 539 MiB. Search results are unchanged. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md#index-and-preparation-rewrite). ([#7](https://github.com/EskimoDev/stremio-smart-search/pull/7))
 - Redesigned the setup page as a compact desktop utility following LongCipher Design, with bundled Geist fonts and official client icons for Stremio, dx.bi and Stremio Enhanced.
 - Polished the settings catalogue card and the addon order guide. ([#3](https://github.com/EskimoDev/stremio-smart-search/pull/3))
 - Simplified setup branding and removed the header logo.
@@ -36,6 +36,12 @@ Planned as `0.1.0-preview.3`.
 - Brought the docs up to date with the storage card, the index rewrite and the search-quality work, and documented addon ordering for Stremio and Stremio Enhanced.
 - Added a changelog, folder READMEs and release steps, and moved DESIGN.md into docs/. ([#4](https://github.com/EskimoDev/stremio-smart-search/pull/4))
 - Recorded user-confirmed Windows x64 compatibility with Stremio, dx.bi and Stremio Enhanced, and Linux x64 install testing on Ubuntu 24.04.
+
+### Fixed
+
+- **Change location…** no longer deletes the catalogue when the chosen folder is the one already in use under another spelling, such as different letter case on Windows or a linked folder. A move that fails part-way now removes its partial copies, and the catalogue stays where it was.
+- Linux `.deb` previews are versioned `0.1.0~preview.N`, so apt treats the final `0.1.0` as an upgrade.
+- `SHA256SUMS.txt` lists plain file names, and the installation guide explains how to check a download.
 
 ## [0.1.0-preview.2] - 2026-10-31
 

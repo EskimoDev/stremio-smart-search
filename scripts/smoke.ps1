@@ -12,7 +12,8 @@ try {
     ArgumentList = @('--no-browser', '--listen', '127.0.0.1:11498', '--data-dir', ('"' + $testRoot + '"'), '--catalog', ('"' + $fixturePath + '"'))
     PassThru = $true
   }
-  if ($IsWindows) { $processOptions.WindowStyle = 'Hidden' }
+  # $IsWindows only exists in PowerShell 7; Windows PowerShell 5.1 sets OS instead.
+  if ($IsWindows -or $env:OS -eq 'Windows_NT') { $processOptions.WindowStyle = 'Hidden' }
   $helperProcess = Start-Process @processOptions
   $status = $null
   for ($attempt = 0; $attempt -lt 30; $attempt++) {

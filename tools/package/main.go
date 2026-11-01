@@ -180,6 +180,14 @@ func deb(path, controlDir, dataDir string) error {
 	}
 	return nil
 }
+
+// debVersion turns a semantic pre-release such as 0.1.0-preview.3 into
+// 0.1.0~preview.3. dpkg reads a hyphen as a Debian revision, which sorts
+// "0.1.0-preview.3" after "0.1.0", so apt would never upgrade a preview to the
+// final release. A tilde sorts before the release instead.
+func debVersion(version string) string {
+	return strings.Replace(version, "-", "~", 1)
+}
 func appBundle(root, binary, name, executable, identifier, version string) error {
 	dir := filepath.Join(root, name+".app", "Contents")
 	if err := copyFile(binary, filepath.Join(dir, "MacOS", executable), 0755); err != nil {
@@ -300,11 +308,7 @@ func run() error {
 				return err
 			}
 		}
-		debArch := *arch
-		if debArch == "amd64" {
-			debArch = "amd64"
-		}
-		info := fmt.Sprintf("Package: stremio-smart-search\nVersion: %s\nSection: video\nPriority: optional\nArchitecture: %s\nMaintainer: EskimoDev <80299457+EskimoDev@users.noreply.github.com>\nDepends: xdg-utils\nDescription: Local typo-tolerant movie and series search for Stremio\n Includes a self-contained companion, setup page and Stremio launcher.\n", *version, debArch)
+		info := fmt.Sprintf("Package: stremio-smart-search\nVersion: %s\nSection: video\nPriority: optional\nArchitecture: %s\nMaintainer: EskimoDev <80299457+EskimoDev@users.noreply.github.com>\nDepends: xdg-utils\nDescription: Local typo-tolerant movie and series search for Stremio\n Includes a self-contained companion, setup page and Stremio launcher.\n", debVersion(*version), *arch)
 		if err = put(filepath.Join(control, "control"), info, 0644); err != nil {
 			return err
 		}
