@@ -36,6 +36,9 @@ type Engine struct {
 	// share the vocabulary and trigram index, and therefore all typo handling.
 	alternate      keyIndex
 	alternateCount int
+	// sounds files vocabulary words of ASCII letters by how they sound, for
+	// the last-resort sound-alike lookup (see phonetic.go).
+	sounds soundIndex
 
 	scratchMu sync.Mutex
 	idle      []*scratch
@@ -293,6 +296,7 @@ func New(titles []catalog.Title) *Engine {
 	}
 	e.grams = sortedGrams
 	e.gramWords = buildPostings(gramKeys, gramWords, len(e.grams))
+	e.sounds = newSoundIndex(e.vocabulary)
 	return e
 }
 
@@ -397,7 +401,7 @@ type termMatch struct {
 
 // terms finds the vocabulary words a query word may stand for. With typos
 // false it keeps exact and prefix matches only.
-func (e *Engine) terms(ctx context.Context, query string, typos bool) []termMatch {
+func (e *Engine) terms(ctx context.Context, query string, typos, alone bool) []termMatch {
 	matches := map[int32]float64{}
 	exact := e.word(query)
 	if exact >= 0 {
@@ -492,7 +496,24 @@ func (e *Engine) terms(ctx context.Context, query string, typos bool) []termMatc
 			}
 		}
 	}
-	return sortTerms(matches)
+	result := sortTerms(matches)
+	// Sound-alikes come last and are never cut by the term limit; a word
+	// already matched by spelling keeps its higher weight.
+	sounds := e.soundsLike(query, alone)
+	for _, w := range sounds {
+		if _, ok := matches[w]; !ok {
+			result = append(result, termMatch{w, soundWeight})
+		}
+	}
+	if ctx.Err() != nil {
+		return result
+	}
+	for _, w := range e.nearSounds(query, sounds, alone) {
+		if _, ok := matches[w]; !ok {
+			result = append(result, termMatch{w, nearWeight})
+		}
+	}
+	return result
 }
 
 func sortTerms(matches map[int32]float64) []termMatch {
@@ -693,7 +714,7 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 				m.weight = weight
 			}
 		}
-		for _, match := range e.terms(ctx, part, typos) {
+		for _, match := range e.terms(ctx, part, typos, words == 1) {
 			for n, id := range e.words.get(match.word) {
 				if n >= 3000 || ctx.Err() != nil {
 					break
