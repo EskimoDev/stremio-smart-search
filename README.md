@@ -121,7 +121,7 @@ Useful options:
 --version                 Print version
 ```
 
-Node.js is only used for the optional setup-page development tests, not by the shipped app. See [architecture](docs/ARCHITECTURE.md), [contribution guide](CONTRIBUTING.md) and the build scripts under `scripts/`. Tests use a small handwritten fixture, never a user's catalogue or viewing history. The optional real-catalogue benchmark reads a local path supplied explicitly by the developer.
+Node.js is only used for the optional setup-page development tests, not by the shipped app. See [architecture](docs/ARCHITECTURE.md), [contribution guide](CONTRIBUTING.md), [changelog](CHANGELOG.md) and the build scripts under `scripts/`. Tests use a small handwritten fixture, never a user's catalogue or viewing history. The optional real-catalogue benchmark reads a local path supplied explicitly by the developer.
 
 This is an independent community project, not an official Stremio product. It does not host or distribute video.
 
