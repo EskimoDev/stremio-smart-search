@@ -101,7 +101,8 @@ func ParseIMDbAliases(ctx context.Context, reader io.Reader, c *Catalog, options
 		return nil
 	}
 	language, _ := LanguageByID(options.Language)
-	s := scanner(reader)
+	s, stop := aheadScanner(reader)
+	defer stop()
 	if !s.Scan() {
 		return fmt.Errorf("alternative-title file is empty")
 	}
@@ -129,6 +130,9 @@ func ParseIMDbAliases(ctx context.Context, reader io.Reader, c *Catalog, options
 		}
 	}
 	candidates := map[int32][]aliasCandidate{}
+	// Rows arrive grouped by title, so remember the last lookup: most rows
+	// then skip the map entirely.
+	lastID, lastIndex, lastOK := uint32(0), int32(0), false
 	for rows := 0; s.Scan(); rows++ {
 		if rows&0xfff == 0 && ctx.Err() != nil {
 			return ctx.Err()
@@ -140,7 +144,11 @@ func ParseIMDbAliases(ctx context.Context, reader io.Reader, c *Catalog, options
 			if !ok {
 				continue
 			}
-			if index, ok = selected[id]; !ok {
+			if id != lastID || rows == 0 {
+				lastIndex, lastOK = selected[id]
+				lastID = id
+			}
+			if index = lastIndex; !lastOK {
 				continue
 			}
 		}

@@ -102,7 +102,7 @@ func (v *vocab) title(r *rand.Rand) string {
 
 type anchor struct {
 	kind, name, fr string
-	votes        int
+	votes          int
 }
 
 var anchors = map[int]anchor{
