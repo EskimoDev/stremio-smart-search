@@ -5,22 +5,51 @@ Standard is the default for new setups. On the 2026-11-01 IMDb snapshot it held
 for smaller devices. Existing installations keep their size until you rebuild it.
 
 The [index and preparation rewrite](#index-and-preparation-rewrite) cut memory by
-roughly two thirds. On synthetic data, Standard now uses about 49 MiB of resident
-memory after startup and Expanded about 92 MiB, with 95th-percentile searches near
-2 ms for every size. Expanded no longer runs over the helper's memory target, so it
-is a reasonable choice on most desktops. The Windows tables below predate that change.
+roughly two thirds. Re-measured on real IMDb data on Windows, Standard now uses about
+53 MiB of working set after startup and Expanded about 97 MiB, with 95th-percentile
+searches under 1 ms for every size. Expanded no longer runs over the helper's memory
+target, so it is a reasonable choice on most desktops.
 
 These measurements come from one Windows x64 PC: Ryzen 5 5600X, 32 GiB RAM,
-Go 1.27.3, two Go execution threads and the helper's unchanged 256 MiB Go soft
-memory target. The target is not a hard process-memory ceiling. These are not
-measurements of macOS, Linux, ARM or TV hardware.
+two Go execution threads and the helper's unchanged 256 MiB Go soft memory target.
+The target is not a hard process-memory ceiling. These are not measurements of
+macOS, Linux, ARM or TV hardware.
 
-> **Note:** the Windows tables below were measured before the index and
-> preparation rewrite described in [Index and preparation rewrite](#index-and-preparation-rewrite).
-> That change cut memory, latency and preparation time sharply on synthetic data. The Windows
-> figures will be re-measured on real IMDb data; until then, treat them as an upper bound.
+## Windows, after the rewrite
 
-## Search and normal memory
+Measured 2026-11-01 at commit 804ddcf with Go 1.27.0, on the IMDb snapshot of
+2026-11-01 (title.basics 229,540,187 bytes, title.ratings 8,728,224 bytes,
+title.akas 520,070,554 bytes). The method is the one under [Reproduce](#reproduce):
+every phase in a fresh process, memory and latency as medians of three measure
+runs, preparation and refresh as single runs with cached sources. Two other local
+helpers were running during the run, so treat small differences as noise.
+
+| Size | Titles | RAM after startup | Median request | 95th percentile | 99th percentile | CPU per request |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Compact | 50,000 | 23 MiB | 0.27 ms | 0.44 ms | 0.66 ms | 0.40 ms |
+| Standard | 184,606 | 53 MiB | 0.36 ms | 0.60 ms | 0.82 ms | 0.46 ms |
+| Expanded | 390,470 | 97 MiB | 0.42 ms | 0.77 ms | 1.15 ms | 0.50 ms |
+
+| Size | Load + index build | First preparation | Live refresh | Peak RAM during refresh |
+| --- | ---: | ---: | ---: | ---: |
+| Compact | 0.21 s | 3.55 s | 3.82 s | 86 MiB |
+| Standard | 0.82 s | 4.38 s | 4.74 s | 224 MiB |
+| Expanded | 1.85 s | 4.60 s | 6.16 s | 275 MiB |
+
+With French alternative titles, Standard holds 55,722 of them and uses 58 MiB
+after startup (95th percentile 0.52 ms; preparation 11.4 s, of which 7.2 s reads
+title.akas; refresh peak 256 MiB). Expanded holds 75,501, uses 105 MiB (95th
+percentile 0.86 ms; preparation 12.8 s; refresh peak 294 MiB). The quiet CPU
+sample was zero for every size. All fixed search cases passed in every run.
+
+The peak working set reported for Expanded's measure and prepare phases was the
+same 263 MiB in each run, which suggests a counter artefact; it is left out of
+the tables.
+
+The sections below keep the measurements from before the rewrite
+(2026-10-31, Go 1.27.3) for comparison.
+
+## Search and normal memory, before the rewrite
 
 | Size | Actual movies | Actual series | RAM after startup | Median request | 95th percentile | 99th percentile |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -40,7 +69,7 @@ no-result queries. The table gives medians across three runs. Timings include
 HTTP and JSON handling, but exclude artwork, online metadata, playback and other
 search addons. They do not predict the entire Stremio results page's loading time.
 
-## CPU
+## CPU, before the rewrite
 
 | Size | Mean CPU per request | Quiet CPU sample |
 | --- | ---: | ---: |
@@ -56,7 +85,7 @@ Windows process counter during that sample, not literally zero work forever.
 Expanded recorded about 0.11–0.13 CPU seconds in the initial three-second window
 immediately after startup, before settling.
 
-## Disk, preparation and refresh
+## Disk, preparation and refresh, before the rewrite
 
 | Size | Stored catalogue | Load + index build | First preparation, cached sources | Live refresh, cached sources | Peak RAM during refresh |
 | --- | ---: | ---: | ---: | ---: | ---: |
