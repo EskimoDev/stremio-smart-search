@@ -105,13 +105,19 @@ In settings, choose a language under **Alternative titles**, optionally a region
 <details>
 <summary>Will it slow down my computer?</summary>
 
-The helper does no background work between searches, and its memory use is bounded by the catalogue size you pick. Measured numbers are in [performance](docs/PERFORMANCE.md).
+The helper does no background work between searches, and its memory use is bounded by the catalogue size you pick. The **Storage** card in settings shows its current memory and disk use. Measured numbers are in [performance](docs/PERFORMANCE.md).
+</details>
+
+<details>
+<summary>Where are its files, and can I move them?</summary>
+
+The **Storage** card in settings shows how much space the catalogue, the previous catalogue kept for recovery and the settings take, and how much is free on that drive. **Open folder** shows the data folder, and **Change location…** moves the catalogue to another folder or drive while search keeps working. Settings stay in place. Details are in [the catalogue guide](docs/CATALOGUE.md#where-the-catalogue-is-stored).
 </details>
 
 <details>
 <summary>How do I update the catalogue or uninstall?</summary>
 
-Catalogue updates are manual: choose **Refresh catalogue** in settings. The current catalogue keeps working while the new one is prepared. To uninstall, use your system's normal app removal. Your Stremio settings and other addons are left untouched.
+Catalogue updates are manual: choose **Refresh catalogue** in settings. The current catalogue keeps working while the new one is prepared. To uninstall, use your system's normal app removal. Your Stremio settings and other addons are left untouched. The downloaded catalogue stays behind; use **Open folder** in settings first if you want to delete it too.
 </details>
 
 ## Development
@@ -125,7 +131,7 @@ node scripts/ui-test.mjs
 go run ./cmd/smart-search --help
 ```
 
-Start with [architecture](docs/ARCHITECTURE.md) and the [contribution guide](CONTRIBUTING.md). The [docs folder](docs/README.md) lists everything else.
+Start with [architecture](docs/ARCHITECTURE.md) and the [contribution guide](CONTRIBUTING.md). Matching changes are checked with the [search-quality cases](docs/SEARCH-QUALITY.md) and index changes with the [performance benchmark](docs/PERFORMANCE.md#reproduce). The [docs folder](docs/README.md) lists everything else.
 
 ## Licence and credits
 
