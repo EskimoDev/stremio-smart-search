@@ -1,5 +1,10 @@
 <div align="center">
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-dark.png">
+  <img src="docs/images/logo-light.png" alt="Stremio Smart Search logo" width="140">
+</picture>
+
 # Stremio Smart Search
 
 **Find what you meant to type.** A local search addon for Stremio that understands typos, joined words and abbreviations.
