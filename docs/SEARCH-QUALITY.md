@@ -27,8 +27,8 @@ See [remaining weaknesses](#remaining-weaknesses) for examples that still fail.
 
 ## The cases
 
-[`testdata/quality/cases.json`](../testdata/quality/cases.json) holds 248
-curated queries in 15 categories:
+[`testdata/quality/cases.json`](../testdata/quality/cases.json) holds 288
+curated queries in 16 categories:
 
 | Category | What it tests | Example |
 | --- | --- | --- |
@@ -46,7 +46,13 @@ curated queries in 15 categories:
 | alias | regional title (fr, en, es, de) | `le trone de fer` |
 | alias-fuzzy | misspelled regional title | `la rene des neige` |
 | non-latin | Japanese titles | `千と千尋の神隠し` |
+| phonetic | a title spelled the way it sounds | `pulp fikshun`, `nite at the museum` |
 | negative | queries with no right answer | `qzxqvvnonexistent` |
+
+A separate file, [`phonetic-holdout.json`](../testdata/quality/phonetic-holdout.json),
+holds 31 more phonetic queries that were written before sound-alike matching
+was designed and were never used to tune it. Score it with
+`-cases testdata/quality/phonetic-holdout.json`.
 
 Each case lists every acceptable answer as an IMDb ID together with its title
 and start year. Where several answers are right, such as both versions of *The
@@ -213,8 +219,11 @@ from 99.4% to 97.7%. People who type an obscure title exactly would lose it.
   night" does the same with *The Dark Night*. Both are listed second. Making
   popularity outweigh an exact match would need a vote-ratio rule that the
   current cases cannot justify.
-- **Phonetic spellings.** "incepshun" is three edits from "inception" and is
-  not found. Edit distance cannot cover this without a phonetic index.
+- **Phonetic spellings, partly.** Double Metaphone does not equate every
+  respelling: "back to the fucher" (*Future*), "rattatooey", "pinokkio",
+  "the wocking dead" and "brekin bad" still miss. "the dark nite" and "nite
+  rider" miss because "nite" is three edits from "knight", beyond the
+  sound-alike letter limit. See [Sound-alike fallback](#sound-alike-fallback-2026-11-01).
 - **Three-letter typos.** "retour ver le futur" misses because "ver" is too
   short for fuzzy matching. Its prefix scan stops after the first 20
   vocabulary words, which come before "vers".
@@ -225,3 +234,157 @@ from 99.4% to 97.7%. People who type an obscure title exactly would lose it.
   tests non-Latin script. No case covers Cyrillic, Korean or other scripts
   yet: IMDb's original titles are romanised, and no snapshot was built with
   those languages.
+
+## Sound-alike fallback, 2026-11-01
+
+Some searches are spelled the way the title sounds: `incepshun`, `pulp
+fikshun`, `nite at the museum`. They are three or more edits from the title,
+so edit distance cannot reach them without also matching everything else.
+Smart Search now files every indexed word by its Double Metaphone code and
+uses that as a weak, last-resort match.
+
+### How it works
+
+- **Index.** At build time every vocabulary word made only of the ASCII
+  letters a–z gets its Double Metaphone primary and alternate codes, at full
+  length rather than the usual four symbols. Codes are packed four bits per
+  sound into a `uint64`, stored once each, sorted, with a posting list of the
+  words that share them. Words with digits, accents that did not fold to
+  ASCII, or non-Latin script get no code.
+- **When it runs.** Only for a query word of four or more letters, when typo
+  matching is on (not for a short acronym such as `hotd`), when the word has a
+  vowel and no run of more than three consonants (`xqzvwkplm` is skipped), and
+  when the word is not already in 50 or more titles. So `bear` is taken as
+  meant, while a rare indexed spelling such as `nite` still gets sound-alikes.
+- **What it adds.** From the words sharing either code, those within three
+  letters of the query's length and within about half its letters by edit
+  distance; at most 8 per query word, most-used words first. They are added
+  after the usual 32 spelling terms, so typo matches cannot crowd them out.
+- **How they rank.** A sound-alike word scores 0.4 of a full word match,
+  below one edit (0.76) and two edits (0.6). Exact, joined, acronym and
+  regional-title bands are untouched, so an exact title keeps first place:
+  `momento` still lists the 2013 film *Momento* before *Memento*. Popularity
+  lets a famous sound-alike beat an obscure spelling match: `fite club` finds
+  *Fight Club* rather than *Madam Yankelova's Fine Literature Club*.
+  Results are deduplicated by IMDb ID as before.
+
+**Languages.** The rules are English, with the Romance, Germanic and Slavic
+spellings that Double Metaphone already handles. They help most for English
+titles and English-like respellings. A non-English Latin word can still get
+English sound-alikes; that only adds low-ranked candidates, and no regional
+or original-title case changed on any of the eleven catalogues. Non-Latin
+titles and queries are never matched phonetically.
+
+### Alternatives compared
+
+All on the real Expanded catalogue, with the same inputs. "Phonetic" is the
+39 curated phonetic cases, "Held-out" the 31 untouched ones, "One typo" the
+generated one-typo top-1 (3,000 sampled titles, seed 1). "Random" is the share
+of 3,000 random 5–10-letter strings that return any result, a rough measure
+of over-matching.
+
+| Approach | Phonetic top-1 / top-5 | Held-out top-1 / top-5 | One typo top-1 | Random |
+| --- | --- | --- | --- | --- |
+| None (main) | 28.2% / 30.8% | 43.3% / 46.7% | 77.9% | 3.6% |
+| **Double Metaphone, precomputed, weight 0.4 (chosen)** | **76.9% / 82.1%** | **63.3% / 73.3%** | **77.8%** | **13.8%** |
+| Same, primary code only | 74.4% / 79.5% | 63.3% / 73.3% | 77.9% | 12.9% |
+| Same, stricter letter limit (a third of the word) | 71.8% / 76.9% | 63.3% / 66.7% | 77.9% | 8.4% |
+| Same, only for words not in the index | 61.5% / 64.1% | 60.0% / 66.7% | 77.8% | 13.8% |
+| Same, weight 0.7 | 76.9% / 82.1% | 70.0% / 76.7% | 74.8% | 13.8% |
+| Soundex, four characters | 61.5% / 69.2% | 60.0% / 63.3% | 77.8% | 22.3% |
+| Soundex, untruncated | 56.4% / 64.1% | 60.0% / 63.3% | 77.9% | 18.8% |
+| Double Metaphone at query time, on the trigram candidates only (no index) | 43.6% / 46.2% | 53.3% / 56.7% | 77.9% | 5.6% |
+
+Weight 0.7 finds more held-out titles but loses 3.1 points of one-typo
+accuracy: a random typo in an obscure title often sounds like a famous
+one. Query-time coding needs no memory but only sees words that already
+share trigrams with the query, which most respellings do not. Soundex
+merges too much. The chosen configuration was the best on the curated set
+without costing typo accuracy, and the held-out set, scored only after it
+was picked, confirms most of the gain.
+
+### Results
+
+Curated cases, before → after, on all eleven real snapshots. No case got
+worse on any catalogue in either file, and no false positive was added.
+
+| Catalogue | All cases top-1 | All cases top-5 | Phonetic top-1 | Phonetic top-5 | Held-out top-1 | Held-out top-5 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Compact | 89.0% → 96.9% | 89.0% → 97.4% | 33.3% → 80.6% | 33.3% → 83.3% | 43.3% → 70.0% | 46.7% → 76.7% |
+| Standard | 87.3% → 95.6% | 88.2% → 96.9% | 27.0% → 75.7% | 29.7% → 81.1% | 43.3% → 63.3% | 46.7% → 73.3% |
+| Expanded | 86.1% → 94.8% | 87.9% → 97.0% | 28.2% → 76.9% | 30.8% → 82.1% | 43.3% → 63.3% | 46.7% → 73.3% |
+| Compact, French | 90.4% → 96.8% | 90.4% → 97.2% | 38.9% → 80.6% | 38.9% → 83.3% | 43.3% → 66.7% | 46.7% → 76.7% |
+| Standard, French | 88.8% → 95.6% | 89.6% → 96.8% | 32.4% → 75.7% | 35.1% → 81.1% | 43.3% → 66.7% | 46.7% → 73.3% |
+| Expanded, French | 87.7% → 94.9% | 89.3% → 96.8% | 33.3% → 76.9% | 35.9% → 82.1% | 43.3% → 66.7% | 46.7% → 73.3% |
+| Standard, English | 87.6% → 95.7% | 88.4% → 97.0% | 27.0% → 75.7% | 29.7% → 81.1% | 43.3% → 63.3% | 46.7% → 73.3% |
+| Standard, Spanish | 87.4% → 95.8% | 88.2% → 97.5% | 24.3% → 75.7% | 27.0% → 83.8% | 43.3% → 63.3% | 50.0% → 76.7% |
+| Standard, Spanish (Spain) | 87.8% → 95.8% | 88.7% → 97.5% | 27.0% → 75.7% | 29.7% → 83.8% | 40.0% → 60.0% | 46.7% → 73.3% |
+| Standard, German | 87.5% → 95.8% | 88.3% → 97.1% | 24.3% → 75.7% | 27.0% → 81.1% | 43.3% → 63.3% | 46.7% → 70.0% |
+| Standard, Japanese | 88.2% → 95.8% | 89.5% → 97.5% | 29.7% → 75.7% | 35.1% → 83.8% | 43.3% → 63.3% | 46.7% → 73.3% |
+
+"All cases" now includes the phonetic category, so its "before" is lower
+than in the tables above. On the original 248 cases alone, the only change
+is `incepshun` (a fuzzy case): Expanded top-1 goes from 97.9% to 98.4% and
+top-5 from 99.5% to 100%.
+
+Found first on Expanded now: `incepshun`, `nite at the museum`, `fite club`,
+`pulp fikshun`, `gaim of thrones`, `saving privet ryan`, `the lion keeng`,
+`sykho`, `the shyning`, `yuforia`, `arcain`, `fraysure`, `the fantom
+menace`, `the matricks`, `the termanater`, `hows of the dragon`, `amaylee`,
+`skool of rock`, `a kwiet place`; `toy storee 3` is second. Held out: `the
+green mial`, `the trooman show`, `the offis`, `the eksorsist`, `nite of the
+living dead`, `filadelfia`, with `the kraun` fifth and `nite and day` fourth.
+
+Still missed: `the dark nite`, `the wocking dead`, `back to the fucher`,
+`rattatooey`, `brekin bad`, `pinokkio`, `fone booth` and `the prestij`
+(second), and held out `the sicksth sense` (five consonants in a row),
+`fyuchurama`, `nite rider`, `doctor hoo` (three letters), `goast` (*GOAT*
+is one edit away), `the born identity`, `mishun impossible` (an exact
+*Mishan Impossible* exists), `fineas and ferb`, and `aladin` (second, after
+an exact *Aladin*).
+
+Generated queries, top-1 / top-5:
+
+| Catalogue | Exact | One typo | Two typos | Prefix | Regional title, one typo |
+| --- | --- | --- | --- | --- | --- |
+| Compact | unchanged | unchanged | 82.0/89.3 → 82.9/90.5 | unchanged | – |
+| Standard | unchanged | 81.5/92.8 → 81.4/92.8 | 74.5/81.9 → 76.7/84.5 | 57.0/73.5 → 57.0/73.4 | – |
+| Expanded | unchanged | 77.9/90.2 → 77.8/90.2 | 71.0/77.6 → 71.8/78.9 | 47.0/60.7 → 47.1/60.9 | – |
+| Expanded, French | unchanged | 77.4/89.8 → 77.2/89.8 | 70.5/77.3 → 71.2/78.5 | 45.8/59.6 → 45.8/59.7 | 71.7/86.9 → 71.2/86.8 |
+| Standard, German | unchanged | 81.3/92.7 → 81.2/92.7 | 73.8/81.2 → 75.9/83.6 | 55.0/71.0 → 55.1/71.0 | 65.7/72.8 → 65.5/72.8 |
+
+The first result changed for under 1% of generated queries (89 of 10,879 on
+Expanded). About 12% of them gained or changed a low-ranked result, mostly
+where fewer than 20 titles matched before. Joined and exact regional-title
+queries are unchanged.
+
+### Costs
+
+Real snapshots on the cloud Linux test machine (4 vCPU, `GOMAXPROCS=2`),
+medians of three interleaved runs. Search latency is measured directly on
+the engine over 2,319 queries (every curated and held-out case, 1,500
+generated one-typo queries and 500 random strings), five passes each.
+
+| Catalogue | Heap after load | Index build | Search p50 | Search p95 | Search p99 |
+| --- | --- | --- | --- | --- | --- |
+| Compact | 9.2 → 9.5 MiB | 172 → 205 ms | 0.113 → 0.124 ms | 0.338 → 0.365 ms | 0.528 → 0.570 ms |
+| Standard | 31.6 → 32.6 MiB | 735 → 794 ms | 0.212 → 0.233 ms | 0.647 → 0.700 ms | 0.996 → 1.083 ms |
+| Expanded | 65.0 → 66.6 MiB | 1,730 → 1,814 ms | 0.314 → 0.352 ms | 1.010 → 1.090 ms | 1.641 → 1.749 ms |
+
+The fixed HTTP workload in [PERFORMANCE.md](PERFORMANCE.md) showed no change
+beyond run-to-run noise, and RSS stayed within noise. The Windows figures
+there have not been re-run.
+
+### Limits
+
+- Random pronounceable strings now return something more often: on
+  Expanded, 36% of random strings that pass the vowel and consonant check
+  get a result, against 9% before. A query with no right answer is more
+  likely to show a loose sound-alike. The three curated negative cases still
+  return nothing.
+- The letter limit and the 50-title rule are judgement calls measured on
+  these cases, not universal constants. The stricter letter limit above
+  halves the random-string rate at the cost of two held-out titles.
+- Words of three letters (`hoo`) and words with long consonant runs
+  (`sicksth`) get no sound-alikes.
+

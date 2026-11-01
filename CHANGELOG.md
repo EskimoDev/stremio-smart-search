@@ -9,6 +9,8 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 ### Added
 
 - Dark mode for the settings page. It follows your system's light or dark setting, and a header toggle switches between Auto, Light and Dark and remembers your choice. The logo, buttons, inputs, status text and storage bar all switch with it.
+- Sound-alike matching as a last resort: a word spelled the way it sounds, such as `incepshun`, `pulp fikshun` or `nite at the museum`, can now find the title. It uses a precomputed Double Metaphone index for ASCII words, ranks below every spelling match and never displaces an exact title. On the Expanded catalogue it finds 76.9% of curated phonetic searches first (was 28.2%) and 63.3% of a held-out set (was 43.3%), with no regressions on any of eleven real catalogues, for 1.6 MiB of memory. Details in [docs/SEARCH-QUALITY.md](docs/SEARCH-QUALITY.md#sound-alike-fallback-2026-11-01).
+- A `phonetic` category of 39 search-quality cases, and a separate held-out phonetic file that was not used for tuning.
 
 ### Changed
 

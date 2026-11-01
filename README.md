@@ -60,13 +60,14 @@ Next time, use **Stremio + Smart Search** to start both together. You can close 
 | `hotd` | *House of the Dragon* |
 | `strangerthings` | *Stranger Things* |
 | `game of thornes` | *Game of Thrones* |
+| `pulp fikshun` | *Pulp Fiction* |
 | `dune 1984` | *Dune* (1984) |
 | `les miserables` | *Les Misérables* |
 | `la rene des neige` | *Frozen*, with French alternative titles enabled |
 
 For translated or regional names, choose a language under **Alternative titles** in settings, then rebuild. This adds another data download. [Alternative-title setup →](docs/CATALOGUE.md#alternative-titles-optional)
 
-Matching has limits: an exact title can rank above the similar title you meant, and sound-alike spellings such as `incepshun` may not match. See [tested search quality and known gaps](docs/SEARCH-QUALITY.md).
+Matching has limits: an exact title can rank above the similar title you meant, and only some sound-alike spellings match. `incepshun` and `fite club` work, but `back to the fucher` does not. See [tested search quality and known gaps](docs/SEARCH-QUALITY.md).
 
 ## Choose a catalogue
 
