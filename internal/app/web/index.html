@@ -152,34 +152,38 @@
       </div>
     </div>
     <aside class="storage" aria-labelledby="storage-title">
-      <div class="storage-head">
+      <div class="storage-summary">
         <h3 id="storage-title">Storage</h3>
-        <span id="storage-total" class="storage-total">—</span>
+        <p class="storage-total"><span id="storage-total">—</span> <span class="storage-total-label">used by Smart Search</span></p>
+        <div id="storage-bar" class="storage-bar" role="img" aria-label="Storage used by Smart Search">
+          <span class="seg seg-catalogue" id="seg-catalogue"></span><span class="seg seg-backup" id="seg-backup"></span><span class="seg seg-other" id="seg-other"></span>
+        </div>
       </div>
-      <div id="storage-bar" class="storage-bar" role="img" aria-label="Storage used by Smart Search">
-        <span class="seg seg-catalogue" id="seg-catalogue"></span><span class="seg seg-backup" id="seg-backup"></span><span class="seg seg-other" id="seg-other"></span>
+      <div class="storage-details">
+        <dl class="storage-rows">
+          <div><dt><span class="dot seg-catalogue" aria-hidden="true"></span>Catalogue</dt><dd id="storage-catalogue">—</dd></div>
+          <div id="storage-backup-row" hidden><dt><span class="dot seg-backup" aria-hidden="true"></span>Previous catalogue</dt><dd id="storage-backup">—</dd></div>
+          <div><dt><span class="dot seg-other" aria-hidden="true"></span>Settings</dt><dd id="storage-other">—</dd></div>
+        </dl>
+        <dl class="storage-rows storage-facts">
+          <div><dt>Free on this drive</dt><dd id="storage-disk">—</dd></div>
+          <div><dt>Memory, incl. search index</dt><dd id="storage-memory">—</dd></div>
+        </dl>
       </div>
-      <ul class="storage-legend">
-        <li><span class="dot seg-catalogue" aria-hidden="true"></span>Catalogue <span id="storage-catalogue">—</span></li>
-        <li id="storage-backup-row" hidden><span class="dot seg-backup" aria-hidden="true"></span>Previous <span id="storage-backup">—</span></li>
-        <li><span class="dot seg-other" aria-hidden="true"></span>Settings <span id="storage-other">—</span></li>
-      </ul>
-      <dl class="storage-facts">
-        <div><dt>Free on this drive</dt><dd id="storage-disk">—</dd></div>
-        <div><dt>Memory, incl. search index</dt><dd id="storage-memory">—</dd></div>
-      </dl>
-      <button id="open-folder" class="button secondary storage-open" disabled>Open folder</button>
-      <div class="storage-location">
-        <p id="storage-path" class="fine storage-path">Checking…</p>
-        <p class="storage-actions"><button id="change-folder" class="text-button" disabled>Change location…</button><span id="reset-sep" class="footer-divider" aria-hidden="true" hidden>/</span><button id="reset-folder" class="text-button" hidden>Use default</button></p>
+      <div class="storage-controls">
+        <button id="open-folder" class="button secondary storage-open" disabled>Open folder</button>
+        <div class="storage-location">
+          <p id="storage-path" class="fine storage-path">Checking…</p>
+          <p class="storage-actions"><button id="change-folder" class="text-button" disabled>Change location…</button><span id="reset-sep" class="footer-divider" aria-hidden="true" hidden>/</span><button id="reset-folder" class="text-button" hidden>Use default</button></p>
+        </div>
+        <div id="move-panel" class="move-panel" hidden>
+          <label for="move-path">New catalogue location</label>
+          <input id="move-path" spellcheck="false" autocomplete="off" placeholder="Full folder path">
+          <p id="move-info" class="fine" aria-live="polite"></p>
+          <div class="move-buttons"><button id="move-cancel" class="button secondary">Cancel</button><button id="move-confirm">Move catalogue</button></div>
+        </div>
+        <p id="storage-info" class="fine" aria-live="polite"></p>
       </div>
-      <div id="move-panel" class="move-panel" hidden>
-        <label for="move-path">New catalogue location</label>
-        <input id="move-path" spellcheck="false" autocomplete="off" placeholder="Full folder path">
-        <p id="move-info" class="fine" aria-live="polite"></p>
-        <div class="move-buttons"><button id="move-cancel" class="button secondary">Cancel</button><button id="move-confirm">Move catalogue</button></div>
-      </div>
-      <p id="storage-info" class="fine" aria-live="polite"></p>
     </aside>
   </main>
 

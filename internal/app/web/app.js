@@ -98,8 +98,7 @@
         $(`seg-${name}`).style.minWidth = bytes ? '3px' : '0';
         $(`seg-${name}`).title = `${name === 'backup' ? 'Previous catalogue' : name === 'other' ? 'Settings' : 'Catalogue'}: ${size(bytes)}`;
       }
-      const total = document.createElement('strong'); total.textContent = size(storage.total);
-      $('storage-total').replaceChildren(total, ' used');
+      $('storage-total').textContent = size(storage.total);
       $('storage-bar').setAttribute('aria-label', `Smart Search uses ${size(storage.total)}: catalogue ${size(storage.catalogue)}, previous catalogue ${size(storage.backup)}, settings ${size(storage.other)}`);
       $('storage-catalogue').textContent = storage.catalogue ? size(storage.catalogue) : 'None yet';
       $('storage-backup-row').hidden = !storage.backup;
