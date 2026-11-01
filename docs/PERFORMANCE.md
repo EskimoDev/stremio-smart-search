@@ -7,9 +7,9 @@ until you rebuild.
 The main size-comparison tables below are the **preview.3 Windows baseline**:
 Ryzen 5 5600X, 32 GiB RAM, two Go execution threads and a 256 MiB Go soft memory
 target. That target is not a hard ceiling on process memory. These tables have
-not been remeasured after phonetic search and automatic updates were merged.
+not been remeasured for preview.4 after phonetic search and automatic updates were added.
 
-Unreleased phonetic-search measurements used real catalogues on a Linux VM;
+Preview.4 phonetic-search measurements used real catalogues on a Linux VM;
 see [search quality](SEARCH-QUALITY.md#costs). Separate Windows and Linux update
 measurements appear below. Do not compare Go heap, Linux RSS and Windows working
 set as though they were the same counter. Mac, ARM and TV performance still need
@@ -63,7 +63,7 @@ while saving. A successful save removes the recovery copy.
 
 Alternative titles are off by default and cost nothing when off. Turning them on
 adds IMDb's `title.akas` file, 520 MB in this snapshot, to manual preparations and
-refreshes. It is streamed and never stored. Unreleased automatic updates can
+refreshes. It is streamed and never stored. Preview.4 automatic updates can
 carry the existing aliases forward until the weekly refresh is due.
 
 Measured with French titles in the same run as the tables above:
@@ -80,7 +80,7 @@ Standard: English 54,950, French 55,722, German 55,288, Japanese 55,910, Spanish
 
 ## Automatic updates
 
-**Unreleased main; not present in preview.3.** Recorded on 2026-11-01 with the
+**Preview.4 functionality; not present in preview.3.** Recorded on 2026-11-01 with the
 opt-in tests in `internal/app`: one against IMDb on Windows and one using cached
 real files over loopback on a Linux VM. Both used temporary data folders, so no
 installed catalogue was involved.

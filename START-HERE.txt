@@ -1,4 +1,4 @@
-STREMIO SMART SEARCH — PREVIEW
+STREMIO SMART SEARCH — 0.1.0-preview.4
 
 1. Open Stremio Smart Search. A local setup page opens in your browser.
 2. Choose Catalogue size, then Prepare catalogue. Standard is the new-setup default.
@@ -46,7 +46,7 @@ personal/non-commercial dataset terms. See DATA.md.
 
 Builds are not developer-signed or notarized. Platform approval prompts may appear.
 Platform guide: https://github.com/EskimoDev/stremio-smart-search/blob/main/docs/INSTALLATION.md
-That guide distinguishes the public preview.3 download from unreleased main.
+That guide labels its target version; check the filename for your version.
 If your build shows Update automatically, new installations default to checks
 every 2 days; existing catalogues stay manual until enabled. A routine download
 is about 240 MB, plus about 520 MB weekly with alternative titles. Turn automatic

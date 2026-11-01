@@ -2,7 +2,9 @@
 
 [Download Smart Search](https://github.com/EskimoDev/stremio-smart-search/releases) for the computer where you use Stremio. SSS is a separate helper that must be running for its search rows to respond.
 
-The public release is **0.1.0-preview.3**. Its catalogue refreshes are manual. **Update automatically**, sound-alike matching, dark mode and the new app icons belong to unreleased main builds; see the [changelog](../CHANGELOG.md#unreleased).
+This guide covers **0.1.0-preview.4**. Check [Releases](https://github.com/EskimoDev/stremio-smart-search/releases) for available downloads; a draft is not public. Preview.4 adds **Update automatically**, sound-alike matching, dark mode and the new icons. For preview.3, use the [older installation guide](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.3/docs/INSTALLATION.md).
+
+**Bandwidth:** a new preview.4 installation enables automatic checks every 2 days. A changed-data update downloads about 240 MB, plus about 520 MB weekly with alternative titles (roughly 3.6 or 5.8 GB/month). Existing catalogues stay manual until enabled. Disable **Update automatically** for manual-only updates; see [update behavior](CATALOGUE.md#automatic-updates).
 
 [Choose a download](#choose-a-download) · [First setup](#first-setup) · [Addon order](#put-smart-search-first) · [Troubleshooting](#troubleshooting) · [Uninstall](#uninstalling)
 

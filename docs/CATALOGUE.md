@@ -48,13 +48,13 @@ Uninstalling leaves the catalogue where it is. Delete the folder yourself if you
 
 ## Updating and changing size
 
-The public preview.3 download updates manually through **Refresh catalogue**. In unreleased main, that button is **Refresh now**, and optional automatic updates are described below.
+The public preview.3 download updates manually through **Refresh catalogue**. In preview.4, that button is **Refresh now**, and optional automatic updates are described below.
 
-To change size, select the option and choose **Apply size & rebuild**. If you also change alternative titles, the button reads **Apply changes & rebuild**. On main, **Refresh now** downloads the latest IMDb data with your current choices. The current index keeps serving during preparation; new choices are saved with the replacement catalogue only after success. A failed refresh keeps the previous working catalogue. Existing catalogues retain their saved size. Legacy catalogues without a size field are treated as Compact.
+To change size, select the option and choose **Apply size & rebuild**. If you also change alternative titles, the button reads **Apply changes & rebuild**. In preview.4, **Refresh now** downloads the latest IMDb data with your current choices. The current index keeps serving during preparation; new choices are saved with the replacement catalogue only after success. A failed refresh keeps the previous working catalogue. Existing catalogues retain their saved size. Legacy catalogues without a size field are treated as Compact.
 
 ### Automatic updates
 
-**Unreleased main only; absent from the preview.3 download.**
+**Available in preview.4; absent from preview.3.**
 
 **Update automatically** keeps the catalogue current without you thinking about it. It is on for new installations; an installation that already had a catalogue before this option existed stays manual until you switch it on, so nobody's data use changes unannounced. Choose how often under **Check for new titles**: every day, every 2 days (default), every 3 days or every week.
 

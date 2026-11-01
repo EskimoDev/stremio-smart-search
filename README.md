@@ -11,7 +11,7 @@
 
 [Download](https://github.com/EskimoDev/stremio-smart-search/releases) · [Install guide](docs/INSTALLATION.md) · [Changelog](CHANGELOG.md)
 
-[![Version](https://img.shields.io/badge/version-0.1.0--preview.3-orange)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.1.0--preview.4-orange)](CHANGELOG.md)
 [![Check addon](https://github.com/EskimoDev/stremio-smart-search/actions/workflows/ci.yml/badge.svg)](https://github.com/EskimoDev/stremio-smart-search/actions/workflows/ci.yml)
 ![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-informational)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -26,7 +26,7 @@
 
 ## Installation
 
-**Latest public download: [0.1.0-preview.3](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.3).** It includes typo, abbreviation and regional-title search. Sound-alike matching, automatic catalogue updates, dark mode and the new app icons are merged into `main` but **not released yet**. See [Unreleased](CHANGELOG.md#unreleased).
+**Version covered: 0.1.0-preview.4.** This version adds sound-alike search, automatic catalogue updates, dark mode and the new app icons. Check [Releases](https://github.com/EskimoDev/stremio-smart-search/releases) for available downloads; draft prereleases are not public downloads. Still using preview.3? Follow its [version-specific guide](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.3/README.md#installation).
 
 Choose the package for your computer:
 
@@ -62,14 +62,14 @@ Next time, use **Stremio + Smart Search** to start both together. You can close 
 | `hotd` | *House of the Dragon* |
 | `strangerthings` | *Stranger Things* |
 | `game of thornes` | *Game of Thrones* |
-| `pulp fikshun` | *Pulp Fiction* — unreleased `main` only |
+| `pulp fikshun` | *Pulp Fiction* — preview.4 or newer |
 | `dune 1984` | *Dune* (1984) |
 | `les miserables` | *Les Misérables* |
 | `la rene des neige` | *Frozen*, with French alternative titles enabled |
 
 For translated or regional names, choose a language under **Alternative titles** in settings, then rebuild. This adds another data download. [Alternative-title setup →](docs/CATALOGUE.md#alternative-titles-optional)
 
-Matching has limits: an exact title can rank above the similar title you meant. The unreleased sound-alike matcher finds `incepshun` and `back to the fucher`, but still misses `rattatooey`. See [tested search quality and known gaps](docs/SEARCH-QUALITY.md).
+Matching has limits: an exact title can rank above the similar title you meant. The sound-alike matcher finds `incepshun` and `back to the fucher`, but still misses `rattatooey`. See [tested search quality and known gaps](docs/SEARCH-QUALITY.md).
 
 ## Choose a catalogue
 
@@ -81,7 +81,7 @@ Standard is the default. Choose Compact to use less memory, or Expanded to inclu
 | **Standard** | 184,606 | 53 MiB |
 | Expanded | 390,470 | 97 MiB |
 
-These are the **preview.3 Windows baseline**, recorded on one PC with IMDb data from 2026-11-01 and alternative titles off. They have not been remeasured on the newer main build. Counts and memory vary. Each size keeps up to 25,000, 100,000 or 250,000 **each** of movies and series, subject to its vote threshold.
+These are the **preview.3 Windows baseline**, recorded on one PC with IMDb data from 2026-11-01 and alternative titles off. They have not been remeasured on preview.4. Counts and memory vary. Each size keeps up to 25,000, 100,000 or 250,000 **each** of movies and series, subject to its vote threshold.
 
 Matching runs locally. In that baseline, 95% of Expanded search requests finished within **0.77 ms**, including the local HTTP request and response. This measures SSS, not the time for Stremio to load artwork or other addons' results. [Measurements and method →](docs/PERFORMANCE.md)
 
@@ -92,7 +92,7 @@ Matching runs locally. In that baseline, 95% of Expanded search requests finishe
 - SSS needs no account, Stremio password, API key or AI subscription.
 - Matching happens on your computer. SSS does not send your searches to a search service; Stremio still queries your other installed search addons as usual.
 - IMDb is contacted when you prepare or refresh the catalogue, and by automatic updates. Posters come from MetaHub; your other addons provide metadata and playback.
-- The public preview updates manually. **Unreleased main:** automatic updates default to every 2 days on new installations; existing catalogues stay manual until enabled. A routine download is about 240 MB, plus about 520 MB weekly with alternative titles. See [update controls and bandwidth](docs/CATALOGUE.md#automatic-updates).
+- **Automatic-update bandwidth:** new installations default to every 2 days while the helper runs. Each changed-data update downloads about **240 MB**, plus about **520 MB weekly** with alternative titles: roughly **3.6 GB/month**, or **5.8 GB/month** with alternatives. Existing catalogues remain manual until enabled. Turn **Update automatically** off for manual-only downloads. See [controls, metered connections and estimates](docs/CATALOGUE.md#automatic-updates).
 - No telemetry. Settings are accessible from the host computer only.
 
 The software is MIT licensed. IMDb data has [separate personal, non-commercial terms](DATA.md) and is downloaded by each user; it is not bundled in the app.

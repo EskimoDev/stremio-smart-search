@@ -58,7 +58,7 @@ A live-server check is not a substitute for deterministic regression tests.
 
 Plain Go builds and local packaging now default to **0.1.0-dev**. Release jobs
 must supply the intended version explicitly; this prevents a new main build
-from identifying itself as the already published preview.3.
+from identifying itself as an already published preview.
 `scripts/build.ps1 -Version <version>` stamps the binary and passes the same
 version to the archive packager. The release workflow also passes it to NSIS.
 
