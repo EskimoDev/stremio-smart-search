@@ -24,7 +24,9 @@ This adds IMDb's alternative-title file to each preparation: about 520 MB more t
 
 ## Matching and ranking
 
-Exact titles are ranked first. Acronyms can have several legitimate meanings; popularity helps rank the alternatives. Typo matching has bounded edit distances and work limits. It does not generate fictional titles or use an LLM.
+Exact titles are ranked first, whether canonical or, with alternative titles on, regional; popularity decides between them. Acronyms can have several legitimate meanings; popularity helps rank the alternatives. Typo matching has bounded edit distances and work limits. It does not generate fictional titles or use an LLM.
+
+To pick one of several films with the same name, add its release year: `dune 1984`, `halloween 2018`, `it 2017`. If no title matches that year, the year is ignored. Measured accuracy per catalogue size, and the known weak spots, are in [search quality](SEARCH-QUALITY.md).
 
 ## Updating and changing size
 
