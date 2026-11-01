@@ -12,7 +12,12 @@ In **dx.bi**:
 2. Move **Stremio Smart Search** to the top using the drag handle or up arrows.
 3. Choose **Save order**, then run your search again.
 
-If that control is hidden, enable **Addon order & backup** in dx.bi settings. Saving with that tool requires signing into Stremio. Other clients can have different reorder controls.
+If that control is hidden, enable **Addon order & backup** in dx.bi settings. Saving with that tool requires signing into Stremio.
+
+**Stremio** and **Stremio Enhanced** have no built-in reorder control. Two options, also shown on the settings page:
+
+- **Addon manager:** open the community [Stremio Addon Manager](https://github.com/pancake3000/stremio-addon-manager), sign in, choose **Load addons**, drag Stremio Smart Search to the top, then **Sync to Stremio**. It is a third-party tool, not affiliated with this project or Stremio, and it asks for your Stremio login.
+- **No sign-in:** newly installed addons go to the bottom. Note your other addons' install links, remove them, then reinstall them after Stremio Smart Search.
 
 Moving **only SSS** keeps the other addons in their existing relative order. SSS supplies search-only catalogues: it does not supply streams, metadata or subtitles, or add Home/Discover rows. Your existing playback providers continue working in their previous order. The order is a Stremio account setting and may sync to your other clients.
 
@@ -34,7 +39,7 @@ The optional **Start helper when I sign in** component keeps the helper availabl
 
 Unsigned development installers can show Windows publisher/reputation prompts. Signing is a separate release task, not something GitHub Releases automatically provides. Do not claim a verified publisher without a signing certificate.
 
-Uninstall removes the app and shortcuts, leaving the local catalogue in the user's configuration folder. No Stremio settings or other addons are removed.
+Uninstall removes the app and shortcuts, leaving the local catalogue in `%AppData%\StremioSmartSearch`, or in the folder chosen with **Change location…**. No Stremio settings or other addons are removed. See [where the catalogue is stored](CATALOGUE.md#where-the-catalogue-is-stored).
 
 ## macOS
 
