@@ -192,7 +192,7 @@ func TestCanonicalExactBeatsAlternativeExact(t *testing.T) {
 	}
 	e := New(c.Titles)
 	if got := ids(e.Search(context.Background(), "alien", "movie", 20)); len(got) < 2 || got[0] != "tt0078748" || got[1] != "tt0816692" {
-		t.Fatalf("canonical exact should win over a more popular alias: %v", got)
+		t.Fatalf("a short alias ranks with acronyms, below a canonical exact name: %v", got)
 	}
 	// A short alias that spells another title's acronym ranks with acronyms,
 	// so the more popular title keeps first place (IMDb lists "H.O.T.D." for

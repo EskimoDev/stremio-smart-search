@@ -14,9 +14,11 @@ Planned as `0.1.0-preview.3`.
 - Catalogue sizes: Compact, Standard (new default) and Expanded, with measured resource comparisons in [docs/PERFORMANCE.md](docs/PERFORMANCE.md). Changing size rebuilds in the background and keeps the current catalogue until the replacement is ready.
 - macOS app and DMG smoke test in CI, and recorded platform test findings in [docs/PLATFORM-TESTING.md](docs/PLATFORM-TESTING.md). ([#2](https://github.com/EskimoDev/stremio-smart-search/pull/2))
 - Guidance on why local matching feels fast and on putting Smart Search first in the addon order.
+- Search-quality evaluation: 248 curated queries with verified IMDb answers, scored by `tools/quality` for top-1, recall@5, false positives and per-case regressions. Results in [docs/SEARCH-QUALITY.md](docs/SEARCH-QUALITY.md).
 
 ### Changed
 
+- Search accuracy on real catalogues: Expanded top-1 rose from 91.1% to 96.9% and recall@5 from 93.8% to 99.5% on the curated cases, with no case worse. A year typed after a title ("dune 1984") now picks that version instead of returning nothing. Swapped letters in long words ("game of thornes") and long translated titles are found. "hotd" no longer lists unrelated one-letter variants such as *Hot Fuzz*, and an exact regional title ranks by popularity alongside exact canonical names. See [docs/SEARCH-QUALITY.md](docs/SEARCH-QUALITY.md).
 - Rebuilt the search index around compact sorted arrays and faster catalogue parsing. On synthetic data, Expanded's memory after startup fell from about 276 to 92 MiB, its 95th-percentile search time from about 20 to 2 ms, and its live refresh from 50 to 14 s, with a peak of 270 MiB instead of 554 MiB. Search results are unchanged. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md#index-and-preparation-rewrite).
 - Redesigned the setup page as a compact desktop utility following LongCipher Design, with bundled Geist fonts and official client icons for Stremio, dx.bi and Stremio Enhanced.
 - Polished the settings catalogue card and the addon order guide. ([#3](https://github.com/EskimoDev/stremio-smart-search/pull/3))

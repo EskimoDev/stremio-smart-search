@@ -22,6 +22,7 @@
 ## What it does
 
 - **Forgiving search.** `interstelar` finds *Interstellar*, `HOTD` finds *House of the Dragon*, `strangerthings` finds *Stranger Things*.
+- **Add a year to pick a version.** `dune 1984` finds the 1984 film, `the lion king 2019` the remake.
 - **Regional titles, if you want them.** Turn on one language and `La Reine des neiges` finds *Frozen*.
 - **Runs on your computer.** Matching uses a local index in memory, with no AI service, hosted backend, account or API key.
 - **Plays nicely.** It adds search rows only. Your other addons keep supplying streams, metadata and their own results.
