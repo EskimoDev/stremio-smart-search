@@ -2,11 +2,11 @@
 
 All notable changes to Stremio Smart Search are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Preview builds use the `0.1.0-preview.N` pre-release form.
 
-Previews so far are draft GitHub releases. They are listed here so each build can be traced to its commit.
+`0.1.0-preview.1` and `0.1.0-preview.2` were draft-only builds and were never published. `0.1.0-preview.3` is the first public preview. Each entry links to the source it was built from.
 
 ## [Unreleased]
 
-Planned as `0.1.0-preview.3`.
+## [0.1.0-preview.3] - 2026-11-01
 
 ### Added
 
@@ -69,6 +69,7 @@ Planned as `0.1.0-preview.3`.
 - Executable permissions are preserved in cross-built archives.
 - Platform download names are easier to identify.
 
-[Unreleased]: https://github.com/EskimoDev/stremio-smart-search/compare/30f644c...main
+[Unreleased]: https://github.com/EskimoDev/stremio-smart-search/compare/v0.1.0-preview.3...main
+[0.1.0-preview.3]: https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.3
 [0.1.0-preview.2]: https://github.com/EskimoDev/stremio-smart-search/commit/30f644c625763da24e44de98db46d9deca06d286
 [0.1.0-preview.1]: https://github.com/EskimoDev/stremio-smart-search/commit/d3a6d98aed1aee833fb834ae55dc071186f83a4f
