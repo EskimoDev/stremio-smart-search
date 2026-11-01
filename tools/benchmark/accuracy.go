@@ -31,6 +31,16 @@ type accuracyReport struct {
 	Aliases int            `json:"aliases,omitempty"`
 	Seed    uint64         `json:"seed"`
 	Kinds   []accuracyKind `json:"kinds"`
+	Probes  []probe        `json:"probes"`
+}
+
+// probe records the first results of a fixed query, for cases judged by eye,
+// such as an acronym that also fuzzily matches an unrelated word ("hotd" and
+// "Hota Hai" on the movie row).
+type probe struct {
+	Query string   `json:"query"`
+	Kind  string   `json:"kind"`
+	First []string `json:"first"`
 }
 
 // runAccuracy measures how often a deliberately mistyped or partial title
@@ -151,6 +161,12 @@ func runAccuracy(path, profile string, samples int, seed uint64, dump string) {
 	for _, kind := range order {
 		t := tallies[kind]
 		r.Kinds = append(r.Kinds, accuracyKind{kind, t.n, ratio(t.top1, t.n), ratio(t.top5, t.n), ratio(t.top20, t.n), float64(t.elapsed.Microseconds()) / 1000 / float64(t.n)})
+	}
+	for _, p := range []probe{{Query: "hotd", Kind: "movie"}, {Query: "hotd", Kind: "series"}, {Query: "got", Kind: "series"}, {Query: "lotr", Kind: "movie"}} {
+		for _, t := range engine.Search(context.Background(), p.Query, p.Kind, 10) {
+			p.First = append(p.First, t.Name)
+		}
+		r.Probes = append(r.Probes, p)
 	}
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
