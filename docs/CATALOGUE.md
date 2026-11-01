@@ -14,13 +14,13 @@ Choose the catalogue size in setup:
 
 These are ceilings, not promised counts. Titles are selected by vote count from qualifying movies, TV movies, series and miniseries. Adult-marked titles and individual episodes are excluded; titles without sufficient votes are excluded even with Expanded. Primary and original titles are always searchable. Optionally, **Alternative titles** adds regional and translated titles in one chosen language, for example *La Reine des neiges* for *Frozen* or *Zootropolis* for *Zootopia*. Coverage depends on IMDb's data; this does not promise every regional spelling or alternate title. Normal results from other addons remain available.
 
-In the 2026-11-01 measurements, the three sizes contained **50,000 / 184,588 / 390,449 titles** respectively. See the [resource comparison and reproducible measurements](PERFORMANCE.md) before choosing a larger option, particularly on a low-memory device.
+On the 2026-11-01 IMDb data, the three sizes held **50,000, 184,606 and 390,470 titles**. Memory and speed for each are in [performance](PERFORMANCE.md).
 
 ## Alternative titles (optional)
 
 Under **Catalogue → Alternative titles**, choose a language. Where titles commonly differ by country, you can also choose a **Regional preference**, such as Spain or Mexico for Spanish, or France or Canada for French. Then choose **Apply titles & rebuild**. Search then also matches those titles, including misspellings and missing accents. Results keep their normal IMDb identifiers and names, and English and original titles keep working. Off is the default, and existing catalogues keep their current behaviour until you change it.
 
-This adds IMDb's alternative-title file to each preparation: about 520 MB more to download (2026-11-01), roughly tripling the download, and it is streamed and discarded like the other files. Preparation takes about 10 seconds longer. With French titles, measured RAM rose by about 8–10 MiB (Compact) and 20–30 MiB (Standard), and search speed was unchanged. Expanded became slightly slower in that measurement because it was already over the helper's memory target. The later [index rewrite](PERFORMANCE.md#index-and-preparation-rewrite) brought Expanded with French titles to about 105 MiB on real data, well under that target, so alternative titles work with every size. See [performance](PERFORMANCE.md#alternative-titles). Only the chosen language is kept. It is matched against your own installed catalogue, not translated, and no other service is involved.
+This adds IMDb's alternative-title file to each preparation: about 520 MB more to download (2026-11-01), streamed and discarded like the other files. Preparation takes about 7 seconds longer. With French titles, Standard uses 58 MiB instead of 53 MiB and Expanded 105 MiB instead of 97 MiB, with search speed about the same; see [performance](PERFORMANCE.md#alternative-titles). Only the chosen language is kept, and no translation or other service is involved.
 
 ## Matching and ranking
 

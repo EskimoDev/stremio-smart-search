@@ -15,3 +15,4 @@ The version is stamped at build time: `scripts/build.ps1` passes it to the binar
 1. Move the `[Unreleased]` entries in [CHANGELOG.md](CHANGELOG.md) under the new version and date.
 2. Update the default preview version in `scripts/build.ps1`, `scripts/windows-installer.nsi`, `tools/package/main.go` and `.github/workflows/release.yml` to the next planned version, and the version badge at the top of `README.md`.
 3. Push a `v<version>` tag, or run the release workflow by hand. It prepares a draft pre-release with all packages and `SHA256SUMS.txt`.
+4. Before publishing, run the native tests and smoke tests, check install and uninstall, install the addon in a real Stremio client, and check the packages contain no catalogue data, credentials or machine-specific files. Only call a package device-tested once it has run on that platform.
