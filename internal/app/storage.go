@@ -143,8 +143,27 @@ func (a *App) MoveCatalog(target string) (string, error) {
 	a.mu.Unlock()
 	defer func() { a.mu.Lock(); a.moving = false; a.mu.Unlock() }()
 
+	_, statErr := os.Stat(dest)
+	created := os.IsNotExist(statErr)
 	if err := os.MkdirAll(dest, 0700); err != nil {
 		return "", fmt.Errorf("could not create the folder: %w", err)
+	}
+	// The same folder under another spelling (letter case on Windows and macOS,
+	// a symlink or junction) must not be copied onto itself: the clean-up below
+	// would then delete the only copy of the catalogue.
+	if sameDir(source, dest) {
+		return source, nil
+	}
+	// removeCopies undoes this move's copies so a failed move leaves nothing
+	// half-copied behind; the source files are never touched.
+	var copied []string
+	removeCopies := func() {
+		for _, name := range copied {
+			_ = os.Remove(filepath.Join(dest, name))
+		}
+		if created {
+			_ = os.Remove(dest) // only succeeds if the folder is empty
+		}
 	}
 	var needed uint64
 	for _, name := range catalogFiles {
@@ -153,17 +172,25 @@ func (a *App) MoveCatalog(target string) (string, error) {
 		}
 	}
 	if free, size := diskFree(dest); size > 0 && free < needed+64<<20 {
+		removeCopies()
 		return "", errNotEnoughSpace
 	}
 	for _, name := range catalogFiles {
-		if err := copyFile(filepath.Join(source, name), filepath.Join(dest, name)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		err := copyFile(filepath.Join(source, name), filepath.Join(dest, name))
+		switch {
+		case err == nil:
+			copied = append(copied, name)
+		case errors.Is(err, fs.ErrNotExist):
+			// Not in the source: drop any stale copy so a restart can never
+			// fall back to an older catalogue left in the destination.
+			_ = os.Remove(filepath.Join(dest, name))
+		default:
+			removeCopies()
 			return "", fmt.Errorf("could not copy the catalogue: %w", err)
 		}
 	}
 	if err := saveCatalogDir(settings, dest); err != nil {
-		for _, name := range catalogFiles {
-			_ = os.Remove(filepath.Join(dest, name))
-		}
+		removeCopies()
 		return "", fmt.Errorf("could not save the new location: %w", err)
 	}
 	a.mu.Lock()
@@ -177,6 +204,16 @@ func (a *App) MoveCatalog(target string) (string, error) {
 		_ = os.Remove(source) // only succeeds if the folder is now empty
 	}
 	return dest, nil
+}
+
+// sameDir reports whether two paths name the same existing folder.
+func sameDir(a, b string) bool {
+	x, err := os.Stat(a)
+	if err != nil {
+		return false
+	}
+	y, err := os.Stat(b)
+	return err == nil && os.SameFile(x, y)
 }
 
 func saveCatalogDir(settings, dir string) error {
