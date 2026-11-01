@@ -6,7 +6,7 @@ Run `go test ./...` and `go vet ./...` before proposing a code change. Match beh
 
 Platform changes need a native test or a clear note that only compilation was checked. Avoid adding a runtime, background crawler or cloud dependency to make a local installation work. Preserve normal Stremio addon behavior and document any change to first-run download size or memory limits.
 
-Follow [DESIGN.md](DESIGN.md) for setup-page styling. Use locally bundled assets and preserve the install and clipboard behavior. For catalogue or index changes, use the [resource comparison workflow](docs/PERFORMANCE.md#reproduce) with real source data kept outside this repository. The benchmark tool is a developer utility and is not shipped as part of the helper.
+Follow [docs/DESIGN.md](docs/DESIGN.md) for setup-page styling. Use locally bundled assets and preserve the install and clipboard behavior. For catalogue or index changes, use the [resource comparison workflow](docs/PERFORMANCE.md#reproduce) with real source data kept outside this repository. The benchmark tool is a developer utility and is not shipped as part of the helper.
 
 ## Releasing
 

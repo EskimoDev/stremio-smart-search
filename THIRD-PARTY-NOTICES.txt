@@ -4,7 +4,7 @@ Geist Sans and Geist Mono are distributed unmodified from vercel/geist-font
 commit 2e554ff2ea3979b63afe770af6424eb8b9490a74.
 https://github.com/vercel/geist-font
 
-LongCipher Design by Akagi201 is the CC0 visual reference for DESIGN.md:
+LongCipher Design by Akagi201 is the CC0 visual reference for docs/DESIGN.md:
 https://designmd.ai/Akagi201/longcipher-design
 
 The following SIL Open Font License applies to the bundled fonts.

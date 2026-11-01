@@ -8,6 +8,7 @@ Background reading for users and contributors. Start with the [project README](.
 | [ARCHITECTURE.md](ARCHITECTURE.md) | How the index, matching, Stremio protocol and helper lifecycle work |
 | [PERFORMANCE.md](PERFORMANCE.md) | Measured memory, CPU and latency per catalogue size, and how to reproduce them |
 | [PLATFORM-TESTING.md](PLATFORM-TESTING.md) | What has been tested on which OS and client, and what is still open |
+| [DESIGN.md](DESIGN.md) | Visual rules for the setup page, based on LongCipher Design |
 | `benchmarks/` | Raw benchmark results referenced by PERFORMANCE.md, one JSON file per device and date |
 
-The setup-page design rules are in [DESIGN.md](../DESIGN.md), and IMDb data terms are in [DATA.md](../DATA.md).
+IMDb data terms are in [DATA.md](../DATA.md).
