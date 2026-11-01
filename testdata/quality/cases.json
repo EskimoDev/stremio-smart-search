@@ -730,20 +730,6 @@
    "source": "curated"
   },
   {
-   "name": "original/hp1",
-   "query": "harry potter and the philosophers stone",
-   "kind": "movie",
-   "category": "original",
-   "expect": [
-    {
-     "id": "tt0241527",
-     "title": "Harry Potter and the Philosopher's Stone",
-     "year": 2001
-    }
-   ],
-   "source": "curated"
-  },
-  {
    "name": "fuzzy/interstellar/interstelar",
    "query": "interstelar",
    "kind": "movie",
@@ -1542,7 +1528,9 @@
     }
    ],
    "forbid": [
-    "hota hai"
+    "hota hai",
+    "hot",
+    "hood"
    ],
    "source": "coordinator: real dx.bi screenshot"
   },
@@ -3159,6 +3147,22 @@
    "language": "en",
    "alias": "Zootropolis",
    "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "alias/en/harry potter and the philosophers stone",
+   "query": "harry potter and the philosophers stone",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0241527",
+     "title": "Harry Potter and the Sorcerer's Stone",
+     "year": 2001
+    }
+   ],
+   "language": "en",
+   "alias": "Harry Potter and the Philosopher's Stone",
+   "source": "curated"
   },
   {
    "name": "alias/en/avengers assemble",

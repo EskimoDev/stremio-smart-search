@@ -388,7 +388,9 @@ type termMatch struct {
 	weight float64
 }
 
-func (e *Engine) terms(ctx context.Context, query string) []termMatch {
+// terms finds the vocabulary words a query word may stand for. With typos
+// false it keeps exact and prefix matches only.
+func (e *Engine) terms(ctx context.Context, query string, typos bool) []termMatch {
 	matches := map[int32]float64{}
 	exact := e.word(query)
 	if exact >= 0 {
@@ -411,8 +413,22 @@ func (e *Engine) terms(ctx context.Context, query string) []termMatch {
 	// ("rene" for "reine") can share none of them. For short ASCII terms, look
 	// up every single-edit variant directly: a few hundred allocation-free
 	// binary searches in the vocabulary.
+	if !typos {
+		return sortTerms(matches)
+	}
 	if length >= 4 && length <= 6 && isASCII(query) {
 		forEachEdit(query, func(variant []byte) {
+			if w := e.word(string(variant)); w >= 0 && matches[w] < .76 {
+				matches[w] = .76
+			}
+		})
+	}
+	// A transposed or doubled letter in a longer word breaks up to four of its
+	// trigrams, so "thornes" shares only one with "thrones" and can lose the
+	// bounded candidate scan to thousands of unrelated words. Probe those two
+	// edit kinds directly: about two lookups per letter.
+	if length >= 7 && length <= 20 && isASCII(query) {
+		forEachSwapOrDrop(query, func(variant []byte) {
 			if w := e.word(string(variant)); w >= 0 && matches[w] < .76 {
 				matches[w] = .76
 			}
@@ -469,6 +485,10 @@ func (e *Engine) terms(ctx context.Context, query string) []termMatch {
 			}
 		}
 	}
+	return sortTerms(matches)
+}
+
+func sortTerms(matches map[int32]float64) []termMatch {
 	result := make([]termMatch, 0, len(matches))
 	for word, weight := range matches {
 		result = append(result, termMatch{word, weight})
@@ -570,7 +590,10 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 		return nil
 	}
 	parts := strings.Fields(q)
-	if len(parts) > 8 {
+	// Bound the work by the words that are actually looked up: short words
+	// and articles are skipped below, so a long translated title such as "el
+	// señor de los anillos la comunidad del anillo" still gets its exact match.
+	if len(parts) > 16 || indexedWords(parts) > 8 {
 		return nil
 	}
 	scores := map[int32]float64{}
@@ -595,15 +618,49 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 	seed(e.alternate.lookup(q), scoreAlternate)
 	e.alternate.eachJoined(joined, func(id int32) { seedOne(id, scoreAlternateCompact) })
 	seed(e.acronyms.lookup(q), scoreAcronym)
+	// "it 2017": the name without its year, released that year, is exact.
+	if rest, year := splitYear(parts); year != 0 && rest != "" {
+		for _, id := range e.names.lookup(rest) {
+			if e.titles[id].year == year {
+				seedOne(id, scoreExact)
+			}
+		}
+	}
+	// A single short word that is some title's acronym ("hotd") is taken as
+	// that acronym: one-letter variants of it ("hot", "hood", "hota") are
+	// unrelated titles, not typos, and would otherwise fill the results.
+	typos := true
+	if len(parts) == 1 && utf8.RuneCountInString(q) <= 5 {
+		for _, id := range e.acronyms.lookup(q) {
+			if e.kinds[id] == want {
+				typos = false
+				break
+			}
+		}
+	}
 	unique := map[string]bool{}
 	var work *scratch
 	var groups [][]member
+	// A release year typed with a title ("dune 1984") is satisfied by the
+	// title's year as well as by a title word, so it narrows similar names
+	// instead of making the query fail. It only applies alongside other words.
+	var years []int32
+	words := 0
+	for _, part := range parts {
+		if !stop[part] && utf8.RuneCountInString(part) >= 3 && yearOf(part) == 0 {
+			words++
+		}
+	}
 	for _, part := range parts {
 		if stop[part] || unique[part] {
 			continue
 		}
 		unique[part] = true
 		if utf8.RuneCountInString(part) < 3 {
+			continue
+		}
+		if y := yearOf(part); y != 0 && words > 0 {
+			years = append(years, y)
 			continue
 		}
 		if work == nil {
@@ -629,7 +686,7 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 				m.weight = weight
 			}
 		}
-		for _, match := range e.terms(ctx, part) {
+		for _, match := range e.terms(ctx, part, typos) {
 			for n, id := range e.words.get(match.word) {
 				if n >= 3000 || ctx.Err() != nil {
 					break
@@ -680,9 +737,12 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 			}
 			candidates = kept
 		}
+		for _, y := range years {
+			candidates = e.filterYear(work, candidates, y)
+		}
 		hits = make([]hit, 0, len(candidates)+len(scores))
 		for _, c := range candidates {
-			score := 100 * c.weight / float64(len(groups))
+			score := 100 * c.weight / float64(len(groups)+len(years))
 			if old, ok := scores[c.id]; ok {
 				score = max(score, old)
 				delete(scores, c.id)
@@ -709,4 +769,91 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 		result = append(result, catalog.Title{ID: t.id(), Name: t.name, Type: kind, Year: int(t.year), Votes: int(t.votes), Rating: t.rating})
 	}
 	return result
+}
+
+// yearOf returns the year a query word names, or 0. Four digits from 1880 to
+// 2099 cover IMDb's feature-film and series start years.
+func yearOf(part string) int32 {
+	if len(part) != 4 {
+		return 0
+	}
+	n := int32(0)
+	for i := 0; i < 4; i++ {
+		if part[i] < '0' || part[i] > '9' {
+			return 0
+		}
+		n = n*10 + int32(part[i]-'0')
+	}
+	if n < 1880 || n > 2099 {
+		return 0
+	}
+	return n
+}
+
+// filterYear keeps candidates released in year or with the year as a title
+// word ("Blade Runner 2049"), adding a full word's weight. If none qualify the
+// year is treated as unmatched rather than emptying the results, since a
+// remembered year is often off by one.
+func (e *Engine) filterYear(work *scratch, candidates []member, year int32) []member {
+	gen := work.next()
+	var digits [4]byte
+	for i, n := 3, year; i >= 0; i, n = i-1, n/10 {
+		digits[i] = byte('0' + n%10)
+	}
+	if w := e.word(string(digits[:])); w >= 0 {
+		for _, id := range e.words.get(w) {
+			work.stamp[id] = gen
+		}
+	}
+	matched := 0
+	for _, c := range candidates {
+		if e.titles[c.id].year == year || work.stamp[c.id] == gen {
+			matched++
+		}
+	}
+	if matched == 0 {
+		return candidates
+	}
+	kept := candidates[:0]
+	for _, c := range candidates {
+		if e.titles[c.id].year == year || work.stamp[c.id] == gen {
+			c.weight++
+			kept = append(kept, c)
+		}
+	}
+	return kept
+}
+
+// splitYear returns the query without its last year-like word, and that year.
+func splitYear(parts []string) (string, int32) {
+	for i := len(parts) - 1; i > 0; i-- {
+		if y := yearOf(parts[i]); y != 0 {
+			return strings.Join(append(append([]string(nil), parts[:i]...), parts[i+1:]...), " "), y
+		}
+	}
+	return "", 0
+}
+
+// indexedWords counts the distinct query words that get a term lookup.
+func indexedWords(parts []string) int {
+	n := 0
+	for i, part := range parts {
+		if !stop[part] && utf8.RuneCountInString(part) >= 3 && !slices.Contains(parts[:i], part) {
+			n++
+		}
+	}
+	return n
+}
+
+// forEachSwapOrDrop visits every deletion and adjacent transposition of word.
+// The buffer is reused, so visit must copy anything it keeps.
+func forEachSwapOrDrop(word string, visit func([]byte)) {
+	buf := make([]byte, 0, len(word))
+	for i := 0; i < len(word); i++ {
+		head, tail := word[:i], word[i:]
+		visit(append(append(buf[:0], head...), tail[1:]...))
+		if len(tail) > 1 && tail[0] != tail[1] {
+			visit(append(append(append(buf[:0], head...), tail[1], tail[0]), tail[2:]...))
+		}
+	}
 }
