@@ -45,6 +45,8 @@ button, .button, summary { -webkit-tap-highlight-color: transparent; }
 .page-header, .utility, .page-footer { max-width: 1080px; margin: 0 auto; }
 .page-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 26px 0; border-bottom: 1px solid var(--line); }
 .brand { font-weight: 550; font-size: 16px; letter-spacing: -.4px; text-decoration: none; }
+.brand { display: inline-flex; border-radius: 6px; }
+.brand-logo { display: block; width: auto; height: 36px; }
 .source-link { color: var(--muted); font-size: 12px; text-decoration: none; }
 .source-link span { margin-left: 6px; }
 .source-link:hover { color: var(--ink); }
