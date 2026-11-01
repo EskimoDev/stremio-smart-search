@@ -41,14 +41,17 @@ type Engine struct {
 	idle      []*scratch
 }
 
-// Score bands. Canonical exact names stay first; an exact alternative title
-// ranks above acronym and word matches. Alternative-title word matches are
-// discounted slightly so canonical words win ties.
+// Score bands. An exact alternative title is as exact as a canonical one, so
+// they share a band and popularity decides between them: with Spanish titles
+// on, "cadena perpetua" means The Shawshank Redemption before an obscure
+// film whose original title it is. Short alternative titles still rank with
+// acronyms, and alternative-title word matches are discounted slightly so
+// canonical words win ties.
 const (
 	scoreExact            = 2200
 	scoreCompact          = 2100
-	scoreAlternate        = 2000
-	scoreAlternateCompact = 1900
+	scoreAlternate        = scoreExact
+	scoreAlternateCompact = scoreCompact
 	scoreAcronym          = 1200
 	alternateWordWeight   = .9
 )

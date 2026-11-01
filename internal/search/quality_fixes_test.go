@@ -90,3 +90,13 @@ func TestShortAcronymIsNotFuzzed(t *testing.T) {
 		t.Fatalf("fuzzz: %v", got)
 	}
 }
+
+func TestExactRegionalTitleRanksByPopularity(t *testing.T) {
+	e := New([]catalog.Title{
+		{ID: "tt0111161", Name: "The Shawshank Redemption", Type: "movie", Year: 1994, Votes: 3000000, Aliases: []string{"Cadena perpetua"}},
+		{ID: "tt0077287", Name: "Life Sentence", Original: "Cadena perpetua", Type: "movie", Year: 1979, Votes: 500},
+	})
+	if got := first(t, e, "cadena perpetua", "movie"); !slices.Equal(got, []string{"tt0111161", "tt0077287"}) {
+		t.Fatalf("got %v", got)
+	}
+}
