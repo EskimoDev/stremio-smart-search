@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -117,8 +118,12 @@ type updater struct {
 	state     updateState
 	checking  bool
 	automatic bool // the running build was started by the schedule
-	network   string
-	wake      chan struct{}
+	// carry: the running build may copy alternative titles instead of
+	// downloading them; committed: it already has, past the point where
+	// Refresh now could still turn that into a full download.
+	carry, committed bool
+	network          string
+	wake             chan struct{}
 }
 
 func writeJSONFile(path string, value any) error {
@@ -173,8 +178,12 @@ func (a *App) loadUpdates() {
 	}
 }
 
-func (a *App) saveUpdateStateLocked() {
-	_ = writeJSONFile(filepath.Join(a.dataDir, updateStateFile), a.updates.state)
+// saveUpdateStateLocked persists the bookkeeping. A failure is returned for
+// the one write that guards a download (beginBuildLocked); elsewhere the
+// in-memory state stays correct for this run and the next good write
+// catches up.
+func (a *App) saveUpdateStateLocked() error {
+	return writeJSONFile(filepath.Join(a.dataDir, updateStateFile), a.updates.state)
 }
 
 func backoff(failures int) time.Duration {
@@ -192,7 +201,7 @@ func (a *App) recordFailureLocked(at time.Time, message string) {
 	s.LastFailure = at
 	s.LastError = message
 	s.RetryAfter = at.Add(backoff(s.Failures))
-	a.saveUpdateStateLocked()
+	_ = a.saveUpdateStateLocked()
 }
 
 // sane clamps persisted times that lie in the future, which happens after the
@@ -314,18 +323,44 @@ func (a *App) SetUpdates(auto *bool, hours *int) error {
 }
 
 // beginBuildLocked records a download in progress, so a run that dies during
-// it is noticed at the next start-up.
-func (a *App) beginBuildLocked(automatic bool) {
+// it is noticed at the next start-up. If that record cannot be written (disk
+// full, permissions), an automatic build is not started: otherwise every
+// restart would forget the failures and retry a large download at once.
+// Refresh now still runs.
+func (a *App) beginBuildLocked(automatic, carry bool) error {
 	a.updates.automatic = automatic
+	a.updates.carry, a.updates.committed = carry, false
 	a.updates.state.Attempt = a.now()
-	a.saveUpdateStateLocked()
+	err := a.saveUpdateStateLocked()
+	if err != nil && automatic {
+		a.updates.state.Attempt = time.Time{}
+		a.updates.automatic, a.updates.carry = false, false
+		a.recordFailureLocked(a.now(), "Smart Search could not save its update records ("+err.Error()+"). Automatic updates wait until its settings folder can be written; Refresh now still works.")
+		return err
+	}
+	return nil
+}
+
+// downgradeLocked reports a downloaded file that is older than the one the
+// active catalogue came from. IMDb's files are cached by CloudFront, so a
+// check can see the new copy and the download still get an old one. Only
+// Last-Modified can tell; files without it are accepted.
+func (a *App) downgradeLocked(downloaded []catalog.SourceFile) error {
+	for _, current := range downloaded {
+		for _, previous := range a.updates.state.Sources {
+			if previous.File == current.File && catalog.Older(previous, current) {
+				return fmt.Errorf("IMDb's server sent an older copy of %s (%s) than the current catalogue's (%s); kept the current catalogue", current.File, current.LastModified, previous.LastModified)
+			}
+		}
+	}
+	return nil
 }
 
 // finishBuildLocked records the outcome of any build, manual or automatic.
 // carried means the alternative titles were copied from the previous
 // catalogue, so their download time and validator are kept.
 func (a *App) finishBuildLocked(c *catalog.Catalog, err error, carried bool) {
-	a.updates.automatic = false
+	a.updates.automatic, a.updates.carry, a.updates.committed = false, false, false
 	s := &a.updates.state
 	if err != nil {
 		a.recordFailureLocked(a.now(), err.Error())
@@ -345,7 +380,7 @@ func (a *App) finishBuildLocked(c *catalog.Catalog, err error, carried bool) {
 	default:
 		s.AliasesAt = a.now()
 	}
-	a.saveUpdateStateLocked()
+	_ = a.saveUpdateStateLocked()
 }
 
 // aliasesFreshLocked reports whether the active alternative titles were
@@ -428,13 +463,15 @@ func (a *App) UpdateTick(ctx context.Context) {
 	a.mu.Lock()
 	u.checking = false
 	u.network = network
-	if network == "metered" || ctx.Err() != nil || a.status.Building || !u.state.LastSuccess.Equal(since) {
-		// Metered, shutting down, or a manual refresh started or finished
-		// meanwhile: this check's answer no longer matters.
+	now = a.now()
+	if network == "metered" || ctx.Err() != nil || a.status.Building || !u.state.LastSuccess.Equal(since) ||
+		!u.settings.Auto || now.Before(a.nextUpdateLocked(now)) {
+		// Metered, shutting down, a manual refresh started or finished,
+		// or the user switched updates off or chose a longer interval
+		// while the check was in flight: its answer no longer matters.
 		a.mu.Unlock()
 		return
 	}
-	now = a.now()
 	if err != nil {
 		u.state.LastCheck = now
 		u.state.CheckResult = "failed"
@@ -445,7 +482,7 @@ func (a *App) UpdateTick(ctx context.Context) {
 	u.state.LastCheck = now
 	u.state.CheckResult = string(result)
 	if result == catalog.Unchanged {
-		a.saveUpdateStateLocked()
+		_ = a.saveUpdateStateLocked()
 		a.mu.Unlock()
 		return
 	}
@@ -464,16 +501,29 @@ func (a *App) DisableUpdates() {
 	a.mu.Unlock()
 }
 
+// Results of Refresh now pressed while an automatic update runs.
+const (
+	notJoined = iota
+	joined    // the running update is now a manual, full one
+	finishing // it already kept the old alternative titles; ask again shortly
+)
+
 // adoptAutomaticBuild turns a running automatic build with the same selection
 // into a manual one when the user presses Refresh now, so the click is not
-// refused and a failure is shown on the page.
-func (a *App) adoptAutomaticBuild(profile catalog.Profile, aliases catalog.AliasOptions) bool {
+// refused and a failure is shown on the page. Refresh now promises fresh
+// alternative titles, so it also cancels carrying them over; if the build
+// has already carried them, it is moments from finishing and the click is
+// refused rather than starting a second build alongside it.
+func (a *App) adoptAutomaticBuild(profile catalog.Profile, aliases catalog.AliasOptions) int {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if !a.status.Building || !a.updates.automatic || a.status.BuildProfile != profile.ID ||
 		a.status.BuildLanguage != aliases.Language || a.status.BuildRegion != aliases.Region {
-		return false
+		return notJoined
 	}
-	a.updates.automatic = false
-	return true
+	if a.updates.committed {
+		return finishing
+	}
+	a.updates.automatic, a.updates.carry = false, false
+	return joined
 }

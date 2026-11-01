@@ -230,7 +230,14 @@ func (a *App) startBuildMode(profile catalog.Profile, aliases catalog.AliasOptio
 	a.status.Bytes = 0
 	active := a.status.Movies + a.status.Series
 	sameProfile := a.status.Ready && a.status.Profile == profile.ID
-	a.beginBuildLocked(automatic)
+	if a.beginBuildLocked(automatic, carryAliases) != nil && automatic {
+		a.status.Building = false
+		a.status.BuildProfile = ""
+		a.status.BuildLanguage, a.status.BuildRegion = "", ""
+		a.status.Stage = "Ready to search"
+		a.mu.Unlock()
+		return false
+	}
 	a.mu.Unlock()
 	go func() {
 		ctx, cancel := context.WithTimeout(a.ctx, 45*time.Minute)
@@ -242,21 +249,42 @@ func (a *App) startBuildMode(profile catalog.Profile, aliases catalog.AliasOptio
 			a.mu.Unlock()
 		}
 		c, err := a.DownloadCatalog(ctx, profile, progress)
-		carried := false
-		if err == nil && aliases.Enabled() && carryAliases {
-			progress("Keeping your alternative titles", 0)
-			if catalog.CarryAliases(a.catalogPath(), c, aliases) == nil {
-				carried = true
-			} else {
-				// Unreadable or different selection: download them instead.
-				for i := range c.Titles {
-					c.Titles[i].Aliases = nil
-				}
-				c.AliasLanguage, c.AliasRegion = "", ""
-			}
+		if err == nil {
+			a.mu.Lock()
+			err = a.downgradeLocked(c.Sources)
+			a.mu.Unlock()
 		}
-		if err == nil && aliases.Enabled() && !carried {
-			err = a.DownloadAliases(ctx, c, aliases, progress)
+		carried := false
+		if err == nil && aliases.Enabled() {
+			a.mu.Lock()
+			carry := a.updates.carry
+			a.mu.Unlock()
+			if carry {
+				progress("Keeping your alternative titles", 0)
+				carried = catalog.CarryAliases(a.catalogPath(), c, aliases) == nil
+				// Refresh now may have asked for fresh alternative titles
+				// meanwhile; past this point it can no longer.
+				a.mu.Lock()
+				carried = carried && a.updates.carry
+				a.updates.committed = carried
+				a.mu.Unlock()
+				if !carried {
+					// Unreadable, different selection, or Refresh now:
+					// download them instead.
+					for i := range c.Titles {
+						c.Titles[i].Aliases = nil
+					}
+					c.AliasLanguage, c.AliasRegion = "", ""
+				}
+			}
+			if !carried {
+				err = a.DownloadAliases(ctx, c, aliases, progress)
+				if err == nil {
+					a.mu.Lock()
+					err = a.downgradeLocked(c.Sources)
+					a.mu.Unlock()
+				}
+			}
 		}
 		if err == nil && automatic && sameProfile && len(c.Titles) < active/2 {
 			// A valid but much smaller file usually means IMDb published
@@ -452,8 +480,12 @@ func (a *App) Handler() http.Handler {
 					return
 				}
 				if !a.startBuild(profile, aliases) {
-					if a.adoptAutomaticBuild(profile, aliases) {
+					switch a.adoptAutomaticBuild(profile, aliases) {
+					case joined:
 						writeJSON(w, 202, a.Status())
+						return
+					case finishing:
+						writeJSON(w, 409, map[string]string{"error": "An automatic update is just finishing. Choose Refresh now again in a moment to also download new alternative titles."})
 						return
 					}
 					writeJSON(w, 409, map[string]string{"error": "A catalogue update is already running."})

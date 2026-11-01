@@ -40,14 +40,16 @@ type fakeIMDb struct {
 	etag     string // "" sends no ETag
 	modified string // "" sends no Last-Modified
 	// Fault injection.
-	headStatus        int           // reply to HEAD with this status
-	ignoreConditional bool          // never answer 304
-	getStatus         int           // reply to GET with this status
-	truncate          bool          // send half the body under the full Content-Length
-	garbage           bool          // send bytes that are not gzip
-	block             chan struct{} // GETs wait for this to close
-	heads, gets       atomic.Int64
-	bodyBytes         atomic.Int64
+	headStatus        int  // reply to HEAD with this status
+	ignoreConditional bool // never answer 304
+	// A CDN edge serving an older copy to GET than HEAD saw.
+	getETag, getModified string
+	getStatus            int           // reply to GET with this status
+	truncate             bool          // send half the body under the full Content-Length
+	garbage              bool          // send bytes that are not gzip
+	block                chan struct{} // GETs wait for this to close
+	heads, gets          atomic.Int64
+	bodyBytes            atomic.Int64
 }
 
 func gzipFile(t *testing.T, path string) []byte {
@@ -80,6 +82,9 @@ func (f *fakeIMDb) serve(w http.ResponseWriter, r *http.Request) {
 	f.mu.Lock()
 	body, ok := f.files[strings.TrimPrefix(r.URL.Path, "/")]
 	etag, modified, headStatus, getStatus, truncate, garbage, block, plain := f.etag, f.modified, f.headStatus, f.getStatus, f.truncate, f.garbage, f.block, f.ignoreConditional
+	if r.Method == http.MethodGet && f.getETag != "" {
+		etag, modified = f.getETag, f.getModified
+	}
 	f.mu.Unlock()
 	if r.Method == http.MethodHead {
 		f.heads.Add(1)
@@ -821,6 +826,220 @@ func TestAlternativeTitlesRefreshWeekly(t *testing.T) {
 	}
 	if _, g := f.requests(); g-gets != 3 {
 		t.Fatalf("fallback downloaded %d files; want 3", g-gets)
+	}
+}
+
+// blockingCheck replaces the metadata check with one that reports when it
+// starts and then waits, so a test can act while a check is in flight.
+func blockingCheck(a *App, result catalog.Freshness) (started, release chan struct{}) {
+	started, release = make(chan struct{}), make(chan struct{})
+	a.CheckSource = func(ctx context.Context, _ []string, _ []catalog.SourceFile) (catalog.Freshness, error) {
+		close(started)
+		<-release
+		return result, nil
+	}
+	return started, release
+}
+
+// Review item 1: switching automatic updates off (or to a longer interval)
+// while a check is in flight must not let that check start a download.
+func TestSettingsChangeDuringCheckStartsNoDownload(t *testing.T) {
+	for name, change := range map[string]func(a *App) error{
+		"turned off": func(a *App) error { off := false; return a.SetUpdates(&off, nil) },
+		"weekly":     func(a *App) error { week := 168; return a.SetUpdates(nil, &week) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			f := newFakeIMDb(t)
+			c := &clock{now: startTime()}
+			a, _ := installed(t, f, c)
+			c.Advance(49 * time.Hour)
+			started, release := blockingCheck(a, catalog.Changed)
+			done := make(chan struct{})
+			go func() { a.UpdateTick(context.Background()); close(done) }()
+			<-started
+			if s := a.Status().Updates; s.State != "checking" {
+				t.Fatalf("state during check: %s", s.State)
+			}
+			if err := change(a); err != nil {
+				t.Fatal(err)
+			}
+			_, gets := f.requests()
+			close(release)
+			<-done
+			if s := a.Status(); s.Building {
+				t.Fatal("a check that finished after the change started a download")
+			}
+			if _, g := f.requests(); g != gets {
+				t.Fatalf("%d downloads after the change", g-gets)
+			}
+		})
+	}
+	// Control: the same sequence without a change does download.
+	f := newFakeIMDb(t)
+	c := &clock{now: startTime()}
+	a, _ := installed(t, f, c)
+	c.Advance(49 * time.Hour)
+	started, release := blockingCheck(a, catalog.Changed)
+	done := make(chan struct{})
+	go func() { a.UpdateTick(context.Background()); close(done) }()
+	<-started
+	close(release)
+	<-done
+	waitBuild(t, a)
+	if s := a.Status().Updates; s.LastSuccess.IsZero() || !s.LastSuccess.Equal(c.Now()) {
+		t.Fatalf("control did not update: %+v", s)
+	}
+}
+
+// aliasInstall builds a French alternative-title catalogue and makes the next
+// automatic update a routine one that would carry the titles over.
+func aliasInstall(t *testing.T) (*App, *fakeIMDb, *clock) {
+	t.Helper()
+	f := newFakeIMDb(t)
+	c := &clock{now: startTime()}
+	a := updateApp(t, context.Background(), t.TempDir(), f, c)
+	profile, _ := catalog.ProfileByID("compact")
+	a.startBuild(profile, catalog.AliasOptions{Language: "fr"})
+	if s := waitBuild(t, a); s.Language != "fr" || s.Error != "" {
+		t.Fatalf("alias build: %+v", s)
+	}
+	f.set(func(f *fakeIMDb) { f.etag = `"v2"`; f.modified = "Mon, 03 Nov 2026 03:00:00 GMT" })
+	c.Advance(49 * time.Hour)
+	return a, f, c
+}
+
+// Review item 2: Refresh now promises fresh alternative titles. Joining a
+// routine automatic update that would carry them over turns it into a full
+// one, in the same single build.
+func TestRefreshNowDuringCarryDownloadsAlternativeTitles(t *testing.T) {
+	a, f, c := aliasInstall(t)
+	block := make(chan struct{})
+	f.set(func(f *fakeIMDb) { f.block = block })
+	_, gets := f.requests()
+	a.UpdateTick(context.Background())
+	a.mu.Lock()
+	carry := a.updates.carry
+	a.mu.Unlock()
+	if !a.Status().Building || !carry {
+		t.Fatal("expected a routine update that carries alternative titles")
+	}
+	if w := postJSON(a, "/api/build", `{}`); w.Code != 202 {
+		t.Fatalf("Refresh now: %d %s", w.Code, w.Body)
+	}
+	close(block)
+	s := waitBuild(t, a)
+	if _, g := f.requests(); g-gets != 3 {
+		t.Fatalf("joined update downloaded %d files; want 3 including title.akas", g-gets)
+	}
+	st := readState(t, a.dataDir)
+	if !st.AliasesAt.Equal(c.Now()) || st.Sources[2].ETag != `"v2"` || s.Language != "fr" {
+		t.Fatalf("alternative titles not refreshed: %+v", st)
+	}
+}
+
+// Once the build has already kept the old alternative titles it is moments
+// from finishing: Refresh now is refused rather than run alongside it.
+func TestRefreshNowAfterCarryCommittedIsRefused(t *testing.T) {
+	a, f, _ := aliasInstall(t)
+	block := make(chan struct{})
+	f.set(func(f *fakeIMDb) { f.block = block })
+	a.UpdateTick(context.Background())
+	a.mu.Lock()
+	a.updates.committed = true // as after CarryAliases succeeded
+	a.mu.Unlock()
+	w := postJSON(a, "/api/build", `{}`)
+	if w.Code != 409 || !strings.Contains(w.Body.String(), "just finishing") {
+		t.Fatalf("Refresh now after carry: %d %s", w.Code, w.Body)
+	}
+	if !a.Status().Updates.Automatic {
+		t.Fatal("refused click changed the running update")
+	}
+	close(block)
+	waitBuild(t, a)
+}
+
+// Review item 3: HEAD sees the new file but GET is answered by a CDN edge
+// still holding an older copy. The download is rejected, not installed.
+func TestOlderCopyFromCDNIsRejected(t *testing.T) {
+	f := newFakeIMDb(t)
+	c := &clock{now: startTime()}
+	a, _ := installed(t, f, c)
+	before := mustRead(t, a.catalogPath())
+	f.set(func(f *fakeIMDb) {
+		f.etag, f.modified = `"v2"`, "Sun, 02 Nov 2026 00:45:00 GMT"       // what HEAD sees
+		f.getETag, f.getModified = `"v0"`, "Fri, 31 Oct 2026 00:45:00 GMT" // what GET gets
+	})
+	c.Advance(49 * time.Hour)
+	_, gets := f.requests()
+	a.UpdateTick(context.Background())
+	s := waitBuild(t, a)
+	if s.Updates.Failures != 1 || !strings.Contains(s.Updates.LastError, "older copy") {
+		t.Fatalf("downgrade accepted: %+v", s.Updates)
+	}
+	if _, g := f.requests(); g-gets != 2 {
+		t.Fatalf("%d downloads", g-gets)
+	}
+	assertRestartable(t, a, before)
+	if st := readState(t, a.dataDir); st.Sources[0].ETag != `"v1"` {
+		t.Fatalf("validators overwritten by the older copy: %+v", st.Sources)
+	}
+	// Refresh now gets the same protection.
+	if w := postJSON(a, "/api/build", `{}`); w.Code != 202 {
+		t.Fatal(w.Code)
+	}
+	if s := waitBuild(t, a); !strings.Contains(s.Error, "older copy") {
+		t.Fatalf("manual downgrade: %q", s.Error)
+	}
+	assertRestartable(t, a, before)
+	// Same date, new ETag, and newer copies are accepted.
+	f.set(func(f *fakeIMDb) { f.getETag, f.getModified = `"v2"`, "Sun, 02 Nov 2026 00:45:00 GMT" })
+	if w := postJSON(a, "/api/build", `{}`); w.Code != 202 {
+		t.Fatal(w.Code)
+	}
+	if s := waitBuild(t, a); s.Error != "" {
+		t.Fatalf("newer copy refused: %q", s.Error)
+	}
+}
+
+// Review item 4: if the update records cannot be written, no automatic
+// download starts, because a restart would forget the failure and retry a
+// large download straight away. Refresh now still works.
+func TestUnwritableStatePausesAutomaticDownloads(t *testing.T) {
+	f := newFakeIMDb(t)
+	c := &clock{now: startTime()}
+	a, dir := installed(t, f, c)
+	state := filepath.Join(dir, updateStateFile)
+	if err := os.Remove(state); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(state, 0700); err != nil { // a write now fails, even as root
+		t.Fatal(err)
+	}
+	f.set(func(f *fakeIMDb) { f.etag = `"v2"` })
+	c.Advance(49 * time.Hour)
+	_, gets := f.requests()
+	a.UpdateTick(context.Background())
+	if a.Status().Building {
+		t.Fatal("automatic download started without a saved attempt record")
+	}
+	if _, g := f.requests(); g != gets {
+		t.Fatal("downloaded without a saved attempt record")
+	}
+	s := a.Status().Updates
+	if s.Failures != 1 || !strings.Contains(s.LastError, "could not save") || !s.NextCheck.Equal(c.Now().Add(time.Hour)) {
+		t.Fatalf("status: %+v", s)
+	}
+	// The in-memory backoff still holds within this run.
+	c.Advance(30 * time.Minute)
+	a.UpdateTick(context.Background())
+	if _, g := f.requests(); g != gets {
+		t.Fatal("retried during backoff")
+	}
+	if w := postJSON(a, "/api/build", `{}`); w.Code != 202 {
+		t.Fatalf("Refresh now: %d", w.Code)
+	}
+	if s := waitBuild(t, a); s.Error != "" {
+		t.Fatalf("Refresh now failed: %s", s.Error)
 	}
 }
 

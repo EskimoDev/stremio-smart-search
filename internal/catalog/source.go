@@ -116,7 +116,7 @@ func (s Source) Check(ctx context.Context, files []string, known []SourceFile) (
 		}
 		current := fileInfo(file, response.Header, response.ContentLength)
 		switch {
-		case olderCopy(previous, current):
+		case Older(previous, current):
 			// A CDN edge can still hold the previous day's file for a few
 			// hours after IMDb publishes. A different ETag on an older file
 			// is not news; never "update" backwards.
@@ -137,8 +137,10 @@ func (s Source) Check(ctx context.Context, files []string, known []SourceFile) (
 	return result, nil
 }
 
-// olderCopy reports a reply whose Last-Modified is not after the stored one.
-func olderCopy(previous, current SourceFile) bool {
+// Older reports whether current's Last-Modified is before previous's, which
+// means a cache served an earlier copy. It is false when either date is
+// missing or unreadable: without dates, a downgrade cannot be told reliably.
+func Older(previous, current SourceFile) bool {
 	if previous.LastModified == "" || current.LastModified == "" {
 		return false
 	}
