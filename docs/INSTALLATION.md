@@ -25,6 +25,10 @@ The companion leaves this choice to you; it does not sign into your account or r
 
 Smart Search matches against a local, prebuilt index, avoiding an internet round trip to a search server. This can reduce search waiting; posters, metadata, streams and the client UI still have their own loading time.
 
+## Check your download
+
+Each release lists a SHA-256 checksum for every file in `SHA256SUMS.txt`. On Windows, run `Get-FileHash .\StremioSmartSearch-<version>-Windows-x64-Setup.exe` in PowerShell and compare the result with the matching line. On macOS or Linux, run `sha256sum -c SHA256SUMS.txt --ignore-missing` in the download folder (`shasum -a 256 -c` on macOS).
+
 ## Windows
 
 The Windows x64 preview has user-confirmed compatibility with standard Stremio, dx.bi and Stremio Enhanced. Installation and removal were also tested on a Windows PC. This confirmation covers the tested desktop clients; Windows ARM64 and additional OS/client releases still need their own verification.

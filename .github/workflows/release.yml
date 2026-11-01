@@ -100,7 +100,7 @@ jobs:
           set -euo pipefail
           version="${REQUESTED_VERSION:-${GITHUB_REF_NAME#v}}"
           cd artifacts
-          find . -maxdepth 1 -type f ! -name SHA256SUMS.txt -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS.txt
+          find . -maxdepth 1 -type f ! -name SHA256SUMS.txt -printf '%P\0' | sort -z | xargs -0 sha256sum > SHA256SUMS.txt
           notes="Preview downloads. Read the installation guide for platform verification and unsigned-app prompts. Downloads include the runtime; no programming tools or API keys are required. Title data is prepared locally on first setup."
           if existing=$(gh release view "v$version" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft 2>/dev/null); then
             if [ "$existing" != true ]; then echo "Refusing to replace a published release" >&2; exit 1; fi
