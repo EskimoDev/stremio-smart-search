@@ -24,6 +24,12 @@ Tested 2026-11-01 on Windows x64 with the files downloaded from the public relea
 - Searching `HOTD` in Stremio returns *House of the Dragon*, **Configure** opens the settings page, and **Stremio + Smart Search** starts the helper and opens dx.bi.
 - The portable build runs from an extracted folder without adding Start Menu shortcuts or sign-in entries.
 
+### Addon logo (unreleased source build)
+
+On 2026-11-01, the maintainer supplied a screenshot confirming the official SSS logo in dx.bi's installed-addon list using a local `0.1.0-dev` build. This confirms the installed-list appearance in dx.bi; it does not establish automatic refresh of an older installed manifest. A separate browser render check covered 32, 48, 64, 96 and 256 pixels on light and dark backgrounds. Standard Stremio and Stremio Enhanced have not been visually checked for this change.
+
+Automated Go tests check absolute logo URLs for loopback, localhost, IPv6, LAN and direct HTTPS origins; fetching the 256×256 PNG before catalogue setup; image content type; public GET/HEAD/OPTIONS handling; and continued protection of settings routes. These are protocol checks, not additional client-device tests. See [manifest refresh instructions](INSTALLATION.md#addon-logo-after-an-update).
+
 ## Linux x64
 
 Tested on Ubuntu 24.04.5 x64 with the packages built by `tools/package`.

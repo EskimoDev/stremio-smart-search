@@ -6,6 +6,10 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 
 ## [Unreleased]
 
+### Added
+
+- The addon manifest supplies the official SSS logo as a 256×256 PNG served by the helper. Its absolute URL follows the manifest request's origin, including custom ports. Clients that retain an older installed manifest may need to [refresh it](docs/INSTALLATION.md#addon-logo-after-an-update).
+
 ## [0.1.0-preview.4] - 2026-11-01
 
 ### Added
