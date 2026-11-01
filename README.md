@@ -100,9 +100,9 @@ Titles kept are from the 2026-11-01 IMDb data; each size allows up to 25k, 100k 
 
 Measured on real IMDb data on one Windows PC (Ryzen 5 5600X, 32 GiB RAM), with 750 real HTTP requests per run mixing exact titles, acronyms, typos, accents, non-Latin text and no-result searches. Medians of three fresh runs.
 
-**The index rewrite in this release**, Expanded catalogue:
+**The index rewrite in this release:**
 
-| | Before | After |
+| Expanded catalogue | Before | After |
 |---|---:|---:|
 | Memory after startup | 276 MiB | **97 MiB** |
 | 95th-percentile search | 9.86 ms | **0.77 ms** |
