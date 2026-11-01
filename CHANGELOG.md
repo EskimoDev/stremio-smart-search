@@ -6,6 +6,10 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 
 ## [Unreleased]
 
+### Added
+
+- Dark mode for the settings page. It follows your system's light or dark setting, and a header toggle switches between Auto, Light and Dark and remembers your choice. The logo, buttons, inputs, status text and storage bar all switch with it.
+
 ### Changed
 
 - Reorganized the README around installation, example searches and catalogue choices, preserving the before/after screenshots. Detailed setup, measurements and development instructions live in the linked guides.

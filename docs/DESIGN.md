@@ -7,6 +7,13 @@ to a small Go/HTML/CSS/JavaScript utility, plus the rules specific to Smart Sear
 ## Look
 
 - White workspace (`#ffffff`) with near-black text (`#171717`).
+- Dark theme: near-black workspace (`#0a0a0a`), raised cards (`#111111`) and light
+  text (`#ededed`). It follows the system's light/dark setting by default; the
+  header toggle cycles Auto, Light and Dark and remembers the choice in the
+  browser. Every colour is a CSS variable in `:root` in `style.css`, so add new
+  colours there for both themes rather than hard-coding them. Text keeps at least
+  4.5:1 contrast in both themes. The logo uses `currentColor`, so it follows the
+  text colour.
 - Shadow borders instead of CSS borders, for example
   `rgba(0,0,0,0.08) 0px 0px 0px 1px, rgba(0,0,0,0.04) 0px 2px 2px`.
   Child corner radii are no larger than their parent's.

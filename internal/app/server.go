@@ -488,7 +488,7 @@ func (a *App) Handler() http.Handler {
 			return
 		}
 		switch r.URL.Path {
-		case "/app.js", "/style.css", "/icon.svg", "/fonts/geist.woff2", "/fonts/geist-mono.woff2", "/fonts/OFL.txt",
+		case "/app.js", "/theme.js", "/style.css", "/icon.svg", "/fonts/geist.woff2", "/fonts/geist-mono.woff2", "/fonts/OFL.txt",
 			"/apps/stremio.png", "/apps/dxbi.png", "/apps/enhanced.png":
 			files.ServeHTTP(w, r)
 		default:
