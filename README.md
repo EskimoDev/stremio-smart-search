@@ -36,13 +36,11 @@ Each of these returns the expected title first in the [search-quality cases](doc
 
 ### At a glance
 
-| | |
-|---|---|
-| 🎯 **Accurate** | Right title first in **97.9%** of 248 checked searches, and in the top five in **99.5%** (Expanded catalogue) |
-| ⚡ **Fast** | **0.8 ms** for 95% of searches on the largest catalogue, measured over real HTTP on a desktop PC |
-| 🪶 **Light** | About **97 MiB** of memory for 390,000 titles, no measurable CPU while idle, and a single 3 to 8 MB download with no runtime to install |
-| 🔒 **Private** | No account, no Stremio login, no AI or search service. Matching runs on your computer |
-| 🤝 **Plays nicely** | Adds search rows only. Your other addons keep supplying streams, metadata and their own results |
+- 🎯 **Accurate**: Right title first in **97.9%** of 248 checked searches, and in the top five in **99.5%** (Expanded catalogue).
+- ⚡ **Fast**: **0.8 ms** for 95% of searches on the largest catalogue, measured over real HTTP on a desktop PC.
+- 🪶 **Light**: About **97 MiB** of memory for 390,000 titles, no measurable CPU while idle, and a single 3 to 8 MB download with no runtime to install.
+- 🔒 **Private**: No account, no Stremio login, no AI or search service. Matching runs on your computer.
+- 🤝 **Plays nicely**: Adds search rows only. Your other addons keep supplying streams, metadata and their own results.
 
 ## Installation
 
