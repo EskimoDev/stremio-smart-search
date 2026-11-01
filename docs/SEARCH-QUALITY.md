@@ -154,6 +154,31 @@ after, with the same 31.6 and 64.9 MiB heap.
    film with that original title, which stays second. Short regional titles
    still rank with acronyms.
 
+## Follow-up: prefer titles the query covers
+
+When several titles match a query's words equally well, the one with the
+fewest extra words now gets up to 10 extra points on a 0–100 word-match
+scale. So "the terminater" lists *The Terminator* before *Terminator 2:
+Judgment Day*, and "harry poter" lists *Sorcerer's Stone* first. Exact,
+joined and acronym bands are unaffected. The per-title word count fits in
+existing struct padding: the entry stays 48 bytes, and heap after startup
+grew by 0.1 MiB on Expanded.
+
+Curated top-1 went from 98.4% to 99.5% on Compact, 97.9% to 99.0% on
+Standard and 96.9% to 97.9% on Expanded, with no case worse on any of the 11
+snapshots. Generated queries, top-1 / top-5:
+
+| Size | One typo | Two typos | Prefix | Exact, joined |
+| --- | --- | --- | --- | --- |
+| Compact | 83.1/94.5 → 85.7/95.3 | 80.5/89.1 → 82.0/89.3 | 69.2/84.8 → 74.4/88.2 | unchanged |
+| Standard | 78.3/91.6 → 81.5/92.8 | 72.6/81.0 → 74.5/81.9 | 52.6/69.0 → 57.0/73.5 | unchanged |
+| Expanded | 75.9/88.9 → 77.9/90.2 | 69.7/77.1 → 71.0/77.6 | 44.1/57.5 → 47.0/60.7 | unchanged |
+
+A second idea was tried and rejected: letting a famous near-miss outrank an
+obscure exact title, so that "interstelar" lists *Interstellar* first. It
+fixed four curated cases, but generated exact-title top-5 on Expanded fell
+from 99.4% to 97.7%. People who type an obscure title exactly would lose it.
+
 ## Remaining weaknesses
 
 - **An exact obscure title beats a near-miss of a famous one.** "interstelar"
@@ -161,11 +186,6 @@ after, with the same 31.6 and 64.9 MiB heap.
   night" does the same with *The Dark Night*. Both are listed second. Making
   popularity outweigh an exact match would need a vote-ratio rule that the
   current cases cannot justify.
-- **Franchise ties.** "the terminater" and "harry poter" match every film in
-  the series equally, so the most-voted one wins: *Terminator 2*, *Deathly
-  Hallows: Part 2*. The intended first film is second. A small bonus for
-  titles whose words are all covered by the query would probably help, but it
-  needs a per-title word count in the index and wider testing.
 - **Phonetic spellings.** "incepshun" is three edits from "inception" and is
   not found. Edit distance cannot cover this without a phonetic index.
 - **Three-letter typos.** "retour ver le futur" misses because "ver" is too

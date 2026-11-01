@@ -18,6 +18,7 @@ Planned as `0.1.0-preview.3`.
 
 ### Changed
 
+- When several titles match a search equally well, the one the search covers best now ranks first: "the terminater" lists *The Terminator* before *Terminator 2*. Generated typo and prefix recall rose 1.3 to 5.2 points of top-1. See [docs/SEARCH-QUALITY.md](docs/SEARCH-QUALITY.md#follow-up-prefer-titles-the-query-covers).
 - Search accuracy on real catalogues: Expanded top-1 rose from 91.1% to 96.9% and recall@5 from 93.8% to 99.5% on the curated cases, with no case worse. A year typed after a title ("dune 1984") now picks that version instead of returning nothing. Swapped letters in long words ("game of thornes") and long translated titles are found. "hotd" no longer lists unrelated one-letter variants such as *Hot Fuzz*, and an exact regional title ranks by popularity alongside exact canonical names. See [docs/SEARCH-QUALITY.md](docs/SEARCH-QUALITY.md).
 - Rebuilt the search index around compact sorted arrays and faster catalogue parsing. On synthetic data, Expanded's memory after startup fell from about 276 to 92 MiB, its 95th-percentile search time from about 20 to 2 ms, and its live refresh from 50 to 14 s, with a peak of 270 MiB instead of 554 MiB. Search results are unchanged. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md#index-and-preparation-rewrite).
 - Redesigned the setup page as a compact desktop utility following LongCipher Design, with bundled Geist fonts and official client icons for Stremio, dx.bi and Stremio Enhanced.

@@ -100,3 +100,19 @@ func TestExactRegionalTitleRanksByPopularity(t *testing.T) {
 		t.Fatalf("got %v", got)
 	}
 }
+
+func TestCoveredTitleWinsCloseMatches(t *testing.T) {
+	// Real IMDb titles; vote counts rounded. Terminator 2 is more popular, but
+	// "the terminater" covers every word of The Terminator.
+	e := New([]catalog.Title{
+		{ID: "tt0103064", Name: "Terminator 2: Judgment Day", Type: "movie", Year: 1991, Votes: 1200000},
+		{ID: "tt0088247", Name: "The Terminator", Type: "movie", Year: 1984, Votes: 950000},
+	})
+	if got := first(t, e, "the terminater", "movie"); len(got) != 2 || got[0] != "tt0088247" {
+		t.Fatalf("got %v", got)
+	}
+	// Exact names keep their band: the bonus never lifts a word match over one.
+	if got := first(t, e, "terminator 2 judgment day", "movie"); got[0] != "tt0103064" {
+		t.Fatalf("exact: %v", got)
+	}
+}

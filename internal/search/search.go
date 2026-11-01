@@ -54,6 +54,10 @@ const (
 	scoreAlternateCompact = scoreCompact
 	scoreAcronym          = 1200
 	alternateWordWeight   = .9
+	// coverageBonus is added in full to a word match that covers every
+	// significant word of the title, and in proportion otherwise. Word matches
+	// score 0–100, so it reorders close matches, not exact or acronym bands.
+	coverageBonus = 10
 )
 
 var stop = map[string]bool{"a": true, "an": true, "the": true, "of": true, "and": true}
@@ -746,6 +750,12 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 		hits = make([]hit, 0, len(candidates)+len(scores))
 		for _, c := range candidates {
 			score := 100 * c.weight / float64(len(groups)+len(years))
+			// Among equally good word matches, prefer titles the query
+			// covers: "the terminater" means The Terminator before
+			// Terminator 2: Judgment Day.
+			if w := e.titles[c.id].words; w > 0 {
+				score += coverageBonus * min(1, float64(len(groups)+len(years))/float64(w))
+			}
 			if old, ok := scores[c.id]; ok {
 				score = max(score, old)
 				delete(scores, c.id)
