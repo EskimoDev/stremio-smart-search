@@ -44,9 +44,7 @@ button:disabled .app-action { visibility: hidden; }
 button, .button, summary { -webkit-tap-highlight-color: transparent; }
 .page-header, .utility, .page-footer { max-width: 1080px; margin: 0 auto; }
 .page-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 26px 0; border-bottom: 1px solid var(--line); }
-.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 550; font-size: 16px; letter-spacing: -.4px; text-decoration: none; }
-.brand svg { flex-shrink: 0; }
-.brand-note { margin-left: 8px; color: var(--muted); font-size: 13px; font-weight: 400; letter-spacing: 0; }
+.brand { font-weight: 550; font-size: 16px; letter-spacing: -.4px; text-decoration: none; }
 .source-link { color: var(--muted); font-size: 12px; text-decoration: none; }
 .source-link span { margin-left: 6px; }
 .source-link:hover { color: var(--ink); }
@@ -144,7 +142,6 @@ code { font-family: "Geist Mono", ui-monospace, monospace; font-size: .9em; }
 @media (max-width: 760px) {
   body { padding: 0 max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left)); }
   .page-header { padding: 20px 0; gap: 12px; }
-  .brand-note { display: block; margin-left: 0; font-size: 11px; }
   .source-link { font-size: 11px; }
   .utility { display: flex; flex-direction: column; padding: 26px 0; gap: 32px; }
   .catalogue, .workspace, .helper-notes { width: 100%; }
