@@ -40,8 +40,6 @@
     if (changed && status.ready && !status.building) info += ' Takes effect after rebuilding; the current catalogue keeps working meanwhile.';
     else if (language && status.ready && !changed) info += ` ${status.aliases.toLocaleString()} alternative titles in this catalogue.`;
     if (language && (changed || !status.ready)) info += ' Adds IMDb’s alternative-title file (about 500 MB) to the download.';
-    // Measured: Expanded already exceeds the memory target, so alternative titles slow it; Standard is unaffected.
-    if (language && selectedProfile === 'expanded') info += ' Standard is recommended with alternative titles: Expanded uses the most memory and searches more slowly with them.';
     $('alias-info').textContent = info;
     return changed;
   }

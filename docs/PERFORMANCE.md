@@ -124,9 +124,9 @@ exclude the download.
 - **Latency:** Compact and Standard search times are unchanged within run-to-run variation. Expanded's median rose
   from about 1.55 to 2.4 ms, and its tail varied too much between runs to call. Its heap (261–277 MiB) is already
   past the 256 MiB soft target, so any added memory means more garbage collection.
-  The settings page therefore suggests Standard when alternative titles are chosen with Expanded. After the
+  The settings page used to suggest Standard when alternative titles were chosen with Expanded. After the
   [index rewrite](#index-and-preparation-rewrite), Expanded with French titles sits well under the soft target on
-  synthetic data, so this advice is due to be revisited once real data is re-measured.
+  synthetic data, so that advice was removed.
 - **Title counts:** real counts per language are far below the per-size budgets (Compact 75k, Standard 200k,
   Expanded 200k), so no titles were dropped. On Standard: English 54,950, French 55,722, German 55,288,
   Japanese 55,910, Spanish 84,843 (Spain only: 48,906).

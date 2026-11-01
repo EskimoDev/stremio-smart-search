@@ -29,6 +29,8 @@ Planned as `0.1.0-preview.3`.
 - Simplified setup branding and removed the header logo.
 - Balanced the settings page columns, with storage in its own card. ([#6](https://github.com/EskimoDev/stremio-smart-search/pull/6), [#7](https://github.com/EskimoDev/stremio-smart-search/pull/7))
 - Rewrote the README as a short landing page with a before/after search comparison. Detail moved to [docs/CATALOGUE.md](docs/CATALOGUE.md), [docs/OTHER-DEVICES.md](docs/OTHER-DEVICES.md) and [docs/INSTALLATION.md](docs/INSTALLATION.md). ([#5](https://github.com/EskimoDev/stremio-smart-search/pull/5))
+- Alternative titles no longer suggest switching from Expanded to Standard. The index rewrite removed the memory pressure behind that advice.
+- README: measured accuracy, system requirements and how to report a wrong result.
 - Brought the docs up to date with the storage card, the index rewrite and the search-quality work, and documented addon ordering for Stremio and Stremio Enhanced.
 - Added a changelog, folder READMEs and release steps, and moved DESIGN.md into docs/. ([#4](https://github.com/EskimoDev/stremio-smart-search/pull/4))
 - Recorded user-confirmed Windows x64 compatibility with Stremio, dx.bi and Stremio Enhanced, and Linux x64 install testing on Ubuntu 24.04.
