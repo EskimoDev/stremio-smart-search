@@ -1,0 +1,462 @@
+{
+ "about": "Held-out phonetic cases. Written before any phonetic matching was designed and never used to tune it; scored only to check that gains on the curated phonetic cases in cases.json generalise. Same format and ground-truth checks as cases.json. See docs/SEARCH-QUALITY.md.",
+ "cases": [
+  {
+   "name": "holdout/jurasic-wurld",
+   "query": "jurasic wurld",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0369610",
+     "title": "Jurassic World",
+     "year": 2015
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/green-mial",
+   "query": "the green mial",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0120689",
+     "title": "The Green Mile",
+     "year": 1999
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/usual-suspeks",
+   "query": "the usual suspeks",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0114814",
+     "title": "The Usual Suspects",
+     "year": 1995
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/sicksth-sense",
+   "query": "the sicksth sense",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0167404",
+     "title": "The Sixth Sense",
+     "year": 1999
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/gravitee",
+   "query": "gravitee",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1454468",
+     "title": "Gravity",
+     "year": 2013
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/trooman",
+   "query": "the trooman show",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0120382",
+     "title": "The Truman Show",
+     "year": 1998
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/fynding-nemo",
+   "query": "fynding nemo",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0266543",
+     "title": "Finding Nemo",
+     "year": 2003
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/incredibuls",
+   "query": "the incredibuls",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0317705",
+     "title": "The Incredibles",
+     "year": 2004
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/house-kards",
+   "query": "house of kards",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1856010",
+     "title": "House of Cards",
+     "year": 2013
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/offis",
+   "query": "the offis",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0386676",
+     "title": "The Office",
+     "year": 2005
+    },
+    {
+     "id": "tt0290978",
+     "title": "The Office",
+     "year": 2001
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/fyuchurama",
+   "query": "fyuchurama",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0149460",
+     "title": "Futurama",
+     "year": 1999
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/eksorsist",
+   "query": "the eksorsist",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0070047",
+     "title": "The Exorcist",
+     "year": 1973
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/amerikan-sycho",
+   "query": "amerikan sycho",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0144084",
+     "title": "American Psycho",
+     "year": 2000
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/nite-living-dead",
+   "query": "nite of the living dead",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0063350",
+     "title": "Night of the Living Dead",
+     "year": 1968
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/kwantum",
+   "query": "kwantum of solace",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0830515",
+     "title": "Quantum of Solace",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/sindrella",
+   "query": "sindrella",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0042332",
+     "title": "Cinderella",
+     "year": 1950
+    },
+    {
+     "id": "tt1661199",
+     "title": "Cinderella",
+     "year": 2015
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/aladin",
+   "query": "aladin",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0103639",
+     "title": "Aladdin",
+     "year": 1992
+    },
+    {
+     "id": "tt6139732",
+     "title": "Aladdin",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/kraun",
+   "query": "the kraun",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt4786824",
+     "title": "The Crown",
+     "year": 2016
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/nite-rider",
+   "query": "nite rider",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0083437",
+     "title": "Knight Rider",
+     "year": 1982
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/shreck",
+   "query": "shreck",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0126029",
+     "title": "Shrek",
+     "year": 2001
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/doctor-hoo",
+   "query": "doctor hoo",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0436992",
+     "title": "Doctor Who",
+     "year": 2005
+    },
+    {
+     "id": "tt0056751",
+     "title": "Doctor Who",
+     "year": 1963
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/opra",
+   "query": "the phantom of the opra",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0293508",
+     "title": "The Phantom of the Opera",
+     "year": 2004
+    },
+    {
+     "id": "tt0016220",
+     "title": "The Phantom of the Opera",
+     "year": 1925
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/goast",
+   "query": "goast",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0099653",
+     "title": "Ghost",
+     "year": 1990
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/born-identity",
+   "query": "the born identity",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0258463",
+     "title": "The Bourne Identity",
+     "year": 2002
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/mishun",
+   "query": "mishun impossible",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0117060",
+     "title": "Mission: Impossible",
+     "year": 1996
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/filadelfia",
+   "query": "filadelfia",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0107818",
+     "title": "Philadelphia",
+     "year": 1993
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/fenomenon",
+   "query": "fenomenon",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0117333",
+     "title": "Phenomenon",
+     "year": 1996
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/fineas",
+   "query": "fineas and ferb",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0852863",
+     "title": "Phineas and Ferb",
+     "year": 2007
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/big-bang-theery",
+   "query": "the big bang theery",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0898266",
+     "title": "The Big Bang Theory",
+     "year": 2007
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/nite-and-day",
+   "query": "nite and day",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1013743",
+     "title": "Knight and Day",
+     "year": 2010
+    },
+    {
+     "id": "tt0038776",
+     "title": "Night and Day",
+     "year": 1946
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "holdout/negative-bloobergast",
+   "query": "bloobergast",
+   "kind": "movie",
+   "category": "negative",
+   "source": "curated"
+  }
+ ]
+}

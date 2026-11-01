@@ -3629,6 +3629,583 @@
    "source": "curated"
   },
   {
+   "name": "phonetic/incepshun",
+   "query": "incepshun",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1375666",
+     "title": "Inception",
+     "year": 2010
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/shoshank",
+   "query": "shoshank redemption",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0111161",
+     "title": "The Shawshank Redemption",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/nite-museum",
+   "query": "nite at the museum",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0477347",
+     "title": "Night at the Museum",
+     "year": 2006
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/fite-club",
+   "query": "fite club",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0137523",
+     "title": "Fight Club",
+     "year": 1999
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/pulp-fikshun",
+   "query": "pulp fikshun",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0110912",
+     "title": "Pulp Fiction",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/dark-nite",
+   "query": "the dark nite",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0468569",
+     "title": "The Dark Knight",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/gaim-thrones",
+   "query": "gaim of thrones",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/wocking-dead",
+   "query": "the wocking dead",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1520211",
+     "title": "The Walking Dead",
+     "year": 2010
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/privet-ryan",
+   "query": "saving privet ryan",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0120815",
+     "title": "Saving Private Ryan",
+     "year": 1998
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/lion-keeng",
+   "query": "the lion keeng",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0110357",
+     "title": "The Lion King",
+     "year": 1994
+    },
+    {
+     "id": "tt6105098",
+     "title": "The Lion King",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/fucher",
+   "query": "back to the fucher",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0088763",
+     "title": "Back to the Future",
+     "year": 1985
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/sykho",
+   "query": "sykho",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0054215",
+     "title": "Psycho",
+     "year": 1960
+    },
+    {
+     "id": "tt0155975",
+     "title": "Psycho",
+     "year": 1998
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/shyning",
+   "query": "the shyning",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0081505",
+     "title": "The Shining",
+     "year": 1980
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/gostbusters",
+   "query": "gostbusters",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0087332",
+     "title": "Ghostbusters",
+     "year": 1984
+    },
+    {
+     "id": "tt1289401",
+     "title": "Ghostbusters",
+     "year": 2016
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/prestij",
+   "query": "the prestij",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0482571",
+     "title": "The Prestige",
+     "year": 2006
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/yuforia",
+   "query": "yuforia",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt8772296",
+     "title": "Euphoria",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/rattatooey",
+   "query": "rattatooey",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0382932",
+     "title": "Ratatouille",
+     "year": 2007
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/arcain",
+   "query": "arcain",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt11126994",
+     "title": "Arcane",
+     "year": 2021
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/fraysure",
+   "query": "fraysure",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0106004",
+     "title": "Frasier",
+     "year": 1993
+    },
+    {
+     "id": "tt14124236",
+     "title": "Frasier",
+     "year": 2023
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/fantom-menace",
+   "query": "the fantom menace",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0120915",
+     "title": "Star Wars: Episode I - The Phantom Menace",
+     "year": 1999
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/matricks",
+   "query": "the matricks",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0133093",
+     "title": "The Matrix",
+     "year": 1999
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/termanater",
+   "query": "the termanater",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0088247",
+     "title": "The Terminator",
+     "year": 1984
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/hows-dragon",
+   "query": "hows of the dragon",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt11198330",
+     "title": "House of the Dragon",
+     "year": 2022
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/brekin-bad",
+   "query": "brekin bad",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0903747",
+     "title": "Breaking Bad",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/amaylee",
+   "query": "amaylee",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0211915",
+     "title": "Amélie",
+     "year": 2001
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/pinokkio",
+   "query": "pinokkio",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0032910",
+     "title": "Pinocchio",
+     "year": 1940
+    },
+    {
+     "id": "tt1488589",
+     "title": "Guillermo del Toro's Pinocchio",
+     "year": 2022
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/skool-rock",
+   "query": "skool of rock",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0332379",
+     "title": "School of Rock",
+     "year": 2003
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/kwiet-place",
+   "query": "a kwiet place",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt6644200",
+     "title": "A Quiet Place",
+     "year": 2018
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/sitizen-kane",
+   "query": "sitizen kane",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0033467",
+     "title": "Citizen Kane",
+     "year": 1941
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/fone-booth",
+   "query": "fone booth",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0183649",
+     "title": "Phone Booth",
+     "year": 2002
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/noatbook",
+   "query": "the noatbook",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0332280",
+     "title": "The Notebook",
+     "year": 2004
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/exact-sherlok",
+   "query": "sherlok",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt5338678",
+     "title": "Sherlok",
+     "year": 2015
+    }
+   ],
+   "source": "curated (exact title wins)"
+  },
+  {
+   "name": "phonetic/exact-momento",
+   "query": "momento",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt3517344",
+     "title": "Momento",
+     "year": 2013
+    }
+   ],
+   "source": "curated (exact title wins)"
+  },
+  {
+   "name": "phonetic/exact-kasablanka",
+   "query": "kasablanka",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt10497826",
+     "title": "Kasablanka",
+     "year": 2019
+    }
+   ],
+   "source": "curated (exact title wins)"
+  },
+  {
+   "name": "phonetic/real-bear",
+   "query": "the bear",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt14452776",
+     "title": "The Bear",
+     "year": 2022
+    }
+   ],
+   "forbid": [
+    "bare",
+    "beer",
+    "bier",
+    "bar"
+   ],
+   "source": "curated (indexed word)"
+  },
+  {
+   "name": "phonetic/real-night",
+   "query": "night at the museum",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0477347",
+     "title": "Night at the Museum",
+     "year": 2006
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/franchise-toy",
+   "query": "toy storee 3",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0435761",
+     "title": "Toy Story 3",
+     "year": 2010
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/franchise-starwors",
+   "query": "star wors",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0076759",
+     "title": "Star Wars: Episode IV - A New Hope",
+     "year": 1977
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/short-up",
+   "query": "up",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1049413",
+     "title": "Up",
+     "year": 2009
+    }
+   ],
+   "source": "curated"
+  },
+  {
    "name": "negative/gibberish",
    "query": "qzxqvvnonexistent",
    "kind": "movie",
@@ -3639,6 +4216,13 @@
    "name": "negative/gibberish-series",
    "query": "xqzvwkplm",
    "kind": "series",
+   "category": "negative",
+   "source": "curated"
+  },
+  {
+   "name": "phonetic/negative-glorpwhistle",
+   "query": "glorpwhistle",
+   "kind": "movie",
    "category": "negative",
    "source": "curated"
   }
