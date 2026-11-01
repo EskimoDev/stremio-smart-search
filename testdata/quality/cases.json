@@ -1,0 +1,3642 @@
+{
+ "about": "Curated search-quality cases. Every expected answer names its IMDb id, title and start year; tools/quality checks them against the catalogue it scores (built from IMDb data) and refuses to score a case whose id and title disagree. See docs/SEARCH-QUALITY.md.",
+ "cases": [
+  {
+   "name": "exact/interstellar",
+   "query": "Interstellar",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0816692",
+     "title": "Interstellar",
+     "year": 2014
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/tdk",
+   "query": "the dark knight",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0468569",
+     "title": "The Dark Knight",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/inception",
+   "query": "inception",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt1375666",
+     "title": "Inception",
+     "year": 2010
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/shawshank",
+   "query": "the shawshank redemption",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0111161",
+     "title": "The Shawshank Redemption",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/pulp",
+   "query": "pulp fiction",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0110912",
+     "title": "Pulp Fiction",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/fightclub",
+   "query": "fight club",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0137523",
+     "title": "Fight Club",
+     "year": 1999
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/godfather",
+   "query": "the godfather",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0068646",
+     "title": "The Godfather",
+     "year": 1972
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/gump",
+   "query": "forrest gump",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0109830",
+     "title": "Forrest Gump",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/matrix",
+   "query": "the matrix",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0133093",
+     "title": "The Matrix",
+     "year": 1999
+    }
+   ],
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "exact/gladiator",
+   "query": "gladiator",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0172495",
+     "title": "Gladiator",
+     "year": 2000
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/jurassic",
+   "query": "jurassic park",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0107290",
+     "title": "Jurassic Park",
+     "year": 1993
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/bttf",
+   "query": "back to the future",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0088763",
+     "title": "Back to the Future",
+     "year": 1985
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/joker",
+   "query": "joker",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt7286456",
+     "title": "Joker",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/coco",
+   "query": "coco",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt2380307",
+     "title": "Coco",
+     "year": 2017
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/whiplash",
+   "query": "whiplash",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt2582802",
+     "title": "Whiplash",
+     "year": 2014
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/arrival",
+   "query": "arrival",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt2543164",
+     "title": "Arrival",
+     "year": 2016
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/departed",
+   "query": "the departed",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0407887",
+     "title": "The Departed",
+     "year": 2006
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/psycho",
+   "query": "psycho",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0054215",
+     "title": "Psycho",
+     "year": 1960
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/endgame",
+   "query": "avengers endgame",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt4154796",
+     "title": "Avengers: Endgame",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/silence",
+   "query": "the silence of the lambs",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0102926",
+     "title": "The Silence of the Lambs",
+     "year": 1991
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/insideout",
+   "query": "inside out",
+   "kind": "movie",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt2096673",
+     "title": "Inside Out",
+     "year": 2015
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/bb",
+   "query": "breaking bad",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0903747",
+     "title": "Breaking Bad",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/got",
+   "query": "game of thrones",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/st",
+   "query": "stranger things",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt4574334",
+     "title": "Stranger Things",
+     "year": 2016
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/friends",
+   "query": "friends",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0108778",
+     "title": "Friends",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/sopranos",
+   "query": "the sopranos",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0141842",
+     "title": "The Sopranos",
+     "year": 1999
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/chernobyl",
+   "query": "chernobyl",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt7366338",
+     "title": "Chernobyl",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/wire",
+   "query": "the wire",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0306414",
+     "title": "The Wire",
+     "year": 2002
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/blackmirror",
+   "query": "black mirror",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt2085059",
+     "title": "Black Mirror",
+     "year": 2011
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/mando",
+   "query": "the mandalorian",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt8111088",
+     "title": "The Mandalorian",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/saul",
+   "query": "better call saul",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt3032476",
+     "title": "Better Call Saul",
+     "year": 2015
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/twd",
+   "query": "the walking dead",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt1520211",
+     "title": "The Walking Dead",
+     "year": 2010
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/squid",
+   "query": "squid game",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt10919420",
+     "title": "Squid Game",
+     "year": 2021
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/heist",
+   "query": "money heist",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt6468322",
+     "title": "Money Heist",
+     "year": 2017
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/westworld",
+   "query": "westworld",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt0475784",
+     "title": "Westworld",
+     "year": 2016
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/truedet",
+   "query": "true detective",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt2356777",
+     "title": "True Detective",
+     "year": 2014
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/hotdragon",
+   "query": "house of the dragon",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt11198330",
+     "title": "House of the Dragon",
+     "year": 2022
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/tlou",
+   "query": "the last of us",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt3581920",
+     "title": "The Last of Us",
+     "year": 2023
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "exact/aot",
+   "query": "attack on titan",
+   "kind": "series",
+   "category": "exact",
+   "expect": [
+    {
+     "id": "tt2560140",
+     "title": "Attack on Titan",
+     "year": 2013
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "original/parasite",
+   "query": "gisaengchung",
+   "kind": "movie",
+   "category": "original",
+   "expect": [
+    {
+     "id": "tt6751668",
+     "title": "Gisaengchung",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "original/amelie",
+   "query": "le fabuleux destin d amelie poulain",
+   "kind": "movie",
+   "category": "original",
+   "expect": [
+    {
+     "id": "tt0211915",
+     "title": "Le fabuleux destin d'Amélie Poulain",
+     "year": 2001
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "original/cityofgod",
+   "query": "cidade de deus",
+   "kind": "movie",
+   "category": "original",
+   "expect": [
+    {
+     "id": "tt0317248",
+     "title": "Cidade de Deus",
+     "year": 2002
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "original/pans",
+   "query": "el laberinto del fauno",
+   "kind": "movie",
+   "category": "original",
+   "expect": [
+    {
+     "id": "tt0457430",
+     "title": "El laberinto del fauno",
+     "year": 2006
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "original/spirited",
+   "query": "sen to chihiro no kamikakushi",
+   "kind": "movie",
+   "category": "original",
+   "expect": [
+    {
+     "id": "tt0245429",
+     "title": "Sen to Chihiro no kamikakushi",
+     "year": 2001
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "original/intouchables",
+   "query": "intouchables",
+   "kind": "movie",
+   "category": "original",
+   "expect": [
+    {
+     "id": "tt1675434",
+     "title": "Intouchables",
+     "year": 2011
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "original/yourname",
+   "query": "kimi no na wa",
+   "kind": "movie",
+   "category": "original",
+   "expect": [
+    {
+     "id": "tt5311514",
+     "title": "Kimi no na wa.",
+     "year": 2016
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "original/mononoke",
+   "query": "mononoke hime",
+   "kind": "movie",
+   "category": "original",
+   "expect": [
+    {
+     "id": "tt0119698",
+     "title": "Mononoke-hime",
+     "year": 1997
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "original/totoro",
+   "query": "tonari no totoro",
+   "kind": "movie",
+   "category": "original",
+   "expect": [
+    {
+     "id": "tt0096283",
+     "title": "Tonari no Totoro",
+     "year": 1988
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "original/sevensam",
+   "query": "shichinin no samurai",
+   "kind": "movie",
+   "category": "original",
+   "expect": [
+    {
+     "id": "tt0047478",
+     "title": "Shichinin no samurai",
+     "year": 1954
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "original/oldboy03",
+   "query": "oldeuboi",
+   "kind": "movie",
+   "category": "original",
+   "expect": [
+    {
+     "id": "tt0364569",
+     "title": "Oldeuboi",
+     "year": 2003
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "original/heist",
+   "query": "la casa de papel",
+   "kind": "series",
+   "category": "original",
+   "expect": [
+    {
+     "id": "tt6468322",
+     "title": "La casa de papel",
+     "year": 2017
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "original/squid",
+   "query": "ojing-eo geim",
+   "kind": "series",
+   "category": "original",
+   "expect": [
+    {
+     "id": "tt10919420",
+     "title": "Ojing-eo geim",
+     "year": 2021
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "original/hp1",
+   "query": "harry potter and the philosophers stone",
+   "kind": "movie",
+   "category": "original",
+   "expect": [
+    {
+     "id": "tt0241527",
+     "title": "Harry Potter and the Philosopher's Stone",
+     "year": 2001
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/interstellar/interstelar",
+   "query": "interstelar",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0816692",
+     "title": "Interstellar",
+     "year": 2014
+    }
+   ],
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "fuzzy/st/strager things",
+   "query": "strager things",
+   "kind": "series",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt4574334",
+     "title": "Stranger Things",
+     "year": 2016
+    }
+   ],
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "fuzzy/hotdragon/house of dragom",
+   "query": "house of dragom",
+   "kind": "series",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt11198330",
+     "title": "House of the Dragon",
+     "year": 2022
+    }
+   ],
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "fuzzy/bb/breaing bad",
+   "query": "breaing bad",
+   "kind": "series",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0903747",
+     "title": "Breaking Bad",
+     "year": 2008
+    }
+   ],
+   "source": "real-data benchmark check (tools/benchmark)"
+  },
+  {
+   "name": "fuzzy/shawshank/shawshank redemtion",
+   "query": "shawshank redemtion",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0111161",
+     "title": "The Shawshank Redemption",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/pulp/pulp ficton",
+   "query": "pulp ficton",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0110912",
+     "title": "Pulp Fiction",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/bb/breking bad",
+   "query": "breking bad",
+   "kind": "series",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0903747",
+     "title": "Breaking Bad",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/gump/forest gump",
+   "query": "forest gump",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0109830",
+     "title": "Forrest Gump",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/gladiator/gladiater",
+   "query": "gladiater",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0172495",
+     "title": "Gladiator",
+     "year": 2000
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/jurassic/jurasic park",
+   "query": "jurasic park",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0107290",
+     "title": "Jurassic Park",
+     "year": 1993
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/terminator/the terminater",
+   "query": "the terminater",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0088247",
+     "title": "The Terminator",
+     "year": 1984
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/hp1/harry poter",
+   "query": "harry poter",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0241527",
+     "title": "Harry Potter and the Sorcerer's Stone",
+     "year": 2001
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/chernobyl/chernobil",
+   "query": "chernobil",
+   "kind": "series",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt7366338",
+     "title": "Chernobyl",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/endgame/avangers endgame",
+   "query": "avangers endgame",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt4154796",
+     "title": "Avengers: Endgame",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/tdk/the dark night",
+   "query": "the dark night",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0468569",
+     "title": "The Dark Knight",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/alien/alein",
+   "query": "alein",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0078748",
+     "title": "Alien",
+     "year": 1979
+    }
+   ],
+   "source": "test fixture (TestShortWordCentralTypos)"
+  },
+  {
+   "name": "fuzzy/interstellar/intersteller",
+   "query": "intersteller",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0816692",
+     "title": "Interstellar",
+     "year": 2014
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/inception/incepshun",
+   "query": "incepshun",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt1375666",
+     "title": "Inception",
+     "year": 2010
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/schindler/shindlers list",
+   "query": "shindlers list",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0108052",
+     "title": "Schindler's List",
+     "year": 1993
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/st/stranger thing",
+   "query": "stranger thing",
+   "kind": "series",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt4574334",
+     "title": "Stranger Things",
+     "year": 2016
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/sopranos/the sopranoes",
+   "query": "the sopranoes",
+   "kind": "series",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0141842",
+     "title": "The Sopranos",
+     "year": 1999
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/mando/the mandalorain",
+   "query": "the mandalorain",
+   "kind": "series",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt8111088",
+     "title": "The Mandalorian",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/got/game of throne",
+   "query": "game of throne",
+   "kind": "series",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/got/game thrones",
+   "query": "game thrones",
+   "kind": "series",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "source": "real-data benchmark check (tools/benchmark)"
+  },
+  {
+   "name": "fuzzy/twd/the waking dead",
+   "query": "the waking dead",
+   "kind": "series",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt1520211",
+     "title": "The Walking Dead",
+     "year": 2010
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/whiplash/wiplash",
+   "query": "wiplash",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt2582802",
+     "title": "Whiplash",
+     "year": 2014
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "fuzzy/godfather/the godfater",
+   "query": "the godfater",
+   "kind": "movie",
+   "category": "fuzzy",
+   "expect": [
+    {
+     "id": "tt0068646",
+     "title": "The Godfather",
+     "year": 1972
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "transposition/hotdragon/house of the draogn",
+   "query": "house of the draogn",
+   "kind": "series",
+   "category": "transposition",
+   "expect": [
+    {
+     "id": "tt11198330",
+     "title": "House of the Dragon",
+     "year": 2022
+    }
+   ],
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "transposition/matrix/matirx",
+   "query": "matirx",
+   "kind": "movie",
+   "category": "transposition",
+   "expect": [
+    {
+     "id": "tt0133093",
+     "title": "The Matrix",
+     "year": 1999
+    }
+   ],
+   "source": "test fixture (TestShortWordCentralTypos)"
+  },
+  {
+   "name": "transposition/hotdragon/hosue of the dragon",
+   "query": "hosue of the dragon",
+   "kind": "series",
+   "category": "transposition",
+   "expect": [
+    {
+     "id": "tt11198330",
+     "title": "House of the Dragon",
+     "year": 2022
+    }
+   ],
+   "source": "test fixture (TestShortWordCentralTypos)"
+  },
+  {
+   "name": "transposition/inception/inecption",
+   "query": "inecption",
+   "kind": "movie",
+   "category": "transposition",
+   "expect": [
+    {
+     "id": "tt1375666",
+     "title": "Inception",
+     "year": 2010
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "transposition/godfather/the godfahter",
+   "query": "the godfahter",
+   "kind": "movie",
+   "category": "transposition",
+   "expect": [
+    {
+     "id": "tt0068646",
+     "title": "The Godfather",
+     "year": 1972
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "transposition/st/strnager things",
+   "query": "strnager things",
+   "kind": "series",
+   "category": "transposition",
+   "expect": [
+    {
+     "id": "tt4574334",
+     "title": "Stranger Things",
+     "year": 2016
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "transposition/bb/braeking bad",
+   "query": "braeking bad",
+   "kind": "series",
+   "category": "transposition",
+   "expect": [
+    {
+     "id": "tt0903747",
+     "title": "Breaking Bad",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "transposition/pulp/plup fiction",
+   "query": "plup fiction",
+   "kind": "movie",
+   "category": "transposition",
+   "expect": [
+    {
+     "id": "tt0110912",
+     "title": "Pulp Fiction",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "transposition/gladiator/gladaitor",
+   "query": "gladaitor",
+   "kind": "movie",
+   "category": "transposition",
+   "expect": [
+    {
+     "id": "tt0172495",
+     "title": "Gladiator",
+     "year": 2000
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "transposition/interstellar/intersetllar",
+   "query": "intersetllar",
+   "kind": "movie",
+   "category": "transposition",
+   "expect": [
+    {
+     "id": "tt0816692",
+     "title": "Interstellar",
+     "year": 2014
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "transposition/chernobyl/chenrobyl",
+   "query": "chenrobyl",
+   "kind": "series",
+   "category": "transposition",
+   "expect": [
+    {
+     "id": "tt7366338",
+     "title": "Chernobyl",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "transposition/fightclub/fihgt club",
+   "query": "fihgt club",
+   "kind": "movie",
+   "category": "transposition",
+   "expect": [
+    {
+     "id": "tt0137523",
+     "title": "Fight Club",
+     "year": 1999
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "transposition/got/game of thornes",
+   "query": "game of thornes",
+   "kind": "series",
+   "category": "transposition",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "transposition/joker/jokre",
+   "query": "jokre",
+   "kind": "movie",
+   "category": "transposition",
+   "expect": [
+    {
+     "id": "tt7286456",
+     "title": "Joker",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "acronym/hotd",
+   "query": "hotd",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt11198330",
+     "title": "House of the Dragon",
+     "year": 2022
+    },
+    {
+     "id": "tt1685401",
+     "title": "Highschool of the Dead",
+     "year": 2010
+    }
+   ],
+   "source": "test fixture (internal/search/search_test.go); real-data benchmark check (tools/benchmark)"
+  },
+  {
+   "name": "acronym/got",
+   "query": "got",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "acronym/lotr",
+   "query": "lotr",
+   "kind": "movie",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt0120737",
+     "title": "The Lord of the Rings: The Fellowship of the Ring",
+     "year": 2001
+    },
+    {
+     "id": "tt0167260",
+     "title": "The Lord of the Rings: The Return of the King",
+     "year": 2003
+    },
+    {
+     "id": "tt0167261",
+     "title": "The Lord of the Rings: The Two Towers",
+     "year": 2002
+    }
+   ],
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "acronym/lotr-series",
+   "query": "lotr",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt7631058",
+     "title": "The Lord of the Rings: The Rings of Power",
+     "year": 2022
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "acronym/tdk",
+   "query": "tdk",
+   "kind": "movie",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt0468569",
+     "title": "The Dark Knight",
+     "year": 2008
+    }
+   ],
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "acronym/twd",
+   "query": "twd",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt1520211",
+     "title": "The Walking Dead",
+     "year": 2010
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "acronym/himym",
+   "query": "himym",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt0460649",
+     "title": "How I Met Your Mother",
+     "year": 2005
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "acronym/iasip",
+   "query": "iasip",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt0472954",
+     "title": "It's Always Sunny in Philadelphia",
+     "year": 2005
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "acronym/tbbt",
+   "query": "tbbt",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt0898266",
+     "title": "The Big Bang Theory",
+     "year": 2007
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "acronym/atla",
+   "query": "atla",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt0417299",
+     "title": "Avatar: The Last Airbender",
+     "year": 2005
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "acronym/tlou",
+   "query": "tlou",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt3581920",
+     "title": "The Last of Us",
+     "year": 2023
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "acronym/gotg",
+   "query": "gotg",
+   "kind": "movie",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt2015381",
+     "title": "Guardians of the Galaxy",
+     "year": 2014
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "acronym/potc",
+   "query": "potc",
+   "kind": "movie",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt0325980",
+     "title": "Pirates of the Caribbean: The Curse of the Black Pearl",
+     "year": 2003
+    },
+    {
+     "id": "tt0383574",
+     "title": "Pirates of the Caribbean: Dead Man's Chest",
+     "year": 2006
+    },
+    {
+     "id": "tt0449088",
+     "title": "Pirates of the Caribbean: At World's End",
+     "year": 2007
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "acronym/hotd-movie",
+   "query": "hotd",
+   "kind": "movie",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt0317676",
+     "title": "House of the Dead",
+     "year": 2003
+    },
+    {
+     "id": "tt1172994",
+     "title": "The House of the Devil",
+     "year": 2009
+    }
+   ],
+   "forbid": [
+    "hota hai"
+   ],
+   "source": "coordinator: real dx.bi screenshot"
+  },
+  {
+   "name": "joined/spiderman/spiderman",
+   "query": "spiderman",
+   "kind": "movie",
+   "category": "joined",
+   "expect": [
+    {
+     "id": "tt0145487",
+     "title": "Spider-Man",
+     "year": 2002
+    }
+   ],
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "joined/tdk/thedarkknight",
+   "query": "thedarkknight",
+   "kind": "movie",
+   "category": "joined",
+   "expect": [
+    {
+     "id": "tt0468569",
+     "title": "The Dark Knight",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "joined/got/gameofthrones",
+   "query": "gameofthrones",
+   "kind": "series",
+   "category": "joined",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "joined/bb/breakingbad",
+   "query": "breakingbad",
+   "kind": "series",
+   "category": "joined",
+   "expect": [
+    {
+     "id": "tt0903747",
+     "title": "Breaking Bad",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "joined/st/strangerthings",
+   "query": "strangerthings",
+   "kind": "series",
+   "category": "joined",
+   "expect": [
+    {
+     "id": "tt4574334",
+     "title": "Stranger Things",
+     "year": 2016
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "joined/toy1/toystory",
+   "query": "toystory",
+   "kind": "movie",
+   "category": "joined",
+   "expect": [
+    {
+     "id": "tt0114709",
+     "title": "Toy Story",
+     "year": 1995
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "joined/lion94/thelionking",
+   "query": "thelionking",
+   "kind": "movie",
+   "category": "joined",
+   "expect": [
+    {
+     "id": "tt0110357",
+     "title": "The Lion King",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "joined/fightclub/fightclub",
+   "query": "fightclub",
+   "kind": "movie",
+   "category": "joined",
+   "expect": [
+    {
+     "id": "tt0137523",
+     "title": "Fight Club",
+     "year": 1999
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "joined/blackmirror/blackmirror",
+   "query": "blackmirror",
+   "kind": "series",
+   "category": "joined",
+   "expect": [
+    {
+     "id": "tt2085059",
+     "title": "Black Mirror",
+     "year": 2011
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "joined/pulp/pulpfiction",
+   "query": "pulpfiction",
+   "kind": "movie",
+   "category": "joined",
+   "expect": [
+    {
+     "id": "tt0110912",
+     "title": "Pulp Fiction",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "joined/hotdragon/houseofthedragon",
+   "query": "houseofthedragon",
+   "kind": "series",
+   "category": "joined",
+   "expect": [
+    {
+     "id": "tt11198330",
+     "title": "House of the Dragon",
+     "year": 2022
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "joined/jurassic/jurassicpark",
+   "query": "jurassicpark",
+   "kind": "movie",
+   "category": "joined",
+   "expect": [
+    {
+     "id": "tt0107290",
+     "title": "Jurassic Park",
+     "year": 1993
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/spiderman/spider-man",
+   "query": "spider-man",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0145487",
+     "title": "Spider-Man",
+     "year": 2002
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/spiderman/spider man",
+   "query": "spider man",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0145487",
+     "title": "Spider-Man",
+     "year": 2002
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/walle/wall-e",
+   "query": "wall-e",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0910970",
+     "title": "WALL·E",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/walle/walle",
+   "query": "walle",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0910970",
+     "title": "WALL·E",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/walle/wall e",
+   "query": "wall e",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0910970",
+     "title": "WALL·E",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/xmen/x-men",
+   "query": "x-men",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0120903",
+     "title": "X-Men",
+     "year": 2000
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/xmen/xmen",
+   "query": "xmen",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0120903",
+     "title": "X-Men",
+     "year": 2000
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/schindler/schindlers list",
+   "query": "schindlers list",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0108052",
+     "title": "Schindler's List",
+     "year": 1993
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/schindler/schindler's list",
+   "query": "schindler's list",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0108052",
+     "title": "Schindler's List",
+     "year": 1993
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/oceans/oceans eleven",
+   "query": "oceans eleven",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0240772",
+     "title": "Ocean's Eleven",
+     "year": 2001
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/oceans/ocean's eleven",
+   "query": "ocean's eleven",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0240772",
+     "title": "Ocean's Eleven",
+     "year": 2001
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/mi/mission impossible",
+   "query": "mission impossible",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0117060",
+     "title": "Mission: Impossible",
+     "year": 1996
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/mi/mission: impossible",
+   "query": "mission: impossible",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0117060",
+     "title": "Mission: Impossible",
+     "year": 1996
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/se7en/se7en",
+   "query": "se7en",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0114369",
+     "title": "Se7en",
+     "year": 1995
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/madmax/mad max fury road",
+   "query": "mad max fury road",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt1392190",
+     "title": "Mad Max: Fury Road",
+     "year": 2015
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/endgame/avengers: endgame",
+   "query": "avengers: endgame",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt4154796",
+     "title": "Avengers: Endgame",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/greys/greys anatomy",
+   "query": "greys anatomy",
+   "kind": "series",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0413573",
+     "title": "Grey's Anatomy",
+     "year": 2005
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/iasip/its always sunny in philadelphia",
+   "query": "its always sunny in philadelphia",
+   "kind": "series",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0472954",
+     "title": "It's Always Sunny in Philadelphia",
+     "year": 2005
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/b99/brooklyn nine nine",
+   "query": "brooklyn nine nine",
+   "kind": "series",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt2467372",
+     "title": "Brooklyn Nine-Nine",
+     "year": 2013
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/b99/brooklyn nine-nine",
+   "query": "brooklyn nine-nine",
+   "kind": "series",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt2467372",
+     "title": "Brooklyn Nine-Nine",
+     "year": 2013
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "punctuation/starwars/star wars episode iv a new hope",
+   "query": "star wars episode iv a new hope",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0076759",
+     "title": "Star Wars: Episode IV - A New Hope",
+     "year": 1977
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "accent/amelie/amelie",
+   "query": "amelie",
+   "kind": "movie",
+   "category": "accent",
+   "expect": [
+    {
+     "id": "tt0211915",
+     "title": "Amélie",
+     "year": 2001
+    }
+   ],
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "accent/amelie/Amélie",
+   "query": "Amélie",
+   "kind": "movie",
+   "category": "accent",
+   "expect": [
+    {
+     "id": "tt0211915",
+     "title": "Amélie",
+     "year": 2001
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "accent/leon/leon the professional",
+   "query": "leon the professional",
+   "kind": "movie",
+   "category": "accent",
+   "expect": [
+    {
+     "id": "tt0110413",
+     "title": "Léon: The Professional",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "accent/leon/léon",
+   "query": "léon",
+   "kind": "movie",
+   "category": "accent",
+   "expect": [
+    {
+     "id": "tt0110413",
+     "title": "Léon: The Professional",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "accent/lesmis12/les miserables",
+   "query": "les miserables",
+   "kind": "movie",
+   "category": "accent",
+   "expect": [
+    {
+     "id": "tt1707386",
+     "title": "Les Misérables",
+     "year": 2012
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "accent/lesmis12/les misérables",
+   "query": "les misérables",
+   "kind": "movie",
+   "category": "accent",
+   "expect": [
+    {
+     "id": "tt1707386",
+     "title": "Les Misérables",
+     "year": 2012
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "accent/pans/el laberínto del fáuno",
+   "query": "el laberínto del fáuno",
+   "kind": "movie",
+   "category": "accent",
+   "expect": [
+    {
+     "id": "tt0457430",
+     "title": "Pan's Labyrinth",
+     "year": 2006
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "accent/walle/wall·e",
+   "query": "wall·e",
+   "kind": "movie",
+   "category": "accent",
+   "expect": [
+    {
+     "id": "tt0910970",
+     "title": "WALL·E",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "short/up/Up",
+   "query": "Up",
+   "kind": "movie",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt1049413",
+     "title": "Up",
+     "year": 2009
+    }
+   ],
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "short/it17/It",
+   "query": "It",
+   "kind": "movie",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt1396484",
+     "title": "It",
+     "year": 2017
+    }
+   ],
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "short/it90/It",
+   "query": "It",
+   "kind": "series",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt0099864",
+     "title": "It",
+     "year": 1990
+    }
+   ],
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "short/her/her",
+   "query": "her",
+   "kind": "movie",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt1798709",
+     "title": "Her",
+     "year": 2013
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "short/us/us",
+   "query": "us",
+   "kind": "movie",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt6857112",
+     "title": "Us",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "short/heat/heat",
+   "query": "heat",
+   "kind": "movie",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt0113277",
+     "title": "Heat",
+     "year": 1995
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "short/dark/dark",
+   "query": "dark",
+   "kind": "series",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt5753856",
+     "title": "Dark",
+     "year": 2017
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "short/taken/taken",
+   "query": "taken",
+   "kind": "movie",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt0936501",
+     "title": "Taken",
+     "year": 2008
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "short/coco/coco",
+   "query": "coco",
+   "kind": "movie",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt2380307",
+     "title": "Coco",
+     "year": 2017
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "short/jaws/jaws",
+   "query": "jaws",
+   "kind": "movie",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt0073195",
+     "title": "Jaws",
+     "year": 1975
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "short/rocky/rocky",
+   "query": "rocky",
+   "kind": "movie",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt0075148",
+     "title": "Rocky",
+     "year": 1976
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "short/sherlock/sherlock",
+   "query": "sherlock",
+   "kind": "series",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt1475582",
+     "title": "Sherlock",
+     "year": 2010
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "short/friends/friends",
+   "query": "friends",
+   "kind": "series",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt0108778",
+     "title": "Friends",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "short/boys/the boys",
+   "query": "the boys",
+   "kind": "series",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt1190634",
+     "title": "The Boys",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "short/alien/alien",
+   "query": "alien",
+   "kind": "movie",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt0078748",
+     "title": "Alien",
+     "year": 1979
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "short/aliens/aliens",
+   "query": "aliens",
+   "kind": "movie",
+   "category": "short",
+   "expect": [
+    {
+     "id": "tt0090605",
+     "title": "Aliens",
+     "year": 1986
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/the-office",
+   "query": "the office",
+   "kind": "series",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0386676",
+     "title": "The Office",
+     "year": 2005
+    },
+    {
+     "id": "tt0290978",
+     "title": "The Office",
+     "year": 2001
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/dune",
+   "query": "dune",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt1160419",
+     "title": "Dune: Part One",
+     "year": 2021
+    },
+    {
+     "id": "tt0087182",
+     "title": "Dune",
+     "year": 1984
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/the-lion-king",
+   "query": "the lion king",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0110357",
+     "title": "The Lion King",
+     "year": 1994
+    },
+    {
+     "id": "tt6105098",
+     "title": "The Lion King",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/halloween",
+   "query": "halloween",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0077651",
+     "title": "Halloween",
+     "year": 1978
+    },
+    {
+     "id": "tt1502407",
+     "title": "Halloween",
+     "year": 2018
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/the-thing",
+   "query": "the thing",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0084787",
+     "title": "The Thing",
+     "year": 1982
+    },
+    {
+     "id": "tt0905372",
+     "title": "The Thing",
+     "year": 2011
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/oldboy",
+   "query": "oldboy",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0364569",
+     "title": "Oldboy",
+     "year": 2003
+    },
+    {
+     "id": "tt1321511",
+     "title": "Oldboy",
+     "year": 2013
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/batman",
+   "query": "batman",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0096895",
+     "title": "Batman",
+     "year": 1989
+    },
+    {
+     "id": "tt1877830",
+     "title": "The Batman",
+     "year": 2022
+    },
+    {
+     "id": "tt0372784",
+     "title": "Batman Begins",
+     "year": 2005
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/avatar-movie",
+   "query": "avatar",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0499549",
+     "title": "Avatar",
+     "year": 2009
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/avatar-series",
+   "query": "avatar",
+   "kind": "series",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0417299",
+     "title": "Avatar: The Last Airbender",
+     "year": 2005
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/toy-story-3",
+   "query": "toy story 3",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0435761",
+     "title": "Toy Story 3",
+     "year": 2010
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/toy-story-2",
+   "query": "toy story 2",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0120363",
+     "title": "Toy Story 2",
+     "year": 1999
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/shrek-2",
+   "query": "shrek 2",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0298148",
+     "title": "Shrek 2",
+     "year": 2004
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/it-chapter-two",
+   "query": "it chapter two",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt7349950",
+     "title": "It Chapter Two",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/the-avengers",
+   "query": "the avengers",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0848228",
+     "title": "The Avengers",
+     "year": 2012
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/the-batman",
+   "query": "the batman",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt1877830",
+     "title": "The Batman",
+     "year": 2022
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/lotr-two-towers",
+   "query": "lord of the rings two towers",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0167261",
+     "title": "The Lord of the Rings: The Two Towers",
+     "year": 2002
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/lotr-return-king",
+   "query": "lord of the rings return of the king",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0167260",
+     "title": "The Lord of the Rings: The Return of the King",
+     "year": 2003
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "similar/dune-part-one",
+   "query": "dune part one",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt1160419",
+     "title": "Dune: Part One",
+     "year": 2021
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "year/dune 1984",
+   "query": "dune 1984",
+   "kind": "movie",
+   "category": "year",
+   "expect": [
+    {
+     "id": "tt0087182",
+     "title": "Dune",
+     "year": 1984
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "year/dune 2021",
+   "query": "dune 2021",
+   "kind": "movie",
+   "category": "year",
+   "expect": [
+    {
+     "id": "tt1160419",
+     "title": "Dune: Part One",
+     "year": 2021
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "year/the lion king 2019",
+   "query": "the lion king 2019",
+   "kind": "movie",
+   "category": "year",
+   "expect": [
+    {
+     "id": "tt6105098",
+     "title": "The Lion King",
+     "year": 2019
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "year/the lion king 1994",
+   "query": "the lion king 1994",
+   "kind": "movie",
+   "category": "year",
+   "expect": [
+    {
+     "id": "tt0110357",
+     "title": "The Lion King",
+     "year": 1994
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "year/halloween 2018",
+   "query": "halloween 2018",
+   "kind": "movie",
+   "category": "year",
+   "expect": [
+    {
+     "id": "tt1502407",
+     "title": "Halloween",
+     "year": 2018
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "year/halloween 1978",
+   "query": "halloween 1978",
+   "kind": "movie",
+   "category": "year",
+   "expect": [
+    {
+     "id": "tt0077651",
+     "title": "Halloween",
+     "year": 1978
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "year/oldboy 2013",
+   "query": "oldboy 2013",
+   "kind": "movie",
+   "category": "year",
+   "expect": [
+    {
+     "id": "tt1321511",
+     "title": "Oldboy",
+     "year": 2013
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "year/the thing 2011",
+   "query": "the thing 2011",
+   "kind": "movie",
+   "category": "year",
+   "expect": [
+    {
+     "id": "tt0905372",
+     "title": "The Thing",
+     "year": 2011
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "year/batman 1989",
+   "query": "batman 1989",
+   "kind": "movie",
+   "category": "year",
+   "expect": [
+    {
+     "id": "tt0096895",
+     "title": "Batman",
+     "year": 1989
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "year/it 2017",
+   "query": "it 2017",
+   "kind": "movie",
+   "category": "year",
+   "expect": [
+    {
+     "id": "tt1396484",
+     "title": "It",
+     "year": 2017
+    }
+   ],
+   "source": "curated"
+  },
+  {
+   "name": "alias/fr/la reine des neiges",
+   "query": "la reine des neiges",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt2294629",
+     "title": "Frozen",
+     "year": 2013
+    }
+   ],
+   "language": "fr",
+   "alias": "La Reine des neiges",
+   "source": "real-data benchmark check (tools/benchmark)"
+  },
+  {
+   "name": "alias/fr/le trone de fer",
+   "query": "le trone de fer",
+   "kind": "series",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "language": "fr",
+   "alias": "Le Trône de fer",
+   "source": "real-data benchmark check (tools/benchmark)"
+  },
+  {
+   "name": "alias/fr/le voyage de chihiro",
+   "query": "le voyage de chihiro",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0245429",
+     "title": "Spirited Away",
+     "year": 2001
+    }
+   ],
+   "language": "fr",
+   "alias": "Le Voyage de Chihiro",
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "alias/fr/les evades",
+   "query": "les evades",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0111161",
+     "title": "The Shawshank Redemption",
+     "year": 1994
+    }
+   ],
+   "language": "fr",
+   "alias": "Les Évadés",
+   "source": "curated"
+  },
+  {
+   "name": "alias/fr/le parrain",
+   "query": "le parrain",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0068646",
+     "title": "The Godfather",
+     "year": 1972
+    }
+   ],
+   "language": "fr",
+   "alias": "Le Parrain",
+   "source": "curated"
+  },
+  {
+   "name": "alias/fr/la ligne verte",
+   "query": "la ligne verte",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0120689",
+     "title": "The Green Mile",
+     "year": 1999
+    }
+   ],
+   "language": "fr",
+   "alias": "La Ligne verte",
+   "source": "curated"
+  },
+  {
+   "name": "alias/fr/le roi lion",
+   "query": "le roi lion",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0110357",
+     "title": "The Lion King",
+     "year": 1994
+    }
+   ],
+   "language": "fr",
+   "alias": "Le Roi lion",
+   "source": "curated"
+  },
+  {
+   "name": "alias/fr/retour vers le futur",
+   "query": "retour vers le futur",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0088763",
+     "title": "Back to the Future",
+     "year": 1985
+    }
+   ],
+   "language": "fr",
+   "alias": "Retour vers le futur",
+   "source": "curated"
+  },
+  {
+   "name": "alias/fr/les dents de la mer",
+   "query": "les dents de la mer",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0073195",
+     "title": "Jaws",
+     "year": 1975
+    }
+   ],
+   "language": "fr",
+   "alias": "Les Dents de la mer",
+   "source": "curated"
+  },
+  {
+   "name": "alias/fr/vice versa",
+   "query": "vice versa",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt2096673",
+     "title": "Inside Out",
+     "year": 2015
+    }
+   ],
+   "language": "fr",
+   "alias": "Vice-versa",
+   "source": "curated"
+  },
+  {
+   "name": "alias/fr/la haut",
+   "query": "la haut",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt1049413",
+     "title": "Up",
+     "year": 2009
+    }
+   ],
+   "language": "fr",
+   "alias": "Là-haut",
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "alias/fr/zootopie",
+   "query": "zootopie",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt2948356",
+     "title": "Zootopia",
+     "year": 2016
+    }
+   ],
+   "language": "fr",
+   "alias": "Zootopie",
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "alias/fr/le monde de nemo",
+   "query": "le monde de nemo",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0266543",
+     "title": "Finding Nemo",
+     "year": 2003
+    }
+   ],
+   "language": "fr",
+   "alias": "Le Monde de Nemo",
+   "source": "curated"
+  },
+  {
+   "name": "alias/fr/le silence des agneaux",
+   "query": "le silence des agneaux",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0102926",
+     "title": "The Silence of the Lambs",
+     "year": 1991
+    }
+   ],
+   "language": "fr",
+   "alias": "Le Silence des agneaux",
+   "source": "curated"
+  },
+  {
+   "name": "alias/fr/les indestructibles",
+   "query": "les indestructibles",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0317705",
+     "title": "The Incredibles",
+     "year": 2004
+    }
+   ],
+   "language": "fr",
+   "alias": "Les Indestructibles",
+   "source": "curated"
+  },
+  {
+   "name": "alias-fuzzy/fr/la rene des neige",
+   "query": "la rene des neige",
+   "kind": "movie",
+   "category": "alias-fuzzy",
+   "expect": [
+    {
+     "id": "tt2294629",
+     "title": "Frozen",
+     "year": 2013
+    }
+   ],
+   "language": "fr",
+   "alias": "La Reine des neiges",
+   "source": "real-data benchmark check (tools/benchmark)"
+  },
+  {
+   "name": "alias-fuzzy/fr/le tronne de fer",
+   "query": "le tronne de fer",
+   "kind": "series",
+   "category": "alias-fuzzy",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "language": "fr",
+   "alias": "Le Trône de fer",
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "alias-fuzzy/fr/retour ver le futur",
+   "query": "retour ver le futur",
+   "kind": "movie",
+   "category": "alias-fuzzy",
+   "expect": [
+    {
+     "id": "tt0088763",
+     "title": "Back to the Future",
+     "year": 1985
+    }
+   ],
+   "language": "fr",
+   "alias": "Retour vers le futur",
+   "source": "curated"
+  },
+  {
+   "name": "alias-fuzzy/fr/les dent de la mer",
+   "query": "les dent de la mer",
+   "kind": "movie",
+   "category": "alias-fuzzy",
+   "expect": [
+    {
+     "id": "tt0073195",
+     "title": "Jaws",
+     "year": 1975
+    }
+   ],
+   "language": "fr",
+   "alias": "Les Dents de la mer",
+   "source": "curated"
+  },
+  {
+   "name": "alias-fuzzy/fr/le silense des agneaux",
+   "query": "le silense des agneaux",
+   "kind": "movie",
+   "category": "alias-fuzzy",
+   "expect": [
+    {
+     "id": "tt0102926",
+     "title": "The Silence of the Lambs",
+     "year": 1991
+    }
+   ],
+   "language": "fr",
+   "alias": "Le Silence des agneaux",
+   "source": "curated"
+  },
+  {
+   "name": "alias-fuzzy/fr/zootopi",
+   "query": "zootopi",
+   "kind": "movie",
+   "category": "alias-fuzzy",
+   "expect": [
+    {
+     "id": "tt2948356",
+     "title": "Zootopia",
+     "year": 2016
+    }
+   ],
+   "language": "fr",
+   "alias": "Zootopie",
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "alias/fr/lareinedesneiges",
+   "query": "lareinedesneiges",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt2294629",
+     "title": "Frozen",
+     "year": 2013
+    }
+   ],
+   "language": "fr",
+   "alias": "La Reine des neiges",
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "alias/en/zootropolis",
+   "query": "zootropolis",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt2948356",
+     "title": "Zootopia",
+     "year": 2016
+    }
+   ],
+   "language": "en",
+   "alias": "Zootropolis",
+   "source": "real-data benchmark check (tools/benchmark)"
+  },
+  {
+   "name": "alias-fuzzy/en/zootropolsi",
+   "query": "zootropolsi",
+   "kind": "movie",
+   "category": "alias-fuzzy",
+   "expect": [
+    {
+     "id": "tt2948356",
+     "title": "Zootopia",
+     "year": 2016
+    }
+   ],
+   "language": "en",
+   "alias": "Zootropolis",
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "alias/en/avengers assemble",
+   "query": "avengers assemble",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0848228",
+     "title": "The Avengers",
+     "year": 2012
+    }
+   ],
+   "language": "en",
+   "alias": "Avengers Assemble",
+   "source": "curated"
+  },
+  {
+   "name": "alias/es/juego de tronos",
+   "query": "juego de tronos",
+   "kind": "series",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "language": "es",
+   "alias": "Juego de tronos",
+   "source": "real-data benchmark check (tools/benchmark)"
+  },
+  {
+   "name": "alias/es/el padrino",
+   "query": "el padrino",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0068646",
+     "title": "The Godfather",
+     "year": 1972
+    }
+   ],
+   "language": "es",
+   "alias": "El padrino",
+   "source": "curated"
+  },
+  {
+   "name": "alias/es/cadena perpetua",
+   "query": "cadena perpetua",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0111161",
+     "title": "The Shawshank Redemption",
+     "year": 1994
+    }
+   ],
+   "language": "es",
+   "alias": "Cadena perpetua",
+   "source": "curated"
+  },
+  {
+   "name": "alias/es/regreso al futuro",
+   "query": "regreso al futuro",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0088763",
+     "title": "Back to the Future",
+     "year": 1985
+    }
+   ],
+   "language": "es",
+   "alias": "Regreso al futuro",
+   "source": "curated"
+  },
+  {
+   "name": "alias/es/el rey leon",
+   "query": "el rey leon",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0110357",
+     "title": "The Lion King",
+     "year": 1994
+    }
+   ],
+   "language": "es",
+   "alias": "El rey león",
+   "source": "curated"
+  },
+  {
+   "name": "alias/es/tiburon",
+   "query": "tiburon",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0073195",
+     "title": "Jaws",
+     "year": 1975
+    }
+   ],
+   "language": "es",
+   "alias": "Tiburón",
+   "source": "curated"
+  },
+  {
+   "name": "alias/es/el señor de los anillos la comunidad del anillo",
+   "query": "el señor de los anillos la comunidad del anillo",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0120737",
+     "title": "The Lord of the Rings: The Fellowship of the Ring",
+     "year": 2001
+    }
+   ],
+   "language": "es",
+   "alias": "El señor de los anillos: La comunidad del anillo",
+   "source": "curated"
+  },
+  {
+   "name": "alias-fuzzy/es/juego de tronoss",
+   "query": "juego de tronoss",
+   "kind": "series",
+   "category": "alias-fuzzy",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "language": "es",
+   "alias": "Juego de tronos",
+   "source": "curated"
+  },
+  {
+   "name": "alias-fuzzy/es/cadena perpetu",
+   "query": "cadena perpetu",
+   "kind": "movie",
+   "category": "alias-fuzzy",
+   "expect": [
+    {
+     "id": "tt0111161",
+     "title": "The Shawshank Redemption",
+     "year": 1994
+    }
+   ],
+   "language": "es",
+   "alias": "Cadena perpetua",
+   "source": "curated"
+  },
+  {
+   "name": "alias/de/die eiskonigin",
+   "query": "die eiskonigin",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt2294629",
+     "title": "Frozen",
+     "year": 2013
+    }
+   ],
+   "language": "de",
+   "alias": "Die Eiskönigin",
+   "source": "real-data benchmark check (tools/benchmark)"
+  },
+  {
+   "name": "alias/de/der pate",
+   "query": "der pate",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0068646",
+     "title": "The Godfather",
+     "year": 1972
+    }
+   ],
+   "language": "de",
+   "alias": "Der Pate",
+   "source": "curated"
+  },
+  {
+   "name": "alias/de/die verurteilten",
+   "query": "die verurteilten",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0111161",
+     "title": "The Shawshank Redemption",
+     "year": 1994
+    }
+   ],
+   "language": "de",
+   "alias": "Die Verurteilten",
+   "source": "curated"
+  },
+  {
+   "name": "alias/de/zuruck in die zukunft",
+   "query": "zuruck in die zukunft",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0088763",
+     "title": "Back to the Future",
+     "year": 1985
+    }
+   ],
+   "language": "de",
+   "alias": "Zurück in die Zukunft",
+   "source": "curated"
+  },
+  {
+   "name": "alias/de/das schweigen der lammer",
+   "query": "das schweigen der lammer",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0102926",
+     "title": "The Silence of the Lambs",
+     "year": 1991
+    }
+   ],
+   "language": "de",
+   "alias": "Das Schweigen der Lämmer",
+   "source": "curated"
+  },
+  {
+   "name": "alias/de/der weisse hai",
+   "query": "der weisse hai",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0073195",
+     "title": "Jaws",
+     "year": 1975
+    }
+   ],
+   "language": "de",
+   "alias": "Der weiße Hai",
+   "source": "curated"
+  },
+  {
+   "name": "alias/de/zoomania",
+   "query": "zoomania",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt2948356",
+     "title": "Zootopia",
+     "year": 2016
+    }
+   ],
+   "language": "de",
+   "alias": "Zoomania",
+   "source": "curated"
+  },
+  {
+   "name": "alias/de/findet nemo",
+   "query": "findet nemo",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0266543",
+     "title": "Finding Nemo",
+     "year": 2003
+    }
+   ],
+   "language": "de",
+   "alias": "Findet Nemo",
+   "source": "curated"
+  },
+  {
+   "name": "alias/de/die unglaublichen",
+   "query": "die unglaublichen",
+   "kind": "movie",
+   "category": "alias",
+   "expect": [
+    {
+     "id": "tt0317705",
+     "title": "The Incredibles",
+     "year": 2004
+    }
+   ],
+   "language": "de",
+   "alias": "Die Unglaublichen",
+   "source": "curated"
+  },
+  {
+   "name": "alias-fuzzy/de/das schweigen der lämer",
+   "query": "das schweigen der lämer",
+   "kind": "movie",
+   "category": "alias-fuzzy",
+   "expect": [
+    {
+     "id": "tt0102926",
+     "title": "The Silence of the Lambs",
+     "year": 1991
+    }
+   ],
+   "language": "de",
+   "alias": "Das Schweigen der Lämmer",
+   "source": "curated"
+  },
+  {
+   "name": "alias-fuzzy/de/zurück in die zukunf",
+   "query": "zurück in die zukunf",
+   "kind": "movie",
+   "category": "alias-fuzzy",
+   "expect": [
+    {
+     "id": "tt0088763",
+     "title": "Back to the Future",
+     "year": 1985
+    }
+   ],
+   "language": "de",
+   "alias": "Zurück in die Zukunft",
+   "source": "curated"
+  },
+  {
+   "name": "non-latin/ja/千と千尋の神隠し",
+   "query": "千と千尋の神隠し",
+   "kind": "movie",
+   "category": "non-latin",
+   "expect": [
+    {
+     "id": "tt0245429",
+     "title": "Spirited Away",
+     "year": 2001
+    }
+   ],
+   "language": "ja",
+   "alias": "千と千尋の神隠し",
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "non-latin/ja/千と千尋",
+   "query": "千と千尋",
+   "kind": "movie",
+   "category": "non-latin",
+   "expect": [
+    {
+     "id": "tt0245429",
+     "title": "Spirited Away",
+     "year": 2001
+    }
+   ],
+   "language": "ja",
+   "alias": "千と千尋の神隠し",
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "non-latin/ja/君の名は",
+   "query": "君の名は",
+   "kind": "movie",
+   "category": "non-latin",
+   "expect": [
+    {
+     "id": "tt5311514",
+     "title": "Your Name.",
+     "year": 2016
+    }
+   ],
+   "language": "ja",
+   "alias": "君の名は。",
+   "source": "curated"
+  },
+  {
+   "name": "non-latin/ja/もののけ姫",
+   "query": "もののけ姫",
+   "kind": "movie",
+   "category": "non-latin",
+   "expect": [
+    {
+     "id": "tt0119698",
+     "title": "Princess Mononoke",
+     "year": 1997
+    }
+   ],
+   "language": "ja",
+   "alias": "もののけ姫",
+   "source": "curated"
+  },
+  {
+   "name": "non-latin/ja/となりのトトロ",
+   "query": "となりのトトロ",
+   "kind": "movie",
+   "category": "non-latin",
+   "expect": [
+    {
+     "id": "tt0096283",
+     "title": "My Neighbor Totoro",
+     "year": 1988
+    }
+   ],
+   "language": "ja",
+   "alias": "となりのトトロ",
+   "source": "curated"
+  },
+  {
+   "name": "non-latin/ja/七人の侍",
+   "query": "七人の侍",
+   "kind": "movie",
+   "category": "non-latin",
+   "expect": [
+    {
+     "id": "tt0047478",
+     "title": "Seven Samurai",
+     "year": 1954
+    }
+   ],
+   "language": "ja",
+   "alias": "七人の侍",
+   "source": "curated"
+  },
+  {
+   "name": "non-latin/ja/鬼滅の刃",
+   "query": "鬼滅の刃",
+   "kind": "series",
+   "category": "non-latin",
+   "expect": [
+    {
+     "id": "tt9335498",
+     "title": "Demon Slayer: Kimetsu no Yaiba",
+     "year": 2019
+    }
+   ],
+   "language": "ja",
+   "alias": "鬼滅の刃",
+   "source": "curated"
+  },
+  {
+   "name": "non-latin/ja/進撃の巨人",
+   "query": "進撃の巨人",
+   "kind": "series",
+   "category": "non-latin",
+   "expect": [
+    {
+     "id": "tt2560140",
+     "title": "Attack on Titan",
+     "year": 2013
+    }
+   ],
+   "language": "ja",
+   "alias": "進撃の巨人",
+   "source": "curated"
+  },
+  {
+   "name": "negative/gibberish",
+   "query": "qzxqvvnonexistent",
+   "kind": "movie",
+   "category": "negative",
+   "source": "test fixture (internal/search/search_test.go)"
+  },
+  {
+   "name": "negative/gibberish-series",
+   "query": "xqzvwkplm",
+   "kind": "series",
+   "category": "negative",
+   "source": "curated"
+  }
+ ]
+}
