@@ -16,6 +16,13 @@
 ![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-informational)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/dashboard-showcase-dark.jpg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/images/dashboard-showcase-light.jpg">
+  <img src="docs/images/dashboard-showcase-light.jpg" alt="Illustrative SSS dashboard showing app connections, local catalogue options, automatic updates and storage controls" width="640">
+</picture>
+<p><sub>Stylised dashboard artwork; appearance, addresses and figures are illustrative. Use the addon link from your own settings page. <a href="#dashboard">Unedited screenshots</a>.</sub></p>
+
 <img src="docs/images/search-before-stremio.jpg" alt="dx.bi search for hotd without Smart Search: hot dog films and unrelated series" width="100%">
 <p><sub><b>Before:</b> searching <code>hotd</code> in dx.bi without Smart Search</sub></p>
 
@@ -59,11 +66,15 @@ Next time, use **Stremio + Smart Search** to start both together. You can close 
 
 Choose your app, catalogue size and update schedule in one place, with light and dark themes.
 
+<details>
+<summary>View unedited dashboard screenshots</summary>
+
 <p>
   <a href="docs/images/dashboard-light.jpg"><img src="docs/images/dashboard-light.jpg" alt="Light dashboard with app connection options, catalogue settings, automatic updates and storage controls" width="49%"></a>
   <a href="docs/images/dashboard-dark.jpg"><img src="docs/images/dashboard-dark.jpg" alt="Dark dashboard with the same app connection options, catalogue settings, automatic updates and storage controls" width="49%"></a>
 </p>
 <p><sub>Preview.4 in light and dark mode; click either image to enlarge. Shown with a prepared Standard catalogue and automatic updates off. Totals and storage use vary.</sub></p>
+</details>
 
 ## Try a search
 
