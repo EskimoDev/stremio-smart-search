@@ -22,9 +22,10 @@
 ## What it does
 
 - **Forgiving search.** `interstelar` finds *Interstellar*, `HOTD` finds *House of the Dragon*, `strangerthings` finds *Stranger Things*.
+- **Measured accuracy.** On 248 test searches with checked answers, the Expanded catalogue puts the right title first 96.9% of the time and in the top five 99.5%. See [search quality](docs/SEARCH-QUALITY.md).
 - **Add a year to pick a version.** `dune 1984` finds the 1984 film, `the lion king 2019` the remake.
 - **Regional titles, if you want them.** Turn on one language and `La Reine des neiges` finds *Frozen*.
-- **Runs on your computer.** Matching uses a local index in memory, with no AI service, hosted backend, account or API key.
+- **Runs on your computer.** Matching uses a local index in memory, with no AI service, hosted backend, account or API key. A search takes a couple of milliseconds, and the helper sits idle between searches.
 - **Plays nicely.** It adds search rows only. Your other addons keep supplying streams, metadata and their own results.
 
 ## Installation
@@ -41,7 +42,7 @@
 | Debian/Ubuntu, Intel/AMD | x64 `.deb` or portable `.tar.gz` | ✅ Ubuntu 24.04 |
 | Debian/Ubuntu on ARM | ARM64 `.deb` or portable `.tar.gz` | Build only |
 
-Full results are in [platform testing](docs/PLATFORM-TESTING.md).
+Needs Windows 10 or newer, macOS 11 or newer, or 64-bit Linux. Full results are in [platform testing](docs/PLATFORM-TESTING.md).
 
 1. **Open Stremio Smart Search.** Its settings page opens in your browser.
 2. **Prepare the catalogue.** Pick a size (Standard is the default) and choose **Prepare catalogue**. It downloads IMDb title data straight to your computer, a few hundred MB, and takes a few minutes the first time.
@@ -119,6 +120,10 @@ The **Storage** card in settings shows how much space the catalogue, the previou
 
 Catalogue updates are manual: choose **Refresh catalogue** in settings. The current catalogue keeps working while the new one is prepared. To uninstall, use your system's normal app removal. Your Stremio settings and other addons are left untouched. The downloaded catalogue stays behind; use **Open folder** in settings first if you want to delete it too.
 </details>
+
+## Found a wrong result?
+
+[Open an issue](https://github.com/EskimoDev/stremio-smart-search/issues/new) with what you typed, the title you expected, and whether it is a movie or series. Each report can become a [test case](docs/SEARCH-QUALITY.md), so the fix stays fixed. Please don't attach account tokens or debrid details.
 
 ## Development
 

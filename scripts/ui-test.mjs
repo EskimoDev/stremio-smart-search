@@ -110,7 +110,7 @@ assert.equal(nodes.build.textContent,'Apply titles & rebuild');
 assert.equal(nodes['alias-region'].hidden,false);
 assert.equal(nodes['alias-region'].options.length,3);
 assert.match(nodes['alias-info'].textContent,/French.*rebuilding/);
-assert.match(nodes['alias-info'].textContent,/Standard is recommended/,'Expanded + alternative titles recommends Standard');
+assert.doesNotMatch(nodes['alias-info'].textContent,/Standard is recommended/,'Expanded + alternative titles is no longer discouraged');
 nodes['alias-region'].value='CA';
 nodes['alias-region'].change();
 assert.match(nodes['alias-info'].textContent,/Canada/);
