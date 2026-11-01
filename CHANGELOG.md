@@ -17,6 +17,7 @@ Planned as `0.1.0-preview.3`.
 
 ### Changed
 
+- Rebuilt the search index around compact sorted arrays and faster catalogue parsing. On synthetic data, Expanded's memory after startup fell from about 276 to 92 MiB, its 95th-percentile search time from about 20 to 2 ms, and its live refresh from 50 to 14 s, with a peak of 270 MiB instead of 554 MiB. Search results are unchanged. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md#index-and-preparation-rewrite).
 - Redesigned the setup page as a compact desktop utility following LongCipher Design, with bundled Geist fonts and official client icons for Stremio, dx.bi and Stremio Enhanced.
 - Polished the settings catalogue card and the addon order guide. ([#3](https://github.com/EskimoDev/stremio-smart-search/pull/3))
 - Simplified setup branding and removed the header logo.

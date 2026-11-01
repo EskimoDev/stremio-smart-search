@@ -10,6 +10,11 @@ Go 1.27.3, two Go execution threads and the helper's unchanged 256 MiB Go soft
 memory target. The target is not a hard process-memory ceiling. These are not
 measurements of macOS, Linux, ARM or TV hardware.
 
+> **Note:** the Windows tables below were measured before the index and
+> preparation rewrite described in [Index and preparation rewrite](#index-and-preparation-rewrite).
+> That change cut memory, latency and preparation time sharply on synthetic data. The Windows
+> figures will be re-measured on real IMDb data; until then, treat them as an upper bound.
+
 ## Search and normal memory
 
 | Size | Actual movies | Actual series | RAM after startup | Median request | 95th percentile | 99th percentile |
@@ -131,6 +136,64 @@ language works, optionally with a region such as `es:ES`). Snapshots are stored 
 timed 15-query workload is unchanged, so runs with and without alternative titles are comparable. Language-specific
 checks are reported once in `cases` and are not timed.
 
+## Index and preparation rewrite
+
+The search index now uses sorted 32-bit arrays instead of Go maps of slices. Titles are stored
+as compact records, acronyms are packed into integers and trigram lists hold word numbers. Each
+search reuses its working memory and selects the top results instead of sorting every hit. The
+loader's temporary copy of the catalogue is returned to the OS once after startup. Preparation
+reads each dataset on its own thread, so decompression overlaps parsing, and parses rows without
+allocating. **Search results are unchanged**: across about 96,000 generated queries per run (all
+sizes, with and without French titles), every result list matched the previous build exactly,
+and every generated snapshot was byte-for-byte identical apart from its build time.
+
+**These are synthetic measurements**, not IMDb data. The cloud machine used could not download
+IMDb's datasets. `tools/synthetic` generates IMDb-shaped files instead: 12 million basics rows,
+1.6 million ratings, Zipf-distributed title words and grouped akas rows. Its selected catalogues
+are close to the real 2026-11-01 snapshot: Expanded holds 396,652 titles in 10.2 MB, against
+390,449 titles in 10.3 MB on real data, and the old build's Expanded heap was 256 MiB, against
+261–277 MiB on real data. The synthetic data has about twice as many French titles as the real
+data (155k against 76k on Expanded), so the French rows overstate alias costs. The machine was a
+Linux x64 VM (Xeon, 2.8 GHz) running Go 1.24.7 with two Go threads and the 256 MiB target. It is
+slower than the Windows PC above. RSS here is Linux resident memory, which is not the same counter
+as the Windows working set, so compare before and after within this table only. Values are medians
+of three `measure` runs. Prepare and refresh are one run each.
+
+| Size | Go heap after startup, MiB | RSS after startup, MiB | Load + index build | Median request, ms | 95th percentile, ms | 99th percentile, ms | CPU per request, ms |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Compact | 55.1 → 9.6 | 67.3 → 20.7 | 0.72 → 0.44 s | 0.71 → 0.51 | 1.79 → 0.95 | 2.58 → 1.21 | 0.98 → 0.64 |
+| Compact, French | 52.9 → 12.5 | 83.4 → 25.4 | 1.16 → 0.55 s | 0.93 → 0.67 | 2.87 → 1.22 | 4.19 → 1.60 | 1.39 → 0.83 |
+| Standard | 179.5 → 32.9 | 201.2 → 49.4 | 3.03 → 1.85 s | 1.26 → 0.77 | 3.60 → 1.47 | 6.46 → 1.76 | 1.92 → 0.94 |
+| Standard, French | 179.7 → 39.5 | 233.5 → 58.8 | 3.78 → 2.30 s | 1.93 → 0.97 | 6.27 → 2.04 | 10.04 → 2.68 | 3.25 → 1.22 |
+| Expanded | 256.3 → 66.6 | 275.5 → 91.9 | 8.18 → 4.18 s | 2.85 → 0.95 | 20.55 → 1.95 | 31.98 → 2.73 | 7.96 → 1.17 |
+| Expanded, French | 281.6 → 76.4 | 299.1 → 108.0 | 11.53 → 4.84 s | 3.92 → 1.14 | 17.44 → 2.65 | 24.02 → 3.44 | 11.06 → 1.39 |
+
+| Size | First preparation, cached sources | Live refresh | Peak RSS during refresh |
+| --- | ---: | ---: | ---: |
+| Compact | 12.6 → 8.5 s | 13.2 → 7.8 s | 148 → 79 MiB |
+| Compact, French | 20.0 → 14.1 s | 20.7 → 13.8 s | 183 → 103 MiB |
+| Standard | 14.2 → 8.7 s | 24.6 → 10.3 s | 303 → 245 MiB |
+| Standard, French | 23.8 → 15.6 s | 40.2 → 18.0 s | 333 → 261 MiB |
+| Expanded | 18.4 → 10.9 s | 50.3 → 14.3 s | 554 → 270 MiB |
+| Expanded, French | 29.1 → 17.9 s | 65.8 → 25.3 s | 613 → 302 MiB |
+
+- **Memory:** the index for Expanded fell from about 204 MiB of live heap to about 68 MiB, and now
+  sits well under the 256 MiB soft target, even with French titles.
+- **Latency:** the old Expanded build had a heap above the soft target, so garbage collection
+  ran almost continuously, and that drove its long tail. The tail was mostly that collection,
+  not the search work itself. With the smaller heap, Expanded's 95th percentile dropped from
+  about 20 ms to 2 ms.
+- **Preparation:** decompression is now the largest remaining cost and runs alongside parsing.
+  Network download time is excluded, as above.
+- **Accuracy:** results are unchanged, so recall is too. `-phase accuracy` now measures it. The
+  phase derives exact, one-typo, two-typo, prefix, joined and alternative-title queries from the
+  catalogue itself and reports how often the intended title comes first and how often it appears
+  in the top 5 and top 20. It also lists the first results of fixed probes such as "hotd" on the
+  movie row. Synthetic recall depends on the generator's word statistics, so it shows changes
+  between builds, not real-world quality.
+
+[Raw synthetic results](benchmarks/linux-synthetic-2026-11-01.json).
+
 ## Reproduce
 
 The [raw measurements](benchmarks/windows-2026-11-01.json) include every startup
@@ -159,8 +222,14 @@ foreach ($size in @("compact", "standard", "expanded")) {
   ./catalogue-benchmark.exe -phase measure -profile $size -data-dir $data
   ./catalogue-benchmark.exe -phase refresh -profile $size -data-dir $data
   ./catalogue-benchmark.exe -phase measure -steady-idle 10s -profile $size -data-dir $data
+  ./catalogue-benchmark.exe -phase accuracy -profile $size -data-dir $data
 }
 ```
+
+Without the IMDb files, `go run ./tools/synthetic -out <dir>` writes synthetic ones (about 580 MB
+compressed) that the same phases accept. Label any results from them as synthetic. `-cpuprofile`
+writes a Go CPU profile of any phase, and `-phase accuracy -dump <file>` records every generated
+query and its results, so two builds can be compared for identical output.
 
 This benchmark executable is a developer utility, not an installed background
 component. Release packages contain the helper, local setup assets and notices;
