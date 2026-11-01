@@ -305,6 +305,12 @@ func TestServerIgnoringConditionalHeadersStillCompares(t *testing.T) {
 	if got, _ := source.Check(context.Background(), catalog.DatasetFiles(catalog.AliasOptions{}), known); got != catalog.Changed {
 		t.Fatalf("new ETag reported %s", got)
 	}
+	// An edge still serving an older copy (different ETag, earlier date) is
+	// not a change.
+	f.set(func(f *fakeIMDb) { f.etag = `"v0"`; f.modified = "Fri, 31 Oct 2026 00:45:00 GMT" })
+	if got, _ := source.Check(context.Background(), catalog.DatasetFiles(catalog.AliasOptions{}), known); got != catalog.Unchanged {
+		t.Fatalf("older copy reported %s", got)
+	}
 	f.set(func(f *fakeIMDb) { f.etag = ""; f.modified = "Sun, 02 Nov 2026 03:00:00 GMT" })
 	if got, _ := source.Check(context.Background(), catalog.DatasetFiles(catalog.AliasOptions{}), []catalog.SourceFile{{File: catalog.RatingsFile, LastModified: known[0].LastModified}, {File: catalog.BasicsFile, LastModified: known[1].LastModified}}); got != catalog.Changed {
 		t.Fatalf("new Last-Modified reported %s", got)

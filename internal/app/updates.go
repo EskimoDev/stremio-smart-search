@@ -97,12 +97,12 @@ type UpdateStatus struct {
 	DownloadBytes int64 `json:"downloadBytes"`
 }
 
-// Measured IMDb dataset sizes (1 November 2026), used until a download has
-// recorded the real ones.
+// IMDb dataset sizes on 1 November 2026, used until a download has recorded
+// the real ones.
 var defaultDatasetBytes = map[string]int64{
 	catalog.RatingsFile: 8_728_224,
 	catalog.BasicsFile:  229_540_187,
-	catalog.AkasFile:    520_070_554,
+	catalog.AkasFile:    520_203_284,
 }
 
 type updater struct {

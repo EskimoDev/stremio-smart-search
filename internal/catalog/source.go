@@ -116,6 +116,10 @@ func (s Source) Check(ctx context.Context, files []string, known []SourceFile) (
 		}
 		current := fileInfo(file, response.Header, response.ContentLength)
 		switch {
+		case olderCopy(previous, current):
+			// A CDN edge can still hold the previous day's file for a few
+			// hours after IMDb publishes. A different ETag on an older file
+			// is not news; never "update" backwards.
 		case previous.ETag != "" && current.ETag != "":
 			if current.ETag != previous.ETag {
 				result = Changed
@@ -131,6 +135,16 @@ func (s Source) Check(ctx context.Context, files []string, known []SourceFile) (
 		}
 	}
 	return result, nil
+}
+
+// olderCopy reports a reply whose Last-Modified is not after the stored one.
+func olderCopy(previous, current SourceFile) bool {
+	if previous.LastModified == "" || current.LastModified == "" {
+		return false
+	}
+	before, err1 := http.ParseTime(previous.LastModified)
+	now, err2 := http.ParseTime(current.LastModified)
+	return err1 == nil && err2 == nil && now.Before(before)
 }
 
 type countingReader struct {
@@ -268,3 +282,21 @@ func (d *datasetReader) complete() error {
 }
 
 func (d *datasetReader) Close() error { _ = d.gzip.Close(); return d.body.Close() }
+
+// Head returns what the server currently says about one file.
+func (s Source) Head(ctx context.Context, file string) (SourceFile, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, s.url(file), nil)
+	if err != nil {
+		return SourceFile{}, err
+	}
+	req.Header.Set("User-Agent", userAgent)
+	response, err := s.client().Do(req)
+	if err != nil {
+		return SourceFile{}, err
+	}
+	response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return SourceFile{}, fmt.Errorf("HTTP %d", response.StatusCode)
+	}
+	return fileInfo(file, response.Header, response.ContentLength), nil
+}
