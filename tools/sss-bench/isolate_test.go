@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -163,6 +166,43 @@ func TestLockIsAdvisoryAndOnlyReleasedByItsOwner(t *testing.T) {
 		t.Fatalf("after release: %s", warning)
 	}
 	second.releaseLock()
+}
+
+func TestLockLeftByAKilledRunIsReplaced(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("TMPDIR", dir)
+	t.Setenv("TMP", dir)
+	t.Setenv("TEMP", dir)
+	finished := exec.Command("go", "env", "GOVERSION")
+	if err := finished.Run(); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(os.TempDir(), lockName)
+	write := func(owner int) {
+		if err := os.WriteFile(path, []byte(fmt.Sprintf("someone %d %s", owner, runtime.GOOS)), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	w, err := newWorkspace(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	write(os.Getpid())
+	if warning := w.acquireLock(); warning == "" {
+		t.Fatal("a lock held by a live process should warn")
+	}
+	write(finished.Process.Pid)
+	if warning := w.acquireLock(); warning != "" {
+		t.Fatalf("a dead owner's lock should be replaced: %s", warning)
+	}
+	w.releaseLock()
+	if err := os.WriteFile(path, []byte("garbage"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if warning := w.acquireLock(); warning != "" {
+		t.Fatalf("an unreadable lock should be replaced: %s", warning)
+	}
+	w.releaseLock()
 }
 
 func TestOutputsRefuseToReplaceASavedResult(t *testing.T) {

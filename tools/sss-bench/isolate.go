@@ -165,16 +165,13 @@ func buildEnv() []string {
 
 // acquireLock notes that a benchmark is running. Two benchmarks at once disturb
 // each other's timings but cannot corrupt anything, so a held lock is a warning,
-// not an error. A lock left by a crash goes stale.
+// not an error.
 func (w *workspace) acquireLock() (warning string) {
 	path := filepath.Join(os.TempDir(), lockName)
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
-	if errors.Is(err, os.ErrExist) {
-		info, statErr := os.Stat(path)
-		if statErr == nil && time.Since(info.ModTime()) > lockMaxAge {
-			os.Remove(path)
-			file, err = os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
-		}
+	if errors.Is(err, os.ErrExist) && lockIsStale(path) {
+		os.Remove(path)
+		file, err = os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	}
 	if err != nil {
 		return "another sss-bench run appears to be active on this machine; timings may be disturbed"
@@ -183,6 +180,29 @@ func (w *workspace) acquireLock() (warning string) {
 	file.Close()
 	w.locks = path
 	return ""
+}
+
+// lockIsStale reports a lock whose owner has gone, or that is too old to trust: a
+// process identifier can be reused, and a killed run never releases its lock.
+func lockIsStale(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil || time.Since(info.ModTime()) > lockMaxAge {
+		return true
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return true
+	}
+	fields := strings.Fields(string(data))
+	if len(fields) < 2 {
+		return true
+	}
+	pid, err := strconv.Atoi(fields[1])
+	if err != nil {
+		return true
+	}
+	_, err = readProcess(pid)
+	return err != nil
 }
 
 func (w *workspace) releaseLock() {
