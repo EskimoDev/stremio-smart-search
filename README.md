@@ -55,6 +55,16 @@ Next time, use **Stremio + Smart Search** to start both together. You can close 
 
 [Windows, macOS, Linux and portable instructions →](docs/INSTALLATION.md)
 
+## Dashboard
+
+Choose your app, catalogue size and update schedule in one place, with light and dark themes.
+
+<p>
+  <a href="docs/images/dashboard-light.jpg"><img src="docs/images/dashboard-light.jpg" alt="Light dashboard with app connection options, catalogue settings, automatic updates and storage controls" width="49%"></a>
+  <a href="docs/images/dashboard-dark.jpg"><img src="docs/images/dashboard-dark.jpg" alt="Dark dashboard with the same app connection options, catalogue settings, automatic updates and storage controls" width="49%"></a>
+</p>
+<p><sub>Preview.4 in light and dark mode; click either image to enlarge. Shown with a prepared Standard catalogue and automatic updates off. Totals and storage use vary.</sub></p>
+
 ## Try a search
 
 | You type | Title to look for |
