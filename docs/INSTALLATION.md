@@ -57,6 +57,12 @@ Other distributions can extract the portable archive and run `stremio-smart-sear
 
 The **Stremio + Smart Search** launcher starts the helper and opens your registered Stremio app. The helper stays available in the background until you choose **Quit helper** in settings. It does not monitor your processes or watching activity. Closing the browser settings page does not stop it.
 
+To open settings again later, use any of these while the helper is running:
+
+- **Configure** next to Smart Search in Stremio's addon list. It opens the settings page in your browser. Stremio keeps the manifest it saw at install time, so an addon installed before this button existed needs to be removed and added again to show it.
+- **Smart Search Settings** in the Start Menu or Linux app menu, or the **Stremio Smart Search** app on a Mac. If the helper is already running, this just opens the page.
+- `http://127.0.0.1:11479` in any browser on the same computer.
+
 The launcher remembers the app chosen in setup. App-specific buttons launch installed executables directly, and the helper does not change protocol associations. Generic `stremio://` addon links are deliberately avoided because Stremio rewrites them to HTTPS, which does not suit this local HTTP service. Keep the full `http://127.0.0.1:11479/manifest.json` address when installing manually. Some browsers ask for local-network permission for the **Install through Stremio Web** option.
 
 Portable users can run the executable directly. Pass `--launch` to also open Stremio, or `--no-browser` to run in the background without opening settings. No Node.js, Python, Docker or API keys are needed.

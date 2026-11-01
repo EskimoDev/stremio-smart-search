@@ -136,3 +136,24 @@ func TestSettingsRejectRemoteAccessAndDNSRebinding(t *testing.T) {
 		}
 	}
 }
+func TestConfigureOpensSettings(t *testing.T) {
+	a := testApp(t)
+	var body struct{ BehaviorHints map[string]bool }
+	if err := json.Unmarshal(request(a, "GET", "/manifest.json", "", "").Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if !body.BehaviorHints["configurable"] || body.BehaviorHints["configurationRequired"] {
+		t.Fatal("manifest should offer an optional Configure button")
+	}
+	w := request(a, "GET", "/configure", "", "")
+	if w.Code != 302 || w.Header().Get("Location") != "/" {
+		t.Fatalf("configure status %d location %q", w.Code, w.Header().Get("Location"))
+	}
+	r := httptest.NewRequest("GET", "http://192.168.1.20:11479/configure", nil)
+	r.RemoteAddr = "192.168.1.30:40000"
+	remote := httptest.NewRecorder()
+	a.Handler().ServeHTTP(remote, r)
+	if remote.Code != 403 {
+		t.Fatalf("remote configure status %d", remote.Code)
+	}
+}

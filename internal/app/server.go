@@ -474,6 +474,11 @@ func (a *App) Handler() http.Handler {
 			return
 		}
 		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'nonce-"+a.Token+"'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+		if r.URL.Path == "/configure" {
+			// Stremio's Configure button opens <addon base>/configure; send it to settings.
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
 		if r.URL.Path == "/" {
 			html, _ := web.ReadFile("web/index.html")
 			bootstrap, _ := json.Marshal(map[string]string{"token": a.Token, "baseURL": a.BaseURL})
@@ -497,7 +502,7 @@ func (a *App) manifest(w http.ResponseWriter) {
 		catalogs = append(catalogs, map[string]any{"id": "smart-search", "type": kind, "name": "Smart Search", "extra": []any{map[string]any{"name": "search", "isRequired": true}}})
 	}
 	w.Header().Set("Cache-Control", "public, max-age=300")
-	writeJSON(w, 200, map[string]any{"id": "community.eskimodev.smartsearch", "version": strings.TrimPrefix(a.Status().Version, "v"), "name": Product, "description": "Fast local title matching with typo and abbreviation support. Recommended: move Smart Search to the top of your addon order. Requires the Smart Search companion on this computer.", "resources": []string{"catalog"}, "types": []string{"movie", "series"}, "catalogs": catalogs, "behaviorHints": map[string]bool{"adult": false, "p2p": false}})
+	writeJSON(w, 200, map[string]any{"id": "community.eskimodev.smartsearch", "version": strings.TrimPrefix(a.Status().Version, "v"), "name": Product, "description": "Fast local title matching with typo and abbreviation support. Recommended: move Smart Search to the top of your addon order. Requires the Smart Search companion on this computer.", "resources": []string{"catalog"}, "types": []string{"movie", "series"}, "catalogs": catalogs, "behaviorHints": map[string]bool{"adult": false, "p2p": false, "configurable": true}})
 }
 func (a *App) catalog(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(strings.TrimPrefix(r.URL.EscapedPath(), "/catalog/"), "/")
