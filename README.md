@@ -12,10 +12,10 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 <table>
-<tr><th>Searching <code>hotd</code> without Smart Search</th><th>With Smart Search</th></tr>
+<tr><th>Searching <code>hotd</code> without Smart Search</th><th>With Smart Search (Expanded catalogue)</th></tr>
 <tr>
 <td><img src="docs/images/search-before.jpg" alt="dx.bi search for hotd without Smart Search: hot dog films and unrelated series" width="420"></td>
-<td><img src="docs/images/search-after.jpg" alt="dx.bi search for hotd with Smart Search: House of the Dragon is the first series result" width="420"></td>
+<td><img src="docs/images/search-after.jpg" alt="dx.bi search for hotd with Smart Search on the Expanded catalogue: House of the Dragon leads the series row and House of the Devil and House of the Dead lead the movies" width="420"></td>
 </tr>
 </table>
 
