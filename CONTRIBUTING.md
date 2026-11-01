@@ -6,4 +6,12 @@ Run `go test ./...` and `go vet ./...` before proposing a code change. Match beh
 
 Platform changes need a native test or a clear note that only compilation was checked. Avoid adding a runtime, background crawler or cloud dependency to make a local installation work. Preserve normal Stremio addon behavior and document any change to first-run download size or memory limits.
 
-Follow [DESIGN.md](DESIGN.md) for setup-page styling. Use locally bundled assets and preserve the install and clipboard behavior. For catalogue or index changes, use the [resource comparison workflow](docs/PERFORMANCE.md#reproduce) with real source data kept outside this repository. The benchmark tool is a developer utility and is not shipped as part of the helper.
+Follow [docs/DESIGN.md](docs/DESIGN.md) for setup-page styling. Use locally bundled assets and preserve the install and clipboard behavior. For catalogue or index changes, use the [resource comparison workflow](docs/PERFORMANCE.md#reproduce) with real source data kept outside this repository. The benchmark tool is a developer utility and is not shipped as part of the helper.
+
+## Releasing
+
+The version is stamped at build time: `scripts/build.ps1` passes it to the binary with `-ldflags "-X main.version=..."`, and to `tools/package` and the Windows installer. Untagged local builds report `0.1.0-dev`.
+
+1. Move the `[Unreleased]` entries in [CHANGELOG.md](CHANGELOG.md) under the new version and date.
+2. Update the default preview version in `scripts/build.ps1`, `scripts/windows-installer.nsi`, `tools/package/main.go` and `.github/workflows/release.yml` to the next planned version.
+3. Push a `v<version>` tag, or run the release workflow by hand. It prepares a draft pre-release with all packages and `SHA256SUMS.txt`.
