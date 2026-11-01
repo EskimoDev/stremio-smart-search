@@ -2,7 +2,7 @@
 
 A standalone, local search addon for Stremio. **Stremio Smart Search (SSS)** gives you fast local title matching, including misspellings, joined words and abbreviations such as **HOTD**, **LOTR** and **TDK**. Works through standard movie and series search catalogs; no changes to Stremio or dx.bi are required.
 
-**Preview under development.** Windows x64 has been user-tested with standard Stremio, dx.bi and Stremio Enhanced. Automated checks run on Windows, macOS and Linux; other hardware and complete desktop installation flows still need device testing. No release is published yet.
+**Preview under development.** Windows x64 has been user-tested with standard Stremio, dx.bi and Stremio Enhanced. Linux x64 packages have been install- and smoke-tested on Ubuntu 24.04. Automated checks run on Windows, macOS and Linux; macOS, ARM64 and TV setups are not yet device-tested. See [platform testing](docs/PLATFORM-TESTING.md). No release is published yet.
 
 ## How it works
 
@@ -20,9 +20,9 @@ Preview package targets. Use **Windows x64** for most Intel/AMD PCs, or **macOS 
 |---|---|---|---|
 | Windows x64 | Installer `.exe` | Portable ZIP | Installer tested; Stremio, dx.bi and Enhanced user-tested |
 | Windows ARM64 | Installer `.exe` | Portable ZIP | Build target; device testing needed |
-| macOS Apple Silicon | `.dmg` | App ZIP | Build target; device testing needed |
-| macOS Intel | `.dmg` | App ZIP | Build target; device testing needed |
-| Linux x64 | `.deb` | Portable `.tar.gz` | Build target; device testing needed |
+| macOS Apple Silicon | `.dmg` | App ZIP | Untested on a Mac; CI builds and smoke-tests the app and DMG |
+| macOS Intel | `.dmg` | App ZIP | Untested on a Mac; CI builds and smoke-tests the app and DMG |
+| Linux x64 | `.deb` | Portable `.tar.gz` | Installed and smoke-tested on Ubuntu 24.04 |
 | Linux ARM64 | `.deb` | Portable `.tar.gz` | Build target; device testing needed |
 
 After installation:
@@ -95,6 +95,8 @@ Software is MIT licensed. **IMDb data is separate:** each user downloads it dire
 Android, Android TV, Fire TV, iOS and tvOS do not currently have native companion packages. A localhost addon installed on your PC does not become a running helper on those devices through account sync.
 
 Advanced users can host the companion on a home server and expose its addon endpoints through HTTPS. This avoids maintaining a separate engine on each device, but the host must remain online and client support must be checked. Stremio clients can require HTTPS for addresses other than loopback. Plain HTTP to a LAN address is not a promised cross-platform installation route.
+
+**LAN mode (untested on TVs).** Running the companion with `--listen 0.0.0.0:11479` on a PC lets other devices on your network reach `http://<pc-ip>:11479/manifest.json`. Only the manifest and search are exposed; settings and controls stay on the PC. Whether Stremio on Fire TV or Android TV accepts that plain-HTTP address has not been tested yet. See [platform testing](docs/PLATFORM-TESTING.md#fire-tv-and-android-tv-lan-mode) for the steps to try it.
 
 ## Development
 
