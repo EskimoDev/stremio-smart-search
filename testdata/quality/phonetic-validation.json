@@ -1,0 +1,919 @@
+{
+ "about": "Blind validation set of sound-alike misspellings, exact-title guards and pronounceable nonsense negatives, written without reference to the engine or existing phonetic cases and verified against IMDb basics/ratings.",
+ "cases": [
+  {
+   "name": "validation/interstellar-er",
+   "query": "intasteller",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0816692",
+     "title": "Interstellar",
+     "year": 2014
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/pirates-caribbean",
+   "query": "pirats of the carribian",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0325980",
+     "title": "Pirates of the Caribbean: The Curse of the Black Pearl",
+     "year": 2003
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/schindlers-list",
+   "query": "shindlas list",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0108052",
+     "title": "Schindler's List",
+     "year": 1993
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/silence-of-lambs",
+   "query": "the silance of the lams",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0102926",
+     "title": "The Silence of the Lambs",
+     "year": 1991
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/wreck-it-ralph",
+   "query": "rek it ralf",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1772341",
+     "title": "Wreck-It Ralph",
+     "year": 2012
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/social-network",
+   "query": "the soshal network",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1285016",
+     "title": "The Social Network",
+     "year": 2010
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/mandalorian",
+   "query": "the mandaloreean",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt8111088",
+     "title": "The Mandalorian",
+     "year": 2019
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/chernobyl",
+   "query": "chernoble",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt7366338",
+     "title": "Chernobyl",
+     "year": 2019
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/succession",
+   "query": "suksession",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt7660850",
+     "title": "Succession",
+     "year": 2018
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/peaky-blinders",
+   "query": "peeky blindas",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt2442560",
+     "title": "Peaky Blinders",
+     "year": 2013
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/black-mirror",
+   "query": "black mirra",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt2085059",
+     "title": "Black Mirror",
+     "year": 2011
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/seinfeld",
+   "query": "sinefeld",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0098904",
+     "title": "Seinfeld",
+     "year": 1989
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/nightcrawler",
+   "query": "nitecrawler",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt2872718",
+     "title": "Nightcrawler",
+     "year": 2014
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/wednesday",
+   "query": "wensday",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt13443470",
+     "title": "Wednesday",
+     "year": 2022
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/oppenheimer",
+   "query": "openhymer",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt15398776",
+     "title": "Oppenheimer",
+     "year": 2023
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/les-miserables",
+   "query": "lay mizerables",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1707386",
+     "title": "Les Misérables",
+     "year": 2012
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/la-dolce-vita",
+   "query": "la dolchay vita",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0053779",
+     "title": "La Dolce Vita",
+     "year": 1960
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/my-neighbor-totoro",
+   "query": "my nayber totoro",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0096283",
+     "title": "My Neighbor Totoro",
+     "year": 1988
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/naruto",
+   "query": "narooto",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0409591",
+     "title": "Naruto",
+     "year": 2002
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/laberinto-fauno",
+   "query": "el laberinto del fowno",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0457430",
+     "title": "El laberinto del fauno",
+     "year": 2006
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/casa-de-papel",
+   "query": "la kassa de papel",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt6468322",
+     "title": "La casa de papel",
+     "year": 2017
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/intouchables",
+   "query": "intooshables",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1675434",
+     "title": "Intouchables",
+     "year": 2011
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/harry-potter-sorcerer",
+   "query": "harry potter and the sorserers stoan",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0241527",
+     "title": "Harry Potter and the Sorcerer's Stone",
+     "year": 2001
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/goodfellas",
+   "query": "goodfellers",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0099685",
+     "title": "GoodFellas",
+     "year": 1990
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/jumanji",
+   "query": "jumangee",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0113497",
+     "title": "Jumanji",
+     "year": 1995
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/squid-game",
+   "query": "skwid game",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt10919420",
+     "title": "Squid Game",
+     "year": 2021
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/queens-gambit",
+   "query": "the kweens gambit",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt10048342",
+     "title": "The Queen's Gambit",
+     "year": 2020
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/lucifer",
+   "query": "loosifer",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt4052886",
+     "title": "Lucifer",
+     "year": 2016
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/the-wrestler",
+   "query": "the ressler",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1125849",
+     "title": "The Wrestler",
+     "year": 2008
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/natural-born-killers",
+   "query": "nachural born killers",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0110632",
+     "title": "Natural Born Killers",
+     "year": 1994
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/adventure-time",
+   "query": "advencher time",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1305826",
+     "title": "Adventure Time",
+     "year": 2010
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/being-john-malkovich",
+   "query": "bein john malkovitch",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0120601",
+     "title": "Being John Malkovich",
+     "year": 1999
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/killing-eve",
+   "query": "killin eev",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt7016936",
+     "title": "Killing Eve",
+     "year": 2018
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/election",
+   "query": "elecshun",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0126886",
+     "title": "Election",
+     "year": 1999
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/phantom-thread",
+   "query": "fantom thread",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt5776858",
+     "title": "Phantom Thread",
+     "year": 2017
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/clueless",
+   "query": "klooless",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0112697",
+     "title": "Clueless",
+     "year": 1995
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/psych",
+   "query": "sike",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0491738",
+     "title": "Psych",
+     "year": 2006
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/joker",
+   "query": "joka",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt7286456",
+     "title": "Joker",
+     "year": 2019
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/oceans-eleven",
+   "query": "oshans eleven",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0240772",
+     "title": "Ocean's Eleven",
+     "year": 2001
+    },
+    {
+     "id": "tt0054135",
+     "title": "Ocean's Eleven",
+     "year": 1960
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/nosferatu",
+   "query": "nosferahtoo",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt5040012",
+     "title": "Nosferatu",
+     "year": 2024
+    },
+    {
+     "id": "tt0013442",
+     "title": "Nosferatu",
+     "year": 1922
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/dune",
+   "query": "doon",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1160419",
+     "title": "Dune",
+     "year": 2021
+    },
+    {
+     "id": "tt0087182",
+     "title": "Dune",
+     "year": 1984
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/howls-moving-castle",
+   "query": "howls mooving castel",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0347149",
+     "title": "Howl's Moving Castle",
+     "year": 2004
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/shogun",
+   "query": "showgunn",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt2788316",
+     "title": "Shōgun",
+     "year": 2024
+    },
+    {
+     "id": "tt0080274",
+     "title": "Shogun",
+     "year": 1980
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/highlander",
+   "query": "hilander",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0091203",
+     "title": "Highlander",
+     "year": 1986
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/beetlejuice",
+   "query": "beatlejoos",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0094721",
+     "title": "Beetlejuice",
+     "year": 1988
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/guard-sicko",
+   "query": "sicko",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0386032",
+     "title": "Sicko",
+     "year": 2007
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/guard-doom",
+   "query": "doom",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0419706",
+     "title": "Doom",
+     "year": 2005
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/guard-night-moves",
+   "query": "night moves",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0073453",
+     "title": "Night Moves",
+     "year": 1975
+    },
+    {
+     "id": "tt2043933",
+     "title": "Night Moves",
+     "year": 2013
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/guard-lost",
+   "query": "lost",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0411008",
+     "title": "Lost",
+     "year": 2004
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/guard-fringe",
+   "query": "fringe",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1119644",
+     "title": "Fringe",
+     "year": 2008
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/guard-monk",
+   "query": "monk",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0312172",
+     "title": "Monk",
+     "year": 2002
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/guard-suits",
+   "query": "suits",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt1632701",
+     "title": "Suits",
+     "year": 2011
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/guard-heat",
+   "query": "heat",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0113277",
+     "title": "Heat",
+     "year": 1995
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/guard-signs",
+   "query": "signs",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0286106",
+     "title": "Signs",
+     "year": 2002
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/guard-holes",
+   "query": "holes",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt0311289",
+     "title": "Holes",
+     "year": 2003
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/guard-cats",
+   "query": "cats",
+   "kind": "movie",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt5697572",
+     "title": "Cats",
+     "year": 2019
+    }
+   ],
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-glorvent",
+   "query": "glorvent",
+   "kind": "movie",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-brindlemop",
+   "query": "brindlemop",
+   "kind": "movie",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-sparnick",
+   "query": "sparnick",
+   "kind": "series",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-trevolund",
+   "query": "trevolund",
+   "kind": "movie",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-quandersly",
+   "query": "quandersly",
+   "kind": "series",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-flinterbox",
+   "query": "flinterbox",
+   "kind": "movie",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-skavory",
+   "query": "skavory",
+   "kind": "movie",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-drumplefen",
+   "query": "drumplefen",
+   "kind": "series",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-wexmoral",
+   "query": "wexmoral",
+   "kind": "movie",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-vintrosk",
+   "query": "vintrosk",
+   "kind": "series",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-clompering",
+   "query": "clompering",
+   "kind": "movie",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-zarnet-bluve",
+   "query": "zarnet bluve",
+   "kind": "movie",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-mivvel-stroan",
+   "query": "mivvel stroan",
+   "kind": "series",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-pondrable",
+   "query": "pondrable",
+   "kind": "movie",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  },
+  {
+   "name": "validation/neg-tazzlemere",
+   "query": "tazzlemere",
+   "kind": "series",
+   "category": "negative",
+   "source": "curated (blind validation)"
+  }
+ ]
+}

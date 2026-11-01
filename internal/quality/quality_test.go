@@ -17,7 +17,7 @@ func TestCaseFilesLoadAndMatchFixture(t *testing.T) {
 		t.Fatal(err)
 	}
 	names := map[string]bool{}
-	for _, file := range []string{"cases.json", "phonetic-holdout.json"} {
+	for _, file := range []string{"cases.json", "phonetic-holdout.json", "phonetic-validation.json"} {
 		cases, err := LoadCases("../../testdata/quality/" + file)
 		if err != nil {
 			t.Fatal(file, err)
