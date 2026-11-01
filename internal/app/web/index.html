@@ -57,27 +57,6 @@
           <p>Alternative titles add IMDb's regional title list to the download and keep only titles in your chosen language for movies and series already in your catalogue. English, original and translated names all keep working.</p>
           <p>IMDb data is for personal, non-commercial use. <a href="https://developer.imdb.com/non-commercial-datasets/" target="_blank" rel="noreferrer">Data terms <span aria-hidden="true">↗</span></a></p>
         </details>
-        <section class="storage" aria-labelledby="storage-title">
-          <div class="storage-head">
-            <h3 id="storage-title">Storage</h3>
-            <span id="storage-total" class="storage-total">—</span>
-          </div>
-          <div id="storage-bar" class="storage-bar" role="img" aria-label="Storage used by Smart Search">
-            <span class="seg seg-catalogue" id="seg-catalogue"></span><span class="seg seg-backup" id="seg-backup"></span><span class="seg seg-other" id="seg-other"></span>
-          </div>
-          <ul class="storage-legend">
-            <li><span class="dot seg-catalogue" aria-hidden="true"></span>Catalogue <span id="storage-catalogue">—</span></li>
-            <li id="storage-backup-row" hidden><span class="dot seg-backup" aria-hidden="true"></span>Previous <span id="storage-backup">—</span></li>
-            <li><span class="dot seg-other" aria-hidden="true"></span>Settings <span id="storage-other">—</span></li>
-          </ul>
-          <dl class="storage-facts">
-            <div><dt>Free on this drive</dt><dd id="storage-disk">—</dd></div>
-            <div><dt>Memory, incl. search index</dt><dd id="storage-memory">—</dd></div>
-          </dl>
-          <button id="open-folder" class="button secondary storage-open" disabled>Open folder</button>
-          <p id="storage-path" class="fine storage-path">Checking…</p>
-          <p id="storage-info" class="fine" aria-live="polite"></p>
-        </section>
       </div>
 
     </aside>
@@ -150,6 +129,27 @@
       </div>
       <p id="message" class="message" role="status" aria-live="polite"></p>
     </div>
+      <aside class="storage" aria-labelledby="storage-title">
+        <div class="storage-head">
+          <h3 id="storage-title">Storage</h3>
+          <span id="storage-total" class="storage-total">—</span>
+        </div>
+        <div id="storage-bar" class="storage-bar" role="img" aria-label="Storage used by Smart Search">
+          <span class="seg seg-catalogue" id="seg-catalogue"></span><span class="seg seg-backup" id="seg-backup"></span><span class="seg seg-other" id="seg-other"></span>
+        </div>
+        <ul class="storage-legend">
+          <li><span class="dot seg-catalogue" aria-hidden="true"></span>Catalogue <span id="storage-catalogue">—</span></li>
+          <li id="storage-backup-row" hidden><span class="dot seg-backup" aria-hidden="true"></span>Previous <span id="storage-backup">—</span></li>
+          <li><span class="dot seg-other" aria-hidden="true"></span>Settings <span id="storage-other">—</span></li>
+        </ul>
+        <dl class="storage-facts">
+          <div><dt>Free on this drive</dt><dd id="storage-disk">—</dd></div>
+          <div><dt>Memory, incl. search index</dt><dd id="storage-memory">—</dd></div>
+        </dl>
+        <button id="open-folder" class="button secondary storage-open" disabled>Open folder</button>
+        <p id="storage-path" class="fine storage-path">Checking…</p>
+        <p id="storage-info" class="fine" aria-live="polite"></p>
+      </aside>
     <aside class="helper-notes" aria-labelledby="helper-title">
       <svg class="local-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
       <h3 id="helper-title">You can close this page</h3>
@@ -159,6 +159,15 @@
         <p>Titles are matched in memory on this computer, so there is no remote search server to wait for. Posters and playback still use your online providers.</p>
         <p>No AI service, account passwords or watch history are used. This local link works on this computer; a TV or phone needs its own reachable helper.</p>
       </details>
+      <section class="support" aria-labelledby="support-title">
+        <h3 id="support-title">Enjoying Smart Search?</h3>
+        <p>It's a free, open-source side project. A star on GitHub helps other Stremio users find it.</p>
+        <ul class="support-links">
+          <li><a href="https://github.com/EskimoDev/stremio-smart-search" target="_blank" rel="noreferrer">Star on GitHub <span aria-hidden="true">↗</span></a></li>
+          <li><a href="https://github.com/EskimoDev/stremio-smart-search/issues/new" target="_blank" rel="noreferrer">Report a problem or idea <span aria-hidden="true">↗</span></a></li>
+          <li><a href="https://github.com/EskimoDev/stremio-smart-search/releases" target="_blank" rel="noreferrer">Check for updates <span aria-hidden="true">↗</span></a></li>
+        </ul>
+      </section>
     </aside>
   </main>
 
