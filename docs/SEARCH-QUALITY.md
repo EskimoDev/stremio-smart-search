@@ -52,7 +52,11 @@ curated queries in 16 categories:
 A separate file, [`phonetic-holdout.json`](../testdata/quality/phonetic-holdout.json),
 holds 31 more phonetic queries that were written before sound-alike matching
 was designed and were never used to tune it. Score it with
-`-cases testdata/quality/phonetic-holdout.json`.
+`-cases testdata/quality/phonetic-holdout.json`. A third file,
+[`phonetic-validation.json`](../testdata/quality/phonetic-validation.json),
+holds 71 cases (45 sound-alikes, 11 exact-title guards, 15 negatives) written
+before the second round of tuning and scored only after each variant was
+fixed; its per-case results were not inspected while tuning.
 
 Each case lists every acceptable answer as an IMDb ID together with its title
 and start year. Where several answers are right, such as both versions of *The
@@ -377,8 +381,8 @@ there have not been re-run.
 
 ### Limits
 
-- Random pronounceable strings now return something more often: on
-  Expanded, 36% of random strings that pass the vowel and consonant check
+- (Before the follow-up below.) Random pronounceable strings now return
+  something more often: on Expanded, 36% of random strings that pass the vowel and consonant check
   get a result, against 9% before. A query with no right answer is more
   likely to show a loose sound-alike. The three curated negative cases still
   return nothing.
@@ -388,3 +392,55 @@ there have not been re-run.
 - Words of three letters (`hoo`) and words with long consonant runs
   (`sicksth`) get no sound-alikes.
 
+## Sound-alike follow-up: near codes and confidence, 2026-11-01
+
+Of the 23 curated and held-out sound-alike misses on Expanded, 17 never
+reached the candidate list and 6 were found but ranked below another title.
+Most of the never-found ones had a code one sound away from the title's:
+`brekin` PRKN against *breaking* PRKNK, `wocking` AKNK against *walking*
+ALKNK, `fucher` FXR against *future* FTR. Separately, most of what random
+strings matched were obscure one-word titles that shared a sound and little
+else. Two changes address those.
+
+- **Near codes.** For a code of three or more sounds, the words filed under
+  each variant with one K or L inserted, or with X swapped for T, S or K (and
+  back), are added at weight 0.3, below an exact sound-alike. At most 8 per
+  query word, and they must be within half the query's letters by edit
+  distance, one fewer than an exact sound-alike. No index change: each
+  variant is one more lookup in the same sorted code list.
+- **Confidence.** A sound-alike more than a third of the query's letters away
+  by edit distance must belong to a title with at least 20,000 votes, since
+  people respell titles they have heard of. A query of one word (after
+  stopwords and years) of five letters or more gets one edit less, because no
+  other word confirms it.
+
+A third experiment, widening the candidate list for words that have exact
+company in the query, gained three held-out titles but raised multi-word
+random matches and doubled the time of queries with no result; it was not
+kept.
+
+Real snapshots, PR #20's fallback → this follow-up. "Random" is the share of
+2,240 speakable random 5–10-letter strings (of 6,000, seed 42) that return
+anything. "Validation" counts the 56 positive cases of the new set; "fp"
+the negatives that returned something.
+
+| Catalogue | Phonetic top-1 / top-5 | Held-out top-1 / top-5 | Validation top-1 (fp) | Two typos top-1 | Random |
+| --- | --- | --- | --- | --- | --- |
+| Compact | 80.6 / 83.3 → 88.9 / 91.7% | 70.0 / 76.7 → 76.7 / 80.0% | 75.0% (3) → 80.4% (1) | 82.9 → 83.1% | 23.1 → 6.9% |
+| Standard | 75.7 / 81.1 → 83.8 / 91.9% | 63.3 / 73.3 → 73.3 / 80.0% | 73.2% (5) → 78.6% (3) | 76.6 → 77.3% | 31.8 → 10.2% |
+| Expanded | 76.9 / 82.1 → 84.6 / 92.3% | 63.3 / 73.3 → 73.3 / 80.0% | 71.4% (5) → 76.8% (3) | 71.8 → 73.5% | 36.8 → 12.7% |
+
+On main, before any sound-alike matching, Expanded scored 41.1% on the
+validation set and 8.1% on random strings. Exact, one-typo, prefix and joined
+generated accuracy did not change on any catalogue. No curated case got worse
+on any of the eleven snapshots. One held-out case did: `the kraun` no longer
+finds *The Crown* (three edits, and alone after the stopword), in exchange
+for `fyuchurama`, `mishun impossible` and `fineas and ferb`. `pinokkio` now
+reaches *Pinocchio* at rank 4.
+
+Heap and index build are unchanged, since nothing new is stored. Search
+latency, medians of three interleaved runs at `GOMAXPROCS=2`: Expanded p50
+0.212 → 0.224 ms, p95 0.943 → 0.989 ms, p99 1.54 → 1.61 ms; Standard p95
+0.610 → 0.698 ms. Still left: `rattatooey` (RTT against RTTL, a dropped
+final L), `goast` and `the prestij` (found but ranked low), `doctor hoo`
+(three letters) and `the sicksth sense` (consonant run).

@@ -67,7 +67,7 @@ Next time, use **Stremio + Smart Search** to start both together. You can close 
 
 For translated or regional names, choose a language under **Alternative titles** in settings, then rebuild. This adds another data download. [Alternative-title setup →](docs/CATALOGUE.md#alternative-titles-optional)
 
-Matching has limits: an exact title can rank above the similar title you meant, and only some sound-alike spellings match. `incepshun` and `fite club` work, but `back to the fucher` does not. See [tested search quality and known gaps](docs/SEARCH-QUALITY.md).
+Matching has limits: an exact title can rank above the similar title you meant, and only some sound-alike spellings match. `incepshun` and `back to the fucher` work, but `rattatooey` does not. See [tested search quality and known gaps](docs/SEARCH-QUALITY.md).
 
 ## Choose a catalogue
 
