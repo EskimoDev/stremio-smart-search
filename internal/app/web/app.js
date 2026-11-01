@@ -12,7 +12,7 @@
     if (data) { options.headers['Content-Type'] = 'application/json'; options.body = JSON.stringify(data); }
     const response = await fetch(`/api/${path}`, options);
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'The helper could not complete that request.');
+    if (!response.ok) { const error = new Error(result.error || 'The helper could not complete that request.'); error.status = response.status; throw error; }
     return result;
   }
   const option = (value, text) => { const node = document.createElement('option'); node.value = value; node.textContent = text; return node; };
@@ -108,10 +108,28 @@
       $('storage-disk').textContent = storage.diskSize ? `${size(storage.diskFree)} of ${size(storage.diskSize)}` : 'Unknown';
       $('storage-memory').textContent = size(storage.memory);
       $('storage-path').textContent = storage.path;
+      $('storage-path').title = storage.custom ? 'Custom location' : 'Default location';
+      $('change-folder').disabled = storage.moving;
+      $('reset-folder').hidden = $('reset-sep').hidden = !storage.custom;
+      lastStorage = storage;
       $('open-folder').disabled = !storage.canOpen;
     } catch { $('storage-path').textContent = 'Storage details unavailable'; }
   }
-  let storageFor;
+  let storageFor, lastStorage, resetMode = false;
+  function openMovePanel(path, info, reset = false) {
+    resetMode = reset;
+    $('move-panel').hidden = false;
+    $('move-path').value = path;
+    $('move-path').disabled = reset;
+    $('move-confirm').disabled = false;
+    $('move-confirm').textContent = reset ? 'Move back' : 'Move catalogue';
+    $('move-info').textContent = info;
+    if (!reset && !path) $('move-path').focus();
+  }
+  const moveSummary = () => {
+    const bytes = (lastStorage?.catalogue || 0) + (lastStorage?.backup || 0);
+    return `${bytes ? `Moves ${size(bytes)} of catalogue files` : 'Future catalogues are saved'} into a “Stremio Smart Search” folder there. Settings stay where they are, and search keeps working while it moves.`;
+  };
   async function refresh() {
     if (stopped) return;
     try {
@@ -161,6 +179,36 @@
   $('open-folder').addEventListener('click', async () => {
     try { await api('storage/open', 'POST'); $('storage-info').textContent = 'Opened the data folder.'; }
     catch (error) { $('storage-info').textContent = error.message; }
+  });
+  $('change-folder').addEventListener('click', async () => {
+    $('storage-info').textContent = '';
+    if (lastStorage && !lastStorage.canChoose) { openMovePanel('', moveSummary()); return; }
+    const button = $('change-folder');
+    button.disabled = true; button.textContent = 'Choose a folder in the window that opened…';
+    try {
+      const result = await api('storage/choose', 'POST');
+      if (!result.cancelled) openMovePanel(result.path, moveSummary());
+    } catch (error) { openMovePanel('', error.message); }
+    finally { button.disabled = false; button.textContent = 'Change location…'; }
+  });
+  $('reset-folder').addEventListener('click', () => {
+    $('storage-info').textContent = '';
+    openMovePanel(lastStorage?.defaultPath || '', 'Moves the catalogue back to the default folder next to your settings.', true);
+  });
+  $('move-cancel').addEventListener('click', () => { $('move-panel').hidden = true; });
+  $('move-confirm').addEventListener('click', async () => {
+    const path = resetMode ? '' : $('move-path').value.trim();
+    if (!resetMode && !path) { $('move-info').textContent = 'Enter or choose a folder first.'; return; }
+    $('move-confirm').disabled = true; $('move-confirm').textContent = 'Moving…';
+    try {
+      const result = await api('storage/move', 'POST', { path });
+      $('move-panel').hidden = true;
+      $('storage-info').textContent = `Catalogue moved to ${result.path}`;
+      refreshStorage();
+    } catch (error) {
+      $('move-info').textContent = error.message;
+      $('move-confirm').disabled = false; $('move-confirm').textContent = resetMode ? 'Move back' : 'Move catalogue';
+    }
   });
   $('quit').addEventListener('click', async () => {
     stopped = true; clearTimeout(timer);

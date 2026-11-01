@@ -169,7 +169,16 @@
         <div><dt>Memory, incl. search index</dt><dd id="storage-memory">—</dd></div>
       </dl>
       <button id="open-folder" class="button secondary storage-open" disabled>Open folder</button>
-      <p id="storage-path" class="fine storage-path">Checking…</p>
+      <div class="storage-location">
+        <p id="storage-path" class="fine storage-path">Checking…</p>
+        <p class="storage-actions"><button id="change-folder" class="text-button" disabled>Change location…</button><span id="reset-sep" class="footer-divider" aria-hidden="true" hidden>/</span><button id="reset-folder" class="text-button" hidden>Use default</button></p>
+      </div>
+      <div id="move-panel" class="move-panel" hidden>
+        <label for="move-path">New catalogue location</label>
+        <input id="move-path" spellcheck="false" autocomplete="off" placeholder="Full folder path">
+        <p id="move-info" class="fine" aria-live="polite"></p>
+        <div class="move-buttons"><button id="move-cancel" class="button secondary">Cancel</button><button id="move-confirm">Move catalogue</button></div>
+      </div>
       <p id="storage-info" class="fine" aria-live="polite"></p>
     </aside>
   </main>

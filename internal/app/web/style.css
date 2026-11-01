@@ -111,6 +111,18 @@ details p:last-child { margin-bottom: 0; }
 .storage-open:disabled { box-shadow: var(--ring); }
 .storage-path { margin: 8px 0 0; font-family: "Geist Mono", ui-monospace, monospace; font-size: 10px; text-align: center; overflow-wrap: anywhere; }
 #storage-info { margin: 6px 0 0; text-align: center; }
+.storage-location { text-align: center; }
+.storage-actions { margin: 4px 0 0; font-size: 11px; }
+.storage-actions .text-button { min-height: 20px; }
+.storage-actions .footer-divider[hidden] { display: none; }
+.move-panel { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.move-panel label { display: block; font-size: 12px; font-weight: 500; margin-bottom: 8px; }
+.move-panel input { display: block; width: 100%; min-height: 36px; border: 0; box-shadow: var(--ring); border-radius: 5px; padding: 8px 10px; color: var(--ink); background: #fff; font-family: "Geist Mono", ui-monospace, monospace; font-size: 11px; }
+.move-panel input:disabled { background: #fafafa; color: var(--muted); }
+#move-info { margin: 8px 0 10px; }
+#move-info:empty { display: none; }
+.move-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.move-buttons .secondary { margin-bottom: 0; }
 #storage-info:empty { display: none; }
 .support h3 { margin-bottom: 8px; }
 .support-links { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 12px; }
@@ -180,7 +192,7 @@ code { font-family: "Geist Mono", ui-monospace, monospace; font-size: .9em; }
   .catalogue { padding: 22px; }
   .catalog-stats { max-width: 280px; margin-inline: auto; }
   .catalogue h2 { font-size: 18px; }
-  .profile-settings select { font-size: 16px; }
+  .profile-settings select, .move-panel input { font-size: 16px; }
   h1 { font-size: 30px; }
   .app-action { font-size: 11px; }
   .app-action span { margin-left: 3px; font-size: 14px; }
