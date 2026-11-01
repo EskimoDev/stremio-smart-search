@@ -122,7 +122,7 @@ func TestBuildRejectsUnknownProfilesAndParameters(t *testing.T) {
 		t.Fatal("invalid input started a download")
 	}
 }
-func TestNewSetupOffersStandardAndLocalFonts(t *testing.T) {
+func TestNewSetupOffersStandardAndLocalAssets(t *testing.T) {
 	a, err := New(context.Background(), t.TempDir(), "http://127.0.0.1:11479", "test")
 	if err != nil {
 		t.Fatal(err)
@@ -130,10 +130,10 @@ func TestNewSetupOffersStandardAndLocalFonts(t *testing.T) {
 	if a.Status().Profile != "standard" || len(a.Status().Profiles) != 3 {
 		t.Fatal("missing catalogue choices")
 	}
-	for _, path := range []string{"/fonts/geist.woff2", "/fonts/geist-mono.woff2", "/fonts/OFL.txt"} {
+	for _, path := range []string{"/fonts/geist.woff2", "/fonts/geist-mono.woff2", "/fonts/OFL.txt", "/apps/stremio.png", "/apps/dxbi.png", "/apps/enhanced.png"} {
 		response := request(a, "GET", path, "", "")
 		if response.Code != 200 || response.Body.Len() == 0 {
-			t.Fatalf("local font asset missing: %s", path)
+			t.Fatalf("local setup asset missing: %s", path)
 		}
 	}
 }

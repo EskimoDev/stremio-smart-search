@@ -371,11 +371,13 @@ func (a *App) Handler() http.Handler {
 			_, _ = w.Write([]byte(page))
 			return
 		}
-		if r.URL.Path != "/app.js" && r.URL.Path != "/style.css" && r.URL.Path != "/icon.svg" && r.URL.Path != "/fonts/geist.woff2" && r.URL.Path != "/fonts/geist-mono.woff2" && r.URL.Path != "/fonts/OFL.txt" {
+		switch r.URL.Path {
+		case "/app.js", "/style.css", "/icon.svg", "/fonts/geist.woff2", "/fonts/geist-mono.woff2", "/fonts/OFL.txt",
+			"/apps/stremio.png", "/apps/dxbi.png", "/apps/enhanced.png":
+			files.ServeHTTP(w, r)
+		default:
 			http.NotFound(w, r)
-			return
 		}
-		files.ServeHTTP(w, r)
 	})
 }
 func (a *App) manifest(w http.ResponseWriter) {
