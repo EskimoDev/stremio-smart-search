@@ -69,7 +69,7 @@ func request(a *App, method, path, origin, token string) *httptest.ResponseRecor
 }
 func TestSearchAddonProtocolAndEncodedPunctuation(t *testing.T) {
 	a := testApp(t)
-	for _, tc := range []struct{ query, kind, id string }{{"HOTD", "series", "tt11198330"}, {"interstelar", "movie", "tt0816692"}, {"A/B & 100%", "movie", "tt9999901"}} {
+	for _, tc := range []struct{ query, kind, id string }{{"HOTD", "series", "tt11198330"}, {"interstelar", "movie", "tt0816692"}, {"the matricks", "movie", "tt0133093"}, {"A/B & 100%", "movie", "tt9999901"}} {
 		w := request(a, "GET", "/catalog/"+tc.kind+"/smart-search/search="+url.QueryEscape(tc.query)+".json", "https://web.stremio.com", "")
 		if w.Code != 200 {
 			t.Fatalf("search status %d: %s", w.Code, w.Body)

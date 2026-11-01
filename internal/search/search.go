@@ -36,6 +36,9 @@ type Engine struct {
 	// share the vocabulary and trigram index, and therefore all typo handling.
 	alternate      keyIndex
 	alternateCount int
+	// sounds files vocabulary words of ASCII letters by how they sound, for
+	// the last-resort sound-alike lookup (see phonetic.go).
+	sounds soundIndex
 
 	scratchMu sync.Mutex
 	idle      []*scratch
@@ -293,6 +296,7 @@ func New(titles []catalog.Title) *Engine {
 	}
 	e.grams = sortedGrams
 	e.gramWords = buildPostings(gramKeys, gramWords, len(e.grams))
+	e.sounds = newSoundIndex(e.vocabulary)
 	return e
 }
 
@@ -492,7 +496,15 @@ func (e *Engine) terms(ctx context.Context, query string, typos bool) []termMatc
 			}
 		}
 	}
-	return sortTerms(matches)
+	result := sortTerms(matches)
+	// Sound-alikes come last and are never cut by the term limit; a word
+	// already matched by spelling keeps its higher weight.
+	for _, w := range e.soundsLike(query) {
+		if _, ok := matches[w]; !ok {
+			result = append(result, termMatch{w, soundWeight})
+		}
+	}
+	return result
 }
 
 func sortTerms(matches map[int32]float64) []termMatch {
