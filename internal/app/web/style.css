@@ -72,6 +72,9 @@ strong { font-weight: 550; color: var(--ink); }
 .profile-settings label { display: block; font-size: 12px; font-weight: 500; margin-bottom: 8px; }
 .profile-settings select { display: block; width: 100%; min-height: 38px; border: 0; box-shadow: var(--ring); border-radius: 5px; padding: 8px 10px; color: var(--ink); background: #fff; cursor: pointer; }
 #profile-info { margin: 10px 0 6px; }
+.alias-settings { padding-top: 16px; border-top: 1px solid var(--line); margin-bottom: 18px; }
+.alias-settings select + label { margin-top: 12px; }
+#alias-info { margin: 10px 0 0; }
 .comparison-link { display: inline-block; font-size: 11px; color: var(--muted); margin-bottom: 18px; }
 button, .button { min-height: 36px; border: 0; border-radius: 5px; padding: 8px 14px; font-size: 12px; font-weight: 500; background: var(--ink); color: var(--surface); text-decoration: none; transition: background .12s, box-shadow .12s; }
 :where(button, .button):hover { background: #383838; }

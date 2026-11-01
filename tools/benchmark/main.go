@@ -45,6 +45,10 @@ type report struct {
 	RefreshSearches      int      `json:"refreshSearches,omitempty"`
 	Phase                string   `json:"phase"`
 	Profile              string   `json:"profile"`
+	AliasLanguage        string   `json:"aliasLanguage,omitempty"`
+	AliasRegion          string   `json:"aliasRegion,omitempty"`
+	Aliases              int      `json:"aliases,omitempty"`
+	AliasWallMS          float64  `json:"aliasWallMS,omitempty"`
 	Movies               int      `json:"movies"`
 	Series               int      `json:"series"`
 	MinVotes             int      `json:"minVotes"`
@@ -73,7 +77,13 @@ func main() {
 	iterations := flag.Int("iterations", 50, "Repetitions of the fixed loopback HTTP workload")
 	memoryMiB := flag.Int64("memory-mib", 256, "Go soft memory target; match the installed helper")
 	steadyIdle := flag.Duration("steady-idle", 0, "Optional quiet CPU sample after searches and a 3-second settling period")
+	aliasFlag := flag.String("aliases", "", "Optional alternative-title language[:REGION], e.g. fr or es:ES; needs title.akas.tsv.gz in -data-dir")
 	flag.Parse()
+	language, region, _ := strings.Cut(*aliasFlag, ":")
+	aliases := catalog.AliasOptions{Language: language, Region: region}
+	if err := aliases.Validate(); err != nil {
+		panic(err)
+	}
 	runtime.GOMAXPROCS(2)
 	debug.SetMemoryLimit(*memoryMiB << 20)
 	profile, ok := catalog.ProfileByID(*id)
@@ -81,8 +91,20 @@ func main() {
 		panic("choose a data directory, known profile and positive iteration count")
 	}
 	ctx := context.Background()
-	path := filepath.Join(*dir, *id+".json.gz")
-	r := report{Phase: *phase, Profile: *id, MinVotes: profile.MinVotes}
+	name := *id
+	if aliases.Enabled() {
+		name += "-" + strings.ReplaceAll(*aliasFlag, ":", "-")
+	}
+	path := filepath.Join(*dir, name+".json.gz")
+	r := report{Phase: *phase, Profile: *id, MinVotes: profile.MinVotes, AliasLanguage: aliases.Language, AliasRegion: aliases.Region}
+	addAliases := func(ctx context.Context, c *catalog.Catalog, options catalog.AliasOptions) error {
+		akas, closeAkas, err := openGzip(filepath.Join(*dir, "title.akas.tsv.gz"))
+		if err != nil {
+			return err
+		}
+		defer closeAkas()
+		return catalog.ParseIMDbAliases(ctx, akas, c, options)
+	}
 	before := readProcess()
 	start := time.Now()
 	switch *phase {
@@ -95,6 +117,12 @@ func main() {
 		defer closeBasics()
 		c, err := catalog.ParseIMDbProfile(ctx, ratings, basics, profile)
 		must(err)
+		if aliases.Enabled() {
+			aliasStart := time.Now()
+			must(addAliases(ctx, c, aliases))
+			r.AliasWallMS = float64(time.Since(aliasStart).Microseconds()) / 1000
+			r.Aliases = c.AliasCount()
+		}
 		must(catalog.Save(path, c))
 		for _, title := range c.Titles {
 			if title.Type == "movie" {
@@ -115,6 +143,10 @@ func main() {
 		r.CPUSeconds = readProcess().CPUSeconds - before.CPUSeconds
 		r.Movies = a.Status().Movies
 		r.Series = a.Status().Series
+		r.Aliases = a.Status().Aliases
+		a.DownloadAliases = func(ctx context.Context, c *catalog.Catalog, options catalog.AliasOptions, _ catalog.Progress) error {
+			return addAliases(ctx, c, options)
+		}
 		if *phase == "refresh" {
 			a.DownloadCatalog = func(ctx context.Context, profile catalog.Profile, _ catalog.Progress) (*catalog.Catalog, error) {
 				ratings, closeRatings, err := openGzip(filepath.Join(*dir, "title.ratings.tsv.gz"))
@@ -131,7 +163,7 @@ func main() {
 			}
 			server := httptest.NewServer(a.Handler())
 			defer server.Close()
-			request, err := http.NewRequest(http.MethodPost, server.URL+"/api/build", strings.NewReader(fmt.Sprintf("{\"profile\":%q}", *id)))
+			request, err := http.NewRequest(http.MethodPost, server.URL+"/api/build", strings.NewReader(fmt.Sprintf("{\"profile\":%q,\"language\":%q,\"region\":%q}", *id, aliases.Language, aliases.Region)))
 			must(err)
 			request.Host = "127.0.0.1:11479"
 			request.Header.Set("X-Smart-Search-Key", a.Token)
@@ -205,6 +237,15 @@ func main() {
 			{Query: "千と千尋", Kind: "movie"},
 			{Query: "qzxqvvnonexistent", Kind: "movie"},
 		}
+		// Alternative-title quality checks for the indexed language. They are
+		// checked once and reported, but kept out of the timed workload so
+		// latency stays comparable with runs that have no aliases.
+		aliasCases := map[string][]sample{
+			"fr": {{Query: "la reine des neiges", Kind: "movie", Expected: "tt2294629"}, {Query: "la rene des neige", Kind: "movie", Expected: "tt2294629"}, {Query: "le trone de fer", Kind: "series", Expected: "tt0944947"}},
+			"en": {{Query: "zootropolis", Kind: "movie", Expected: "tt2948356"}},
+			"es": {{Query: "juego de tronos", Kind: "series", Expected: "tt0944947"}},
+			"de": {{Query: "die eiskonigin", Kind: "movie", Expected: "tt2294629"}},
+		}[aliases.Language]
 		request := func(test sample) []string {
 			response, err := client.Get(server.URL + "/catalog/" + test.Kind + "/smart-search/search=" + url.QueryEscape(test.Query) + ".json")
 			must(err)
@@ -230,6 +271,18 @@ func main() {
 				fmt.Fprintln(os.Stderr, "quality check failed:", cases[i].Query, cases[i].FirstID)
 			}
 		}
+		aliasResults := []sample{}
+		for _, test := range aliasCases {
+			ids := request(test)
+			if len(ids) > 0 {
+				test.FirstID = ids[0]
+			}
+			test.Passed = slices.Contains(ids, test.Expected)
+			if !test.Passed {
+				fmt.Fprintln(os.Stderr, "alternative-title check failed:", test.Query, test.FirstID)
+			}
+			aliasResults = append(aliasResults, test)
+		}
 		durations := make([]float64, 0, len(cases)**iterations)
 		activeBefore := readProcess()
 		for iteration := 0; iteration < *iterations; iteration++ {
@@ -247,7 +300,7 @@ func main() {
 		r.P99MS = durations[len(durations)*99/100]
 		r.MaxMS = durations[len(durations)-1]
 		r.PeakRSSBytes = readProcess().PeakRSSBytes
-		r.Cases = cases
+		r.Cases = append(cases, aliasResults...)
 		if *steadyIdle > 0 {
 			time.Sleep(3 * time.Second)
 			quietBefore := readProcess()

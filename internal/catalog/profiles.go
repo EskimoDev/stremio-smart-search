@@ -8,15 +8,18 @@ type Profile struct {
 	Movies   int    `json:"movies"`
 	Series   int    `json:"series"`
 	MinVotes int    `json:"minVotes"`
+	// Aliases bounds alternative titles kept for this size (most-voted titles
+	// first), so turning them on adds a bounded amount of index memory.
+	Aliases int `json:"aliases"`
 }
 
 const DefaultProfile = "standard"
 
 func Profiles() []Profile {
 	return []Profile{
-		{ID: "compact", Name: "Compact", Movies: 25000, Series: 25000, MinVotes: 250},
-		{ID: "standard", Name: "Standard", Movies: 100000, Series: 100000, MinVotes: 25},
-		{ID: "expanded", Name: "Expanded", Movies: 250000, Series: 250000, MinVotes: 5},
+		{ID: "compact", Name: "Compact", Movies: 25000, Series: 25000, MinVotes: 250, Aliases: 75000},
+		{ID: "standard", Name: "Standard", Movies: 100000, Series: 100000, MinVotes: 25, Aliases: 200000},
+		{ID: "expanded", Name: "Expanded", Movies: 250000, Series: 250000, MinVotes: 5, Aliases: 200000},
 	}
 }
 

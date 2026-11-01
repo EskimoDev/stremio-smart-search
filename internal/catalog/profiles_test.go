@@ -21,6 +21,9 @@ func TestProfilesSelectByVoteThreshold(t *testing.T) {
 			if profile.Movies+profile.Series > MaxTitles {
 				t.Fatal("profile exceeds loader bound")
 			}
+			if profile.Aliases <= 0 || profile.Aliases > MaxAliases {
+				t.Fatal("profile alias budget exceeds loader bound")
+			}
 		})
 	}
 	if _, err := ParseIMDbProfile(context.Background(), strings.NewReader(ratings), strings.NewReader(basics), Profile{ID: "arbitrary"}); err == nil {
