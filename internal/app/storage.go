@@ -71,7 +71,8 @@ func OpenFolder(path string) error {
 	default:
 		cmd = exec.Command("xdg-open", path)
 	}
-	prepareCommand(cmd)
+	// Unlike the other launchers, never call prepareCommand here: on Windows it
+	// sets HideWindow, and Explorer honours that by opening its window hidden.
 	if err := cmd.Start(); err != nil {
 		return err
 	}

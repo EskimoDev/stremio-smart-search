@@ -105,11 +105,11 @@
       $('storage-backup-row').hidden = !storage.backup;
       $('storage-backup').textContent = size(storage.backup);
       $('storage-other').textContent = size(storage.other);
-      $('storage-disk').textContent = storage.diskSize ? `${size(storage.diskFree)} free of ${size(storage.diskSize)} on this drive` : '';
+      $('storage-disk').textContent = storage.diskSize ? `${size(storage.diskFree)} of ${size(storage.diskSize)}` : 'Unknown';
       $('storage-memory').textContent = size(storage.memory);
-      $('storage-path').value = storage.path;
+      $('storage-path').textContent = storage.path;
       $('open-folder').disabled = !storage.canOpen;
-    } catch { $('storage-path').value = 'Storage details unavailable'; }
+    } catch { $('storage-path').textContent = 'Storage details unavailable'; }
   }
   let storageFor;
   async function refresh() {
@@ -160,9 +160,8 @@
   });
   $('open-folder').addEventListener('click', async () => {
     try { await api('storage/open', 'POST'); $('storage-info').textContent = 'Opened the data folder.'; }
-    catch (error) { $('storage-path').focus(); $('storage-path').select(); $('storage-info').textContent = error.message; }
+    catch (error) { $('storage-info').textContent = error.message; }
   });
-  $('storage-path').addEventListener('focus', () => $('storage-path').select());
   $('quit').addEventListener('click', async () => {
     stopped = true; clearTimeout(timer);
     try { await api('quit', 'POST'); $('connection').textContent = 'Helper stopped'; tell('Smart Search has stopped. You can close this page.'); }

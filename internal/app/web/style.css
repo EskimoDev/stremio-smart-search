@@ -87,28 +87,30 @@ details p:last-child { margin-bottom: 0; }
 .helper-notes p { font-size: 12px; }
 .local-icon { color: #777; margin-bottom: 12px; }
 .helper-notes details { margin-top: 16px; }
-.storage { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); --seg-catalogue: #0a84ff; --seg-backup: #bf5af2; --seg-other: #ff9f0a; }
+.storage { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); --seg-catalogue: #0a84ff; --seg-backup: #bf5af2; --seg-other: #ff9f0a; }
 .storage-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-.storage-head h3 { margin: 0; }
+.storage-head h3 { margin: 0; font-size: 12px; font-weight: 500; }
 .storage-total { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .storage-total strong { font-family: "Geist Mono", ui-monospace, monospace; }
-.storage-bar { display: flex; gap: 2px; height: 14px; border-radius: 4px; overflow: hidden; background: #ededed; }
-.storage-bar .seg { display: block; height: 100%; width: 0; min-width: 0; transition: width .4s ease; }
+.storage-bar { display: flex; gap: 2px; height: 12px; border-radius: 4px; overflow: hidden; background: #ededed; }
+.storage-bar .seg { display: block; height: 100%; width: 0; transition: width .4s ease; }
 .seg-catalogue { background: var(--seg-catalogue); }
 .seg-backup { background: var(--seg-backup); }
 .seg-other { background: var(--seg-other); }
-.storage-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 10px 0 0; padding: 0; list-style: none; font-size: 11px; color: var(--muted); }
+.storage-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 10px 0 0; padding: 0; list-style: none; font-size: 11px; color: var(--muted); }
 .storage-legend li[hidden] { display: none; }
 .storage-legend li > span:last-child { margin-left: 4px; color: var(--ink); font-family: "Geist Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
-.dot { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; vertical-align: 0; }
-.storage-disk { margin: 8px 0 14px; }
-.storage-disk:empty { display: none; }
-.storage-memory { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; margin-bottom: 14px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); }
-.storage-memory span:last-child { color: var(--ink); font-family: "Geist Mono", ui-monospace, monospace; font-size: 11px; font-variant-numeric: tabular-nums; }
-.storage-path input { padding: 8px 10px; }
-.storage-path .copy-button { min-height: 32px; padding: 6px 10px; font-size: 11px; }
-.storage-path .copy-button:disabled { background: #f5f5f5; }
-#storage-info { margin: 8px 0 0; }
+.dot { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; }
+.storage-facts { margin: 14px 0; font-size: 11px; }
+.storage-facts div { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-top: 1px solid var(--line); }
+.storage-facts div:last-child { border-bottom: 1px solid var(--line); }
+.storage-facts dt { color: var(--muted); }
+.storage-facts dd { margin: 0; font-family: "Geist Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.storage-open { width: 100%; margin-bottom: 0; }
+.storage-open:disabled { box-shadow: var(--ring); }
+.storage-path { margin: 8px 0 0; font-family: "Geist Mono", ui-monospace, monospace; font-size: 10px; text-align: center; overflow-wrap: anywhere; }
+#storage-info { margin: 6px 0 0; text-align: center; }
+#storage-info:empty { display: none; }
 .progress { display: flex; align-items: flex-start; gap: 8px; margin-top: 14px; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
 .spinner { width: 12px; height: 12px; flex-shrink: 0; margin-top: 3px; border: 2px solid #ddd; border-top-color: var(--ink); border-radius: 50%; animation: spin 1s linear infinite; }
 .workspace-header { margin-bottom: 30px; }
