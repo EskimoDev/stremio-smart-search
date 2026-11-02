@@ -4,18 +4,104 @@ Memory, speed and disk use for each catalogue size, measured on real IMDb data.
 Standard is the default for new setups. Existing installations keep their size
 until you rebuild.
 
-The main size-comparison tables below are the **preview.3 Windows baseline**:
-Ryzen 5 5600X, 32 GiB RAM, two Go execution threads and a 256 MiB Go soft memory
-target. That target is not a hard ceiling on process memory. These tables have
-not been remeasured for preview.4 after phonetic search and automatic updates were added.
+Three sets of real-data measurements are on this page. Each is labelled with the
+machine it ran on, and they should not be mixed:
 
-Preview.4 phonetic-search measurements used real catalogues on a Linux VM;
-see [search quality](SEARCH-QUALITY.md#costs). Separate Windows and Linux update
-measurements appear below. Do not compare Go heap, Linux RSS and Windows working
-set as though they were the same counter. Mac, ARM and TV performance still need
-measurements.
+- **Preview.4, Windows PC** (2026-11-02): [`sss-bench`](BENCHMARKING.md) on the
+  Expanded catalogue. Ryzen 5 5600X, 12 threads, 32 GiB RAM.
+- **Preview.4, Linux cloud VM** (2026-11-02): all three sizes, with the same
+  15-query workload as the preview.3 tables, plus `sss-bench`. Intel Xeon at
+  2.80 GHz, 4 vCPUs, 16 GiB RAM. The VM is about three times slower per request
+  than the Windows PC, so its absolute times are not what a desktop sees.
+- **Preview.3, Windows PC** (2026-11-01): the original size-comparison tables,
+  kept below unchanged.
 
-## Results
+Every run used two Go execution threads, a 256 MiB Go soft memory target, Go
+1.27.0 and the same IMDb snapshot of 2026-11-01. That target is not a hard ceiling
+on process memory. Linux RSS and Windows working set are different counters, so
+do not compare memory across the two machines as though they were the same. Mac,
+ARM and TV performance still need measurements.
+
+## Preview.4 on Windows
+
+Measured 2026-11-02 with `sss-bench run --profile standard --catalog` on the real
+Expanded catalogue (390,470 titles, alternative titles off). Commit 1edb57e has
+the same application code as the preview.4 release; only the benchmark harness
+differs. Values are medians over 8 fresh processes, each making 10 passes over
+289 queries after 2 warmup passes.
+
+| Measure | Result |
+| --- | ---: |
+| Median request (HTTP, warm) | 0.47 ms |
+| 95th percentile | 0.91 ms |
+| 99th percentile | 1.51 ms |
+| Application CPU per request | 0.58 ms |
+| Startup to ready (load 0.56 s + index build 1.24 s) | 1.87 s |
+| Throughput, 1 client / 2 clients | 1,949 / 3,570 requests per second |
+| Working set after startup | 103 MiB |
+| Peak working set, including sustained searching | 264 MiB |
+| Search-quality cases, top result correct | 222 of 231 |
+
+This workload is not the 15-query workload of the preview.3 tables. It has 289
+queries, including the phonetic and harder fuzzy cases, so its 0.91 ms 95th
+percentile is not directly comparable with preview.3's 0.77 ms. The like-for-like
+comparison is in the next section. Load and index build together took 1.81 s,
+against 1.85 s for preview.3 on the same PC.
+
+## Preview.4 on a Linux cloud VM
+
+Measured 2026-11-02 at commit e08df6c (preview.4 application code) with
+`tools/benchmark`, the same phases and 15 fixed queries repeated 50 times as the
+preview.3 tables. Memory and latency are medians of six fresh processes;
+preparation and refresh are single runs from cached files. All fixed search cases
+passed in every run, and the quiet CPU sample was zero for every size.
+
+| Size | Titles | RSS after startup | Median request | 95th percentile | 99th percentile | CPU per request |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Compact | 50,000 | 22 MiB | 0.65 ms | 1.17 ms | 1.85 ms | 0.76 ms |
+| Standard | 184,606 | 53 MiB | 1.06 ms | 1.80 ms | 3.16 ms | 1.17 ms |
+| Expanded | 390,470 | 97 MiB | 1.30 ms | 2.32 ms | 3.62 ms | 1.42 ms |
+
+| Size | Preparation (download excluded) | Peak RSS | Live refresh (download excluded) | Peak RSS during refresh |
+| --- | ---: | ---: | ---: | ---: |
+| Compact | 7.0 s | 58 MiB | 6.6 s | 72 MiB |
+| Standard | 7.8 s | 167 MiB | 9.6 s | 216 MiB |
+| Expanded | 10.1 s | 260 MiB | 15.0 s | 286 MiB |
+
+**Preview.4 against preview.3 on the same VM.** To see what phonetic search and
+automatic updates cost, the v0.1.0-preview.3 build was measured on the same VM and
+data straight before three further preview.4 runs:
+
+| Size | RSS after startup | 95th percentile | CPU per request |
+| --- | ---: | ---: | ---: |
+| Compact | 22.0 → 22.5 MiB | 1.09 → 1.19 ms | 0.73 → 0.73 ms |
+| Standard | 51.5 → 53.2 MiB | 1.57 → 1.69 ms | 0.96 → 1.04 ms |
+| Expanded | 94.9 → 96.7 MiB | 2.19 → 2.25 ms | 1.33 → 1.41 ms |
+
+Preview.4 uses about 2% more memory and is up to about 9% slower per request on
+this workload. Repeated preview.4 runs on the VM varied by up to 15%, so the speed
+difference is close to the noise. Preparation was within 0.4 s of preview.3 for
+every size.
+
+**`sss-bench` on the VM.** The same standard profile as the Windows run above,
+for comparison between machines:
+
+| Catalogue | Median request | 95th percentile | Startup to ready | RSS after startup | Peak RSS | Top result correct |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Real Standard, 184,606 titles | 1.00 ms | 1.89 ms | 2.58 s | 54 MiB | 160 MiB | 222 of 229 |
+| Real Expanded, 390,470 titles | 1.27 ms | 2.60 ms | 5.36 s | 102 MiB | 250 MiB | 222 of 231 |
+
+Two Standard cases are for titles outside that catalogue, so they count as
+coverage gaps rather than misses. Search-quality results were identical to the
+Windows run on the same Expanded catalogue.
+
+## Preview.3 Windows baseline
+
+These tables are the **preview.3 Windows baseline**: Ryzen 5 5600X, 32 GiB RAM,
+two Go execution threads and a 256 MiB Go soft memory target. They were not
+remeasured with this workload for preview.4; the Linux comparison above shows
+the change between the two releases. Preview.4 phonetic-search costs are also in
+[search quality](SEARCH-QUALITY.md#costs), and update measurements are below.
 
 Measured 2026-11-01 at commit 804ddcf with Go 1.27.0, on the IMDb snapshot of
 2026-11-01. Each phase ran in a fresh process. Memory and latency are medians of

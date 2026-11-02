@@ -96,15 +96,15 @@ Matching has limits: an exact title can rank above the similar title you meant. 
 
 Standard is the default. Choose Compact to use less memory, or Expanded to include more titles with fewer IMDb votes. You can change size in settings; the current catalogue keeps working during a rebuild.
 
-| Size | Titles in the measured snapshot | Memory after startup |
-|---|---:|---:|
-| Compact | 50,000 | 23 MiB |
-| **Standard** | 184,606 | 53 MiB |
-| Expanded | 390,470 | 97 MiB |
+| Size | Titles in the measured snapshot | Memory after startup, Windows PC (preview.3) | Memory after startup, Linux cloud VM (preview.4) |
+|---|---:|---:|---:|
+| Compact | 50,000 | 23 MiB | 22 MiB |
+| **Standard** | 184,606 | 53 MiB | 53 MiB |
+| Expanded | 390,470 | 97 MiB | 97 MiB |
 
-These are the **preview.3 Windows baseline**, recorded on one PC with IMDb data from 2026-11-01 and alternative titles off. They have not been remeasured on preview.4. Counts and memory vary. Each size keeps up to 25,000, 100,000 or 250,000 **each** of movies and series, subject to its vote threshold.
+Both columns use IMDb data from 2026-11-01 with alternative titles off. The Windows PC is a Ryzen 5 5600X with 32 GiB RAM; the Linux VM has 4 vCPUs (Intel Xeon, 2.80 GHz) and 16 GiB. Windows reports working set and Linux reports RSS, which are different counters. On preview.4 the Windows PC measured 103 MiB for Expanded with `sss-bench`. Counts and memory vary. Each size keeps up to 25,000, 100,000 or 250,000 **each** of movies and series, subject to its vote threshold.
 
-Matching runs locally. In that baseline, 95% of Expanded search requests finished within **0.77 ms**, including the local HTTP request and response. This measures SSS, not the time for Stremio to load artwork or other addons' results. [Measurements and method →](docs/PERFORMANCE.md)
+Matching runs locally. On preview.4 with the Windows PC, 95% of Expanded search requests finished within **0.91 ms** across 289 benchmark queries, including the local HTTP request and response. On the same workload the slower Linux VM took 2.60 ms. This measures SSS, not the time for Stremio to load artwork or other addons' results. [Measurements and method →](docs/PERFORMANCE.md)
 
 [Title selection, updates and storage →](docs/CATALOGUE.md)
 
