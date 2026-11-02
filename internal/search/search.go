@@ -524,7 +524,45 @@ func (e *Engine) terms(ctx context.Context, query string, typos, alone bool) []t
 	return result
 }
 
+// shortTypos returns the words a three-letter query word may be with a typo,
+// when it is not a word many titles use ("war", "man"). They are too short
+// for the trigram scan, and most of their one-letter variants are unrelated
+// words, so only a swapped pair ("gyu" for "guy") or one missing letter
+// ("bak" for "back") is tried. Stop words are left out: "teh" adds nothing
+// as "the".
+func (e *Engine) shortTypos(query string) []termMatch {
+	if len(query) != 3 || !isASCII(query) || !e.rareWord(query) {
+		return nil
+	}
+	var found []termMatch
+	probe := func(variant []byte, weight float64) {
+		if stop[string(variant)] {
+			return
+		}
+		if w := e.word(string(variant)); w >= 0 {
+			found = append(found, termMatch{w, weight})
+		}
+	}
+	forEachSwapOrDrop(query, func(variant []byte) {
+		if len(variant) == 3 {
+			probe(variant, shortSwapWeight)
+		}
+	})
+	var buf [4]byte
+	for i := 1; i <= 3; i++ {
+		for c := byte('a'); c <= 'z'; c++ {
+			probe(append(append(append(buf[:0], query[:i]...), c), query[i:]...), shortInsertWeight)
+		}
+	}
+	return found
+}
+
 const (
+	// shortSwapWeight and shortInsertWeight are a three-letter word's typo
+	// weights, a little under a longer word's .76 since short words have
+	// more accidental neighbours.
+	shortSwapWeight   = .72
+	shortInsertWeight = .68
 	// prefixTerms is how many longer words a query word may stand for as a
 	// prefix ("war" for "wars", "thr" for "thrones").
 	prefixTerms = 20
@@ -641,6 +679,8 @@ type scratch struct {
 	slot   []int32
 	gen    uint32
 	groups [][]member
+	// tallies is matchWords' per-title count of matched query words.
+	tallies []tally
 }
 
 func (w *scratch) next() uint32 {
@@ -737,123 +777,13 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 			}
 		}
 	}
-	unique := map[string]bool{}
-	var work *scratch
-	var groups [][]member
-	// A release year typed with a title ("dune 1984") is satisfied by the
-	// title's year as well as by a title word, so it narrows similar names
-	// instead of making the query fail. It only applies alongside other words.
-	var years []int32
-	words := 0
-	for _, part := range parts {
-		if !stop[part] && utf8.RuneCountInString(part) >= 3 && yearOf(part) == 0 {
-			words++
-		}
-	}
-	for _, part := range parts {
-		if stop[part] || unique[part] {
-			continue
-		}
-		unique[part] = true
-		if utf8.RuneCountInString(part) < 3 {
-			continue
-		}
-		if y := yearOf(part); y != 0 && words > 0 {
-			years = append(years, y)
-			continue
-		}
-		if work == nil {
-			work = e.scratch()
-			defer e.release(work)
-		}
-		// One group per query word: every title matching any of the word's
-		// terms, with its best weight.
-		gen := work.next()
-		var group []member
-		if len(groups) < len(work.groups) {
-			group = work.groups[len(groups)][:0]
-		}
-		add := func(id int32, weight float64) {
-			if e.kinds[id] != want {
-				return
-			}
-			if work.stamp[id] != gen {
-				work.stamp[id] = gen
-				work.slot[id] = int32(len(group))
-				group = append(group, member{id, weight})
-			} else if m := &group[work.slot[id]]; weight > m.weight {
-				m.weight = weight
-			}
-		}
-		for _, match := range e.terms(ctx, part, typos, words == 1) {
-			for n, id := range e.words.get(match.word) {
-				if n >= 3000 || ctx.Err() != nil {
-					break
-				}
-				add(id, match.weight)
-			}
-			for n, id := range e.alternateWords.get(match.word) {
-				if n >= 3000 || ctx.Err() != nil {
-					break
-				}
-				add(id, match.weight*alternateWordWeight)
-			}
-		}
-		groups = append(groups, group)
-	}
-	if work != nil {
-		// Hand the (possibly regrown) lists back for reuse.
-		for i, group := range groups {
-			if i < len(work.groups) {
-				work.groups[i] = group
-			} else {
-				work.groups = append(work.groups, group)
-			}
-		}
-	}
-	type hit struct {
-		id    int32
-		score float64
-	}
 	var hits []hit
-	if len(groups) > 0 && ctx.Err() == nil {
-		// A title must match every word. Start from the smallest group and add
-		// each other group's weight in turn, in the same order as before.
-		sort.Slice(groups, func(i, j int) bool { return len(groups[i]) < len(groups[j]) })
-		candidates := groups[0]
-		for _, group := range groups[1:] {
-			gen := work.next()
-			for i, m := range group {
-				work.stamp[m.id] = gen
-				work.slot[m.id] = int32(i)
-			}
-			kept := candidates[:0]
-			for _, c := range candidates {
-				if work.stamp[c.id] == gen {
-					c.weight += group[work.slot[c.id]].weight
-					kept = append(kept, c)
-				}
-			}
-			candidates = kept
+	for _, h := range e.matchWords(ctx, parts, typos, want) {
+		if old, ok := scores[h.id]; ok {
+			h.score = max(h.score, old)
+			delete(scores, h.id)
 		}
-		for _, y := range years {
-			candidates = e.filterYear(work, candidates, y)
-		}
-		hits = make([]hit, 0, len(candidates)+len(scores))
-		for _, c := range candidates {
-			score := 100 * c.weight / float64(len(groups)+len(years))
-			// Among equally good word matches, prefer titles the query
-			// covers: "the terminater" means The Terminator before
-			// Terminator 2: Judgment Day.
-			if w := e.titles[c.id].words; w > 0 {
-				score += coverageBonus * min(1, float64(len(groups)+len(years))/float64(w))
-			}
-			if old, ok := scores[c.id]; ok {
-				score = max(score, old)
-				delete(scores, c.id)
-			}
-			hits = append(hits, hit{c.id, score})
-		}
+		hits = append(hits, h)
 	}
 	for id, score := range scores {
 		hits = append(hits, hit{id, score})
