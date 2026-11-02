@@ -10,6 +10,7 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 
 - **Start Smart Search when I sign in** in settings, off by default. It writes only the current user's own sign-in entry (the Windows Run value the installer's optional component also uses, a macOS LaunchAgent, or a Linux XDG autostart file) and starts the helper without settings or Stremio. See [the launcher section](docs/INSTALLATION.md#launcher-and-portable-use).
 - A **Quit Smart Search** shortcut in the Windows Start Menu and the Linux app menu.
+- A Smart Search icon in the Windows notification area while the helper runs. Double-click it (or select it and press Enter) to open the dashboard; right-click it (or press Shift+F10) for **Open dashboard** and **Quit Smart Search**. It uses Windows' own API with no extra dependency, and returns after Explorer restarts or a slow sign-in.
 - Until a catalogue exists, Smart Search's search rows show one "Smart Search needs setup" item explaining what to do, instead of staying silently empty.
 - A message box (Windows), alert (macOS) or dialog (Linux, with zenity or kdialog) when the helper cannot start, for example because another program holds port 11479. Terminal and scripted runs still print to standard error only.
 

@@ -44,6 +44,8 @@ Run the installer. It installs for your user, without administrator privileges, 
 - **Quit Smart Search** in the Start Menu: stops the helper.
 - An uninstaller in Windows' installed-app list.
 
+While the helper runs, its icon sits in the notification area next to the clock (open the **^** overflow if Windows hides it there). Double-click it, or select it and press Enter, to open the dashboard. Right-click it, or press Shift+F10, for **Open dashboard** and **Quit Smart Search**.
+
 **Start helper when I sign in** is an optional installer component. Select it if you want the helper available when opening Stremio through other shortcuts.
 
 Preview installers are unsigned. If SmartScreen appears for the official download you checked above, **More info → Run anyway** continues installation.
@@ -107,7 +109,7 @@ Moving only Smart Search preserves the relative order of your other addons. SSS 
 
 Next time, use **Stremio + Smart Search** to start the helper and open the app you chose in setup. If no preference has been saved, it uses the registered Stremio URL handler. It does not change that association.
 
-The helper stays running after you close the settings page or Stremio. It does not watch Stremio's processes or your playback. To stop it, choose **Quit Smart Search** in the Start Menu or Linux app menu, or **Quit helper** in settings and then confirm with a second click.
+The helper stays running after you close the settings page or Stremio. It does not watch Stremio's processes or your playback. To stop it, choose **Quit Smart Search** in the Start Menu, Linux app menu or the Windows notification-area icon, or **Quit helper** in settings and then confirm with a second click.
 
 Smart Search rows only appear while the helper is running. If you usually open Stremio with its own shortcut, turn on **Start Smart Search when I sign in** under **You can close this page** in settings. It is off by default. It starts this copy of the helper without opening settings or Stremio, keeps any custom `--data-dir` or `--listen` you started it with, and only changes your own user's sign-in items: the Windows Run entry also used by the installer option, `~/Library/LaunchAgents/community.eskimodev.smartsearch.plist` on macOS, or `~/.config/autostart/stremio-smart-search.desktop` on Linux. For a portable copy, turn it off before moving or deleting the folder.
 
