@@ -5,7 +5,7 @@ catalogues with known IMDb answers.
 
 ## Preview.4 search quality
 
-The sound-alike matcher is included in preview.4 but is not in preview.3. The suite now contains **288 cases in 16 categories**. With alternative
+The sound-alike matcher is included in preview.4 but is not in preview.3. The suite then contained **288 cases in 16 categories** (346 in 18 since the [several-misspelled-words change](#several-misspelled-words-2026-11-02)). With alternative
 titles off, the current engine produced the following results on the existing
 local real catalogues during documentation verification:
 
@@ -55,8 +55,8 @@ See [remaining weaknesses](#remaining-weaknesses) for examples that still fail.
 
 ## The cases
 
-[`testdata/quality/cases.json`](../testdata/quality/cases.json) holds 288
-curated queries in 16 categories:
+[`testdata/quality/cases.json`](../testdata/quality/cases.json) holds 346
+curated queries in 18 categories:
 
 | Category | What it tests | Example |
 | --- | --- | --- |
@@ -75,6 +75,8 @@ curated queries in 16 categories:
 | alias-fuzzy | misspelled regional title | `la rene des neige` |
 | non-latin | Japanese titles | `千と千尋の神隠し` |
 | phonetic | a title spelled the way it sounds | `pulp fikshun`, `nite at the museum` |
+| dropped-vowel | words typed without their vowels | `strngr thngs`, `gdfthr` |
+| multi-typo | several misspelled words, or a space in the wrong place | `gma e of thr`, `bak to teh futre` |
 | negative | queries with no right answer | `qzxqvvnonexistent` |
 
 A separate file, [`phonetic-holdout.json`](../testdata/quality/phonetic-holdout.json),
@@ -257,9 +259,11 @@ from 99.4% to 97.7%. People who type an obscure title exactly would lose it.
   reaches rank four on Expanded. Three-letter words such as "hoo" and long
   consonant runs such as "sicksth" are excluded. See the
   [latest follow-up](#sound-alike-follow-up-near-codes-and-confidence-2026-11-01).
-- **Three-letter typos.** "retour ver le futur" misses because "ver" is too
-  short for fuzzy matching. Its prefix scan stops after the first 20
-  vocabulary words, which come before "vers".
+- **Three-letter typos, partly.** Since the
+  [several-misspelled-words change](#several-misspelled-words-2026-11-02), a
+  rare three-letter word gets a swapped pair or one missing letter ("gyu",
+  "bak"), but only when the query as typed matches poorly. Other three-letter
+  typos still rely on the rest of the query.
 - **Shared exact names.** "avatar" as a series lists the 2024 series
   *Avatar* before *Avatar: The Last Airbender*. The exact name is a fair
   answer.
@@ -267,6 +271,62 @@ from 99.4% to 97.7%. People who type an obscure title exactly would lose it.
   tests non-Latin script. No case covers Cyrillic, Korean or other scripts
   yet: IMDb's original titles are romanised, and no snapshot was built with
   those languages.
+
+## Several misspelled words, 2026-11-02
+
+A title has to match every looked-up query word, so one word that matches
+nothing empties the result. With several typos that is common: a three-letter
+word had no typo matching at all ("bda", "rik", "teh"), and a letter pushed
+across a space left a fragment too short to look up ("gma e of thr" for "game
+of thr"). Main returned nothing for 11 of 55 such tuning queries.
+
+The query as typed is still scored first. Only when no title matches every
+word at least as well as a one-letter typo are other readings tried, and each
+title keeps its best score:
+
+- **One word left out**, scoring nothing for it and 10 points less. In a
+  two-word query only a word of up to four letters may be left out, and the
+  words that do match must average a two-letter typo or better, so gibberish
+  such as "zarnet bluve" still finds nothing.
+- **A fragment joined to its neighbour**: "gma e" is read as "gmae", one swap
+  from "game". A fragment is one letter, or two letters few titles use, so
+  "de" and "la" are not joined to everything.
+- **Spaces moved or added**: two words that form an indexed word when joined
+  ("shaw shank"), two words split at another point into indexed words ("gam
+  eof" as "game of"), and a word that is two indexed words run together
+  ("maxfury"). Words found this way weigh .8.
+- **Three-letter typos**: a rare three-letter word is tried with a swapped pair
+  (.72, "gyu" for "guy") or one missing letter (.68, "bak" for "back"). Stop
+  words are not targets.
+
+Results on real 2026-11-01 snapshots, Standard and Expanded:
+
+| Set | Main | This change |
+| --- | ---: | ---: |
+| Tuning set, 55 queries | 44 | 55 |
+| Held-back set 1, 30 queries | 28 | 29 |
+| Held-back set 2, 32 queries | 21 | 32 |
+
+Set 1 was written before any change and never tuned on; set 2 was written
+after the first version, and two of its misses ("family gyu", "bak to teh
+futre") led to the three-letter typo probes, so it is not fully blind. The
+remaining set-1 miss, "the witch" for *The Witcher*, ranks third behind two
+films titled *The Witch*, which is a fair answer.
+
+33 of these queries are now the `multi-typo` category in `cases.json`, and the
+25 dropped-vowel showcase queries are the `dropped-vowel` category. Top-1 on
+the new categories, main → this change, on Compact, Standard and Expanded:
+multi-typo 30.3% → 100%, dropped-vowel 96.0% → 100%. Across the existing
+suites (`cases.json`, the phonetic held-out and validation files) on all 11
+snapshots no case got worse; 67 case results improved, among them "doctor
+hoo", "the sicksth sense", "lay mizerables" and "fone booth".
+
+Speed: the first version tried the other readings for every query and made
+typical searches about 28% slower in `sss-bench`. Trying them only when the
+query as typed matches poorly brought the real Standard A/B back to no
+significant change on all 12 primary metrics (exit 0). Uncorrected hints
+remain: engine-only throughput 7–10% lower and 6% more bytes per search, from
+the queries that do take the slower path.
 
 ## Sound-alike fallback, 2026-11-01
 

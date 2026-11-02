@@ -4225,6 +4225,818 @@
    "kind": "movie",
    "category": "negative",
    "source": "curated"
+  },
+  {
+   "name": "dropped-vowel/gme-thron",
+   "query": "gme thron",
+   "kind": "series",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/fther-thd",
+   "query": "fther thd",
+   "kind": "series",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt0111958",
+     "title": "Father Ted",
+     "year": 1995
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/brkng-bd",
+   "query": "brkng bd",
+   "kind": "series",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt0903747",
+     "title": "Breaking Bad",
+     "year": 2008
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/shwshnk",
+   "query": "shwshnk",
+   "kind": "movie",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt0111161",
+     "title": "The Shawshank Redemption",
+     "year": 1994
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/shwshnk-rdmptn",
+   "query": "shwshnk rdmptn",
+   "kind": "movie",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt0111161",
+     "title": "The Shawshank Redemption",
+     "year": 1994
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/strngr-thngs",
+   "query": "strngr thngs",
+   "kind": "series",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt4574334",
+     "title": "Stranger Things",
+     "year": 2016
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/bttr-cll-sl",
+   "query": "bttr cll sl",
+   "kind": "series",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt3032476",
+     "title": "Better Call Saul",
+     "year": 2015
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/pky-blndrs",
+   "query": "pky blndrs",
+   "kind": "series",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt2442560",
+     "title": "Peaky Blinders",
+     "year": 2013
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/intrstllr",
+   "query": "intrstllr",
+   "kind": "movie",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt0816692",
+     "title": "Interstellar",
+     "year": 2014
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/gdfthr",
+   "query": "gdfthr",
+   "kind": "movie",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt0068646",
+     "title": "The Godfather",
+     "year": 1972
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/frnds",
+   "query": "frnds",
+   "kind": "series",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt0108778",
+     "title": "Friends",
+     "year": 1994
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/snfld",
+   "query": "snfld",
+   "kind": "series",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt0098904",
+     "title": "Seinfeld",
+     "year": 1989
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/whplsh",
+   "query": "whplsh",
+   "kind": "movie",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt2582802",
+     "title": "Whiplash",
+     "year": 2014
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/incptn",
+   "query": "incptn",
+   "kind": "movie",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt1375666",
+     "title": "Inception",
+     "year": 2010
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/rck-nd-mrty",
+   "query": "rck nd mrty",
+   "kind": "series",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt2861424",
+     "title": "Rick and Morty",
+     "year": 2013
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/tr-dtctv",
+   "query": "tr dtctv",
+   "kind": "series",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt2356777",
+     "title": "True Detective",
+     "year": 2014
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/sccssn",
+   "query": "sccssn",
+   "kind": "series",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt7660850",
+     "title": "Succession",
+     "year": 2018
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/gldtr",
+   "query": "gldtr",
+   "kind": "movie",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt0172495",
+     "title": "Gladiator",
+     "year": 2000
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/fght-clb",
+   "query": "fght clb",
+   "kind": "movie",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt0137523",
+     "title": "Fight Club",
+     "year": 1999
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/blck-mrrr",
+   "query": "blck mrrr",
+   "kind": "series",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt2085059",
+     "title": "Black Mirror",
+     "year": 2011
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/hs-f-crds",
+   "query": "hs f crds",
+   "kind": "series",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt1856010",
+     "title": "House of Cards",
+     "year": 2013
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/tp-gn-mvrck",
+   "query": "tp gn mvrck",
+   "kind": "movie",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt1745960",
+     "title": "Top Gun: Maverick",
+     "year": 2022
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/plp-fctn",
+   "query": "plp fctn",
+   "kind": "movie",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt0110912",
+     "title": "Pulp Fiction",
+     "year": 1994
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/th-drk-knght",
+   "query": "th drk knght",
+   "kind": "movie",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt0468569",
+     "title": "The Dark Knight",
+     "year": 2008
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "dropped-vowel/smpsns",
+   "query": "smpsns",
+   "kind": "series",
+   "category": "dropped-vowel",
+   "expect": [
+    {
+     "id": "tt0096697",
+     "title": "The Simpsons",
+     "year": 1989
+    }
+   ],
+   "source": "curated (2026-11-02 showcase, dropped vowels)"
+  },
+  {
+   "name": "multi-typo/gma-e-of-thr",
+   "query": "gma e of thr",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/gam-eof-thrones",
+   "query": "gam eof thrones",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/breakin-gbad",
+   "query": "breakin gbad",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0903747",
+     "title": "Breaking Bad",
+     "year": 2008
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/stranger-thin-gs",
+   "query": "stranger thin gs",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt4574334",
+     "title": "Stranger Things",
+     "year": 2016
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/the-dar-kknight",
+   "query": "the dar kknight",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0468569",
+     "title": "The Dark Knight",
+     "year": 2008
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/shaw-shank-redemption",
+   "query": "shaw shank redemption",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0111161",
+     "title": "The Shawshank Redemption",
+     "year": 1994
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/gaem-of-throens",
+   "query": "gaem of throens",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/brekaing-bda",
+   "query": "brekaing bda",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0903747",
+     "title": "Breaking Bad",
+     "year": 2008
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/stragner-thigns",
+   "query": "stragner thigns",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt4574334",
+     "title": "Stranger Things",
+     "year": 2016
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/teh-dakr-knight",
+   "query": "teh dakr knight",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0468569",
+     "title": "The Dark Knight",
+     "year": 2008
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/rik-and-mortey",
+   "query": "rik and mortey",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt2861424",
+     "title": "Rick and Morty",
+     "year": 2013
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/the-wakling-ded",
+   "query": "the wakling ded",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt1520211",
+     "title": "The Walking Dead",
+     "year": 2010
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/hous-of-teh-dragn",
+   "query": "hous of teh dragn",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt11198330",
+     "title": "House of the Dragon",
+     "year": 2022
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/lord-of-teh-rings",
+   "query": "lord of teh rings",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0120737",
+     "title": "The Lord of the Rings: The Fellowship of the Ring",
+     "year": 2001
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/harry-poter-adn-the-sorcerers-stone",
+   "query": "harry poter adn the sorcerers stone",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0241527",
+     "title": "Harry Potter and the Sorcerer's Stone",
+     "year": 2001
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/bakc-to-teh-future",
+   "query": "bakc to teh future",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0088763",
+     "title": "Back to the Future",
+     "year": 1985
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/silence-of-hte-lambs",
+   "query": "silence of hte lambs",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0102926",
+     "title": "The Silence of the Lambs",
+     "year": 1991
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/breakng-ba",
+   "query": "breakng ba",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0903747",
+     "title": "Breaking Bad",
+     "year": 2008
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/squi-d-game",
+   "query": "squi d game",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt10919420",
+     "title": "Squid Game",
+     "year": 2021
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/mad-maxfury-road",
+   "query": "mad maxfury road",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt1392190",
+     "title": "Mad Max: Fury Road",
+     "year": 2015
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/teh-boyz",
+   "query": "teh boyz",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt1190634",
+     "title": "The Boys",
+     "year": 2019
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/dumb-adn-dumber",
+   "query": "dumb adn dumber",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0109686",
+     "title": "Dumb and Dumber",
+     "year": 1994
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/teh-lion-king",
+   "query": "teh lion king",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0110357",
+     "title": "The Lion King",
+     "year": 1994
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/hte-usual-suspects",
+   "query": "hte usual suspects",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0114814",
+     "title": "The Usual Suspects",
+     "year": 1995
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/pirates-fo-teh-caribbean",
+   "query": "pirates fo teh caribbean",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0325980",
+     "title": "Pirates of the Caribbean: The Curse of the Black Pearl",
+     "year": 2003
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/breaking-bda",
+   "query": "breaking bda",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0903747",
+     "title": "Breaking Bad",
+     "year": 2008
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/the-bgi-bang-theory",
+   "query": "the bgi bang theory",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0898266",
+     "title": "The Big Bang Theory",
+     "year": 2007
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/tha-wolf-of-wal-street",
+   "query": "tha wolf of wal street",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0993846",
+     "title": "The Wolf of Wall Street",
+     "year": 2013
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/family-gyu",
+   "query": "family gyu",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0182576",
+     "title": "Family Guy",
+     "year": 1999
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/teh-shinign",
+   "query": "teh shinign",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0081505",
+     "title": "The Shining",
+     "year": 1980
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/bak-to-teh-futre",
+   "query": "bak to teh futre",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0088763",
+     "title": "Back to the Future",
+     "year": 1985
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/the-avengres-ag-eof-ultron",
+   "query": "the avengres ag eof ultron",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt2395427",
+     "title": "Avengers: Age of Ultron",
+     "year": 2015
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/gam-eo-fthrones",
+   "query": "gam eo fthrones",
+   "kind": "series",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0944947",
+     "title": "Game of Thrones",
+     "year": 2011
+    }
+   ],
+   "source": "curated (2026-11-02 multi-word misspelling set)"
   }
  ]
 }

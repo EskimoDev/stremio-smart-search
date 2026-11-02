@@ -64,7 +64,8 @@ type Case struct {
 // Categories, in report order.
 var Categories = []string{
 	"exact", "original", "fuzzy", "transposition", "acronym", "joined", "punctuation", "accent",
-	"short", "similar", "year", "alias", "alias-fuzzy", "non-latin", "phonetic", "negative",
+	"short", "similar", "year", "alias", "alias-fuzzy", "non-latin", "phonetic", "dropped-vowel", "multi-typo",
+	"negative",
 }
 
 // LoadCases reads a case file and checks its shape.

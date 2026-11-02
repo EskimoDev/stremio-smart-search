@@ -68,7 +68,7 @@ func classOf(category string) string {
 	switch category {
 	case "exact", "original":
 		return "exact"
-	case "fuzzy", "transposition":
+	case "fuzzy", "transposition", "dropped-vowel", "multi-typo":
 		return "typo"
 	case "punctuation":
 		return "joined"
