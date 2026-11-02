@@ -155,6 +155,12 @@ func (e *Engine) skeletonTerms(query string, matched map[int32]float64) []skelet
 	if !dropsVowels(query) {
 		return nil
 	}
+	// A word many titles use ("star", "dark", "man") is what was meant, not
+	// a word with vowels left out; skipping it keeps ordinary queries as fast
+	// as before.
+	if self := e.word(query); self >= 0 && e.titleCount(self) >= soundCommon {
+		return nil
+	}
 	var stack [64]byte
 	skeleton, ok := skeletonOf(stack[:0], query)
 	if !ok || len(skeleton) < minSkeleton || len(skeleton) > 40 {

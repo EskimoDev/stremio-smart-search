@@ -497,23 +497,28 @@ queries in a hard real-data set, 2 ranked the right title first.
   word in order, so `frnds` never means *fiends*. Up to 8 words per query word
   are kept, those of the most popular titles first, at weight 0.7 (0.64 for
   the longer skeleton): between one typo (0.76) and two (0.6). Words already
-  matched by spelling keep their weight.
+  matched by spelling keep their weight. A query word that is itself used by
+  50 or more titles (`star`, `dark`, `born`) is taken as typed and skips the
+  lookup, which keeps ordinary queries as fast as before.
 - **Results.** On the 2026-11-01 Standard and Expanded snapshots, 24 of the
   25 missing-vowel queries now rank the right title first, against 2 before,
   and two combined cases (`lrd of th rngs retrn kng`, `gdfthr 1972`) are
   fixed too. Across the whole 261-query set, top-1 went from 176 to 200 on
   Standard and from 173 to 197 on Expanded, with no query ranked worse. The
   curated cases, held-out and validation sets had no regression on any of the
-  eleven snapshots; the held-out `the born identity` now finds *The Bourne
-  Identity*. `fther thd` still misses: `thd` has an extra h rather than a
+  eleven snapshots. `fther thd` still misses: `thd` has an extra h rather than a
   missing vowel.
 - **Costs.** Heap after indexing grows by 0.39 MiB on Standard (28.52 →
   28.91 MiB), 0.69 MiB on Expanded and 0.74 MiB on Expanded French, about
   1.2%. Index build changes within run-to-run noise (best of five, Expanded:
-  2.52–2.57 → 2.56–2.81 s on the cloud VM). `sss-bench ab --profile
-  standard` on the real Standard snapshot and on the default fixture found no
-  regression in any primary metric (exit 0). Random strings of four to seven
-  letters with at most one vowel, the only inputs the new lookup sees, return
-  something 20.8% of the time on Standard instead of 19.6%, and 24.9%
-  instead of 23.5% on Expanded French; two such words together, 0.5% instead
-  of 0.3%.
+  2.52–2.57 → 2.56–2.81 s on the cloud VM). A first version that also looked
+  up common words cost 6% on warm median engine time on Standard on a Ryzen
+  5600X (0.191 → 0.203 ms, the one regression `sss-bench ab` flagged), with
+  the international class up 8–12%. With common words skipped, `sss-bench ab
+  --profile standard` on the real Standard snapshot shows warm engine p50
+  0.401 → 0.403 ms, p95 0.968 → 0.990 ms and international p95 0.685 → 0.684
+  ms on the cloud VM, with no primary metric changed (exit 0). Random strings
+  of four to seven letters with at most one vowel, the only inputs the new
+  lookup sees, return something 20.8% of the time on Standard instead of
+  19.6%, and 24.9% instead of 23.5% on Expanded French; two such words
+  together, 0.5% instead of 0.3%.
