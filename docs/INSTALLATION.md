@@ -46,7 +46,7 @@ Run the installer. It installs for your user, without administrator privileges, 
 
 While the helper runs, its icon sits in the notification area next to the clock (open the **^** overflow if Windows hides it there). Double-click it, or select it and press Enter, to open the dashboard. Right-click it, or press Shift+F10, for **Open dashboard** and **Quit Smart Search**.
 
-**Start helper when I sign in** is an optional installer component. Select it if you want the helper available when opening Stremio through other shortcuts.
+**Start when I sign in** is an optional installer component, off by default. Select it if you want the helper available when opening Stremio through other shortcuts.
 
 Preview installers are unsigned. If SmartScreen appears for the official download you checked above, **More info → Run anyway** continues installation.
 

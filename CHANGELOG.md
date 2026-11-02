@@ -19,6 +19,7 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 
 ### Changed
 
+- The Windows installer's component list now shows full names (**Smart Search (required)** and **Start when I sign in**) with a description underneath, instead of cutting them off. The settings page wraps a long sign-in path instead of letting it run into the next column.
 - First-run settings make **Download the title catalogue** step 01 in the main column, with the Stremio steps numbered after it. The page's heading, reading and keyboard order now start with the main steps.
 - Accessibility: download progress is announced to screen readers when its stage changes and every 15 seconds; app buttons stay focusable while unavailable and say why when chosen; **Quit helper** stays armed until focus leaves it instead of a 4-second timer, and announces that state; small print rises from 11 to 12 px.
 - The settings page's **Ready to try it?** examples now show one search per kind of match: a year (`dune 1984`), a typo, a sound-alike spelling, a short form, words run together, a few words of a long title and an original title. `interstelar` was dropped because on Standard and Expanded catalogues a little-known film actually titled *Interstelar* correctly ranks first. A test checks each example against locally built catalogues when `SMART_SEARCH_EXAMPLE_CATALOGS` is set.

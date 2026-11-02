@@ -302,7 +302,14 @@
     $('autostart-settings').hidden = !result.supported;
     $('autostart').checked = result.enabled;
     $('autostart').disabled = false;
-    $('autostart-info').textContent = result.enabled ? `Starts quietly when you sign in, using ${result.path}. Settings stay closed.` : autostartInfo;
+    const info = $('autostart-info');
+    if (!result.enabled) { info.textContent = autostartInfo; return; }
+    // The path has no spaces to wrap at, so it gets break points after each
+    // folder separator instead of running into the next column.
+    const path = document.createElement('span');
+    path.className = 'autostart-path';
+    String(result.path).split(/(?<=[\\/])/).forEach((part, i) => { if (i) path.append(document.createElement('wbr')); path.append(part); });
+    info.replaceChildren('Starts quietly when you sign in, using ', path, '. Settings stay closed.');
   }
   api('autostart').then(renderAutostart).catch(() => {});
   $('autostart').addEventListener('change', async () => {
