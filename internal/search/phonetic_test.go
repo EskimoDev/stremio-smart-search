@@ -200,3 +200,26 @@ func TestLooseSoundAlikesNeedSupport(t *testing.T) {
 		t.Fatalf("kraun with only a stopword and a year: %v", got)
 	}
 }
+
+// Silent letters cost edits that a listener never hears: "nite" is four
+// edits from "knight", too far for a sound-alike, but one from its spoken
+// form.
+func TestSoundDistanceIgnoresSilentLetters(t *testing.T) {
+	for _, tc := range []struct {
+		query, word string
+		want        int
+	}{
+		{"nite", "knight", 1},
+		{"nayber", "neighbor", 3},
+		{"rite", "write", 1},
+		{"fone", "phone", 0},
+		{"spaghetti", "spaghetti", 0}, // gh before a vowel is spoken
+	} {
+		if got := soundDistance(tc.query, tc.word, 4); got != tc.want {
+			t.Errorf("soundDistance(%q, %q) = %d, want %d", tc.query, tc.word, got, tc.want)
+		}
+	}
+	if got := unspoken("spaghetti"); got != "spaghetti" {
+		t.Errorf("unspoken(spaghetti) = %q", got)
+	}
+}

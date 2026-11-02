@@ -3,6 +3,7 @@ package search
 import (
 	"cmp"
 	"slices"
+	"strings"
 )
 
 // Double Metaphone (Lawrence Philips, 2000) for single ASCII words, used as a
@@ -823,9 +824,48 @@ func (e *Engine) closeSounds(candidates []soundCandidate, query string, limit in
 		if len(result) == soundWords {
 			break
 		}
-		if d := distance(query, e.vocabulary[c.word], limit); d <= limit && (3*d <= len(query) || e.bestVotes(c.word) >= soundVotes) {
+		if d := soundDistance(query, e.vocabulary[c.word], limit); d <= limit && (3*d <= len(query) || e.bestVotes(c.word) >= soundVotes) {
 			result = append(result, c.word)
 		}
 	}
 	return result
+}
+
+// soundDistance is the edit distance between two words that sound alike,
+// counting letters that are written but not spoken as absent: "nite" is four
+// edits from "knight" but one from its spoken form "nit".
+func soundDistance(query, word string, limit int) int {
+	d := distance(query, word, limit)
+	if d > 1 {
+		if q, w := unspoken(query), unspoken(word); q != query || w != word {
+			d = min(d, distance(q, w, limit))
+		}
+	}
+	return d
+}
+
+// unspoken drops letters English usually leaves silent: the K, G and W of
+// an initial "kn", "gn" and "wr", "gh" before a consonant or at the end
+// ("night", "though"), and "ph" read as F.
+func unspoken(word string) string {
+	if len(word) > 2 && (strings.HasPrefix(word, "kn") || strings.HasPrefix(word, "gn") || strings.HasPrefix(word, "wr")) {
+		word = word[1:]
+	}
+	if !strings.Contains(word, "gh") && !strings.Contains(word, "ph") {
+		return word
+	}
+	var b strings.Builder
+	for i := 0; i < len(word); i++ {
+		if word[i] == 'g' && i+1 < len(word) && word[i+1] == 'h' && i > 0 && (i+2 == len(word) || strings.IndexByte("aeiouy", word[i+2]) < 0) {
+			i++
+			continue
+		}
+		if word[i] == 'p' && i+1 < len(word) && word[i+1] == 'h' {
+			b.WriteByte('f')
+			i++
+			continue
+		}
+		b.WriteByte(word[i])
+	}
+	return b.String()
 }
