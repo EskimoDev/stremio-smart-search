@@ -217,7 +217,7 @@ details p:last-child { margin-bottom: 0; }
 .prepare-section .prepare-button { margin: 2px 0 10px; min-width: 180px; }
 .prepare-section .fine { margin-bottom: 0; }
 .autostart-settings { margin: 4px 0 14px; }
-.autostart-settings .fine { margin: 6px 0 0; }
+.autostart-settings .fine { margin: 6px 0 0; overflow-wrap: anywhere; }
 .app-mark { display: block; width: 32px; height: 32px; flex-shrink: 0; object-fit: contain; }
 .app-description { flex: 1; min-width: 0; }
 .app-name { display: block; font-size: 13px; font-weight: 500; }

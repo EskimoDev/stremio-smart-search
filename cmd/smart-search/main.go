@@ -133,6 +133,11 @@ func run() error {
 	}
 	server := &http.Server{Handler: a.Handler(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 16 << 10}
 	a.Quit = cancel
+	// The notification-area icon (Windows only) opens the dashboard or quits;
+	// quitting from there, the page or --quit all cancel ctx, and the icon is
+	// removed before the process exits.
+	stopTray := app.StartTray(func() { _ = app.OpenURL(baseURL) }, cancel)
+	defer stopTray()
 	if *importCatalog == "" {
 		a.StartUpdates(ctx)
 	} else {

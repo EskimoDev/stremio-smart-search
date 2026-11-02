@@ -18,6 +18,10 @@ InstallDir "$LOCALAPPDATA\Programs\StremioSmartSearch"
 RequestExecutionLevel user
 SetCompressor /SOLID lzma
 !define MUI_ABORTWARNING
+BrandingText " "
+; Short component names: the list is narrow and cuts longer ones off.
+; The full explanation shows beside it, under Description.
+!define MUI_COMPONENTSPAGE_SMALLDESC
 !define MUI_ICON "..\assets\icon.ico"
 !define MUI_UNICON "..\assets\icon.ico"
 !insertmacro MUI_PAGE_WELCOME
@@ -31,7 +35,7 @@ SetCompressor /SOLID lzma
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "English"
 
-Section "Smart Search and Stremio launcher" Main
+Section "Smart Search (required)" Main
   SectionIn RO
   SetShellVarContext current
   SetOutPath "$INSTDIR"
@@ -56,9 +60,14 @@ Section "Smart Search and Stremio launcher" Main
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\StremioSmartSearch" "UninstallString" '"$INSTDIR\Uninstall.exe"'
 SectionEnd
 
-Section /o "Start helper when I sign in"
+Section /o "Start when I sign in" SignIn
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "StremioSmartSearch" '"$INSTDIR\StremioSmartSearch.exe" --no-browser'
 SectionEnd
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+  !insertmacro MUI_DESCRIPTION_TEXT ${Main} "The helper, plus Stremio + Smart Search, Smart Search Settings and Quit Smart Search shortcuts."
+  !insertmacro MUI_DESCRIPTION_TEXT ${SignIn} "Start the helper quietly when you sign in to Windows. You can change this later in settings."
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 Section "Uninstall"
   SetShellVarContext current
