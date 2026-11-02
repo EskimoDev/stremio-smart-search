@@ -249,7 +249,7 @@ func TestSearchesDuringRebuildAndMove(t *testing.T) {
 			for !stop.Load() {
 				w := request(a, "GET", "/catalog/movie/smart-search/search=interstelar.json", "", "")
 				// A full search slot answers empty by design; anything else is a failure.
-				if w.Code != 200 || (!strings.Contains(w.Body.String(), "tt0816692") && !strings.Contains(w.Body.String(), `"metas":[]`)) {
+				if w.Code != 200 || (!strings.Contains(w.Body.String(), "tt0816692") && !strings.Contains(w.Body.String(), `"metas":[]`) && !strings.Contains(w.Body.String(), SetupPlaceholderID)) {
 					failures.Add(1)
 				}
 				_ = request(a, "GET", "/api/status", "", a.Token)

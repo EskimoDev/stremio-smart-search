@@ -43,6 +43,16 @@
     $('alias-info').textContent = info;
     return changed;
   }
+  // Screen readers hear the download's stage when it changes and its progress
+  // every 15 seconds, not every one-second poll.
+  let spokenStage = '', spokenAt = 0;
+  function announceProgress(status, text) {
+    if (!status.building) { spokenStage = ''; return; }
+    const now = Date.now();
+    if (status.stage === spokenStage && now - spokenAt < 15000) return;
+    spokenStage = status.stage; spokenAt = now;
+    $('progress-live').textContent = text;
+  }
   const megabytes = bytes => `${Math.round(bytes / 1e6).toLocaleString()} MB`;
   const when = value => {
     const date = new Date(value), now = new Date();
@@ -100,7 +110,16 @@
     $('build').textContent = status.building ? 'Preparing…' : !status.ready ? 'Prepare catalogue'
       : sizeChanged && titlesChanged ? 'Apply changes & rebuild' : sizeChanged ? 'Apply size & rebuild' : titlesChanged ? 'Apply titles & rebuild' : 'Refresh now';
     $('progress').hidden = !status.building;
-    $('stage').textContent = `${status.stage}${status.bytes ? ` · ${(status.bytes / 1024 / 1024).toFixed(1)} MB downloaded` : ''}`;
+    const stage = `${status.stage}${status.bytes ? ` · ${(status.bytes / 1024 / 1024).toFixed(1)} MB downloaded` : ''}`;
+    $('stage').textContent = stage;
+    announceProgress(status, stage);
+    // First run: the download is step 01 and the Stremio steps follow it.
+    $('prepare-step').hidden = status.ready;
+    $('prepare').disabled = status.building;
+    $('prepare').textContent = status.building ? 'Preparing…' : 'Prepare catalogue';
+    $('prepare-info').textContent = status.building ? stage : `Uses the ${profile?.name || 'Standard'} size. You can change it under Title catalogue.`;
+    const first = status.ready ? 1 : 2;
+    ['step-choose', 'step-paste', 'step-order'].forEach((id, index) => { $(id).textContent = `0${first + index}`; });
     $('catalog-stats').hidden = !status.ready;
     $('movie-count').textContent = status.movies.toLocaleString();
     $('series-count').textContent = status.series.toLocaleString();
@@ -111,7 +130,9 @@
     renderUpdates(status);
     for (const button of installButtons) {
       const client = clients.find(client => client.id === button.dataset.client);
-      button.disabled = !status.ready || !client?.available;
+      // aria-disabled keeps the buttons focusable, so keyboard and screen-reader
+      // users still reach the reason in their status line.
+      button.setAttribute('aria-disabled', String(!status.ready || !client?.available));
       $(`client-status-${button.dataset.client}`).textContent = !client ? 'Detection unavailable · use the link below' : !client.available ? 'Not detected · use the link below' : !status.ready ? 'Detected · prepare catalogue first' : 'Detected on this computer';
     }
     $('web-install').classList.toggle('disabled', !status.ready);
@@ -177,11 +198,13 @@
     }
     catch { $('connection').textContent = 'Helper is not running'; tell('Open Smart Search again to reconnect.'); }
   }
-  $('build').addEventListener('click', async () => {
+  async function build() {
     clearTimeout(timer); tell('');
     try { render(await api('build', 'POST', { profile: selectedProfile, language: selectedLanguage, region: selectedRegion })); } catch (error) { tell(error.message); }
     refresh();
-  });
+  }
+  $('build').addEventListener('click', build);
+  $('prepare').addEventListener('click', build);
   $('auto-update').addEventListener('change', () => saveUpdates({ auto: $('auto-update').checked }));
   $('update-frequency').addEventListener('change', () => saveUpdates({ intervalHours: Number($('update-frequency').value) }));
   $('catalog-profile').addEventListener('change', () => {
@@ -203,6 +226,8 @@
   });
   for (const button of installButtons) button.addEventListener('click', async () => {
     const id = button.dataset.client;
+    if (!lastStatus?.ready) { tell('Prepare the catalogue first, then choose your app.'); return; }
+    if (!clients.find(client => client.id === id)?.available) { tell(`${clientNames[id]} wasn’t detected. Copy the addon link below and paste it into the app yourself.`); return; }
     try { await navigator.clipboard.writeText($('manifest').value); }
     catch { $('manifest').focus(); $('manifest').select(); tell('Copy the local link below, then paste it into your app’s Add addon dialog.'); return; }
     try {
@@ -255,18 +280,35 @@
   });
   // Quitting stops search in Stremio until the helper is started again, so a
   // stray click only arms the button.
-  let quitArmed = false, quitReset;
+  // It stays armed until focus leaves it, with no timer to race.
+  let quitArmed = false;
   $('quit').addEventListener('click', async () => {
     if (!quitArmed) {
       quitArmed = true;
       $('quit').textContent = 'Click again to quit';
-      quitReset = setTimeout(() => { quitArmed = false; $('quit').textContent = 'Quit helper'; }, 4000);
+      tell('Click Quit helper again to stop Smart Search. Its rows disappear from Stremio until you open it again.');
       return;
     }
-    clearTimeout(quitReset);
     stopped = true; clearTimeout(timer);
     try { await api('quit', 'POST'); $('connection').textContent = 'Helper stopped'; tell('Smart Search has stopped. You can close this page.'); }
     catch (error) { tell(error.message); }
+  });
+  $('quit').addEventListener('blur', () => {
+    if (!quitArmed || stopped) return;
+    quitArmed = false; $('quit').textContent = 'Quit helper'; tell('');
+  });
+  const autostartInfo = 'Smart Search rows only appear in Stremio while the helper is running. Turn this on if you open Stremio with its own shortcut.';
+  function renderAutostart(result) {
+    $('autostart-settings').hidden = !result.supported;
+    $('autostart').checked = result.enabled;
+    $('autostart').disabled = false;
+    $('autostart-info').textContent = result.enabled ? `Starts quietly when you sign in, using ${result.path}. Settings stay closed.` : autostartInfo;
+  }
+  api('autostart').then(renderAutostart).catch(() => {});
+  $('autostart').addEventListener('change', async () => {
+    $('autostart').disabled = true;
+    try { renderAutostart(await api('autostart', 'POST', { enabled: $('autostart').checked })); }
+    catch (error) { $('autostart').checked = !$('autostart').checked; $('autostart').disabled = false; $('autostart-info').textContent = error.message; }
   });
   api('clients').then(result => {
     clients = result.clients;

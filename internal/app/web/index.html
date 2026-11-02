@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0a0a0a" data-scheme="dark" media="(prefers-color-scheme: dark)">
   <title>Stremio Smart Search (SSS)</title>
   <link rel="icon" href="/icon.svg?v=sss-logo">
-  <link rel="stylesheet" href="/style.css?v=examples">
+  <link rel="stylesheet" href="/style.css?v=first-run-examples">
   <script src="/theme.js?v=theme"></script>
   <link rel="preload" href="/fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
 </head>
@@ -27,81 +27,34 @@
   </header>
 
   <main class="utility">
-    <aside class="catalogue" aria-labelledby="catalogue-title">
-      <h2 id="catalogue-title">Title catalogue</h2>
-      <p id="connection" class="connection" role="status">Connecting…</p>
-      <dl id="catalog-stats" class="catalog-stats" hidden>
-        <div><dt>Movies</dt><dd id="movie-count">—</dd></div>
-        <div><dt>Series</dt><dd id="series-count">—</dd></div>
-      </dl>
-      <p id="catalog-info" class="catalog-info" aria-live="polite">Checking your catalogue…</p>
-      <div class="profile-settings">
-        <label for="catalog-profile">Catalogue size</label>
-        <select id="catalog-profile" aria-describedby="profile-info" disabled>
-          <option value="compact">Compact</option>
-          <option value="standard" selected>Standard</option>
-          <option value="expanded">Expanded</option>
-        </select>
-        <p id="profile-info" class="fine" aria-live="polite">Loading catalogue options…</p>
-        <a class="comparison-link" href="https://github.com/EskimoDev/stremio-smart-search/blob/main/docs/PERFORMANCE.md" target="_blank" rel="noreferrer">Compare memory & speed <span aria-hidden="true">↗</span></a>
-        <div class="alias-settings">
-          <label for="alias-language">Alternative titles</label>
-          <select id="alias-language" aria-describedby="alias-info" disabled>
-            <option value="" selected>Off</option>
-          </select>
-          <label for="alias-region" id="alias-region-label" hidden>Regional preference</label>
-          <select id="alias-region" aria-describedby="alias-info" hidden disabled>
-            <option value="" selected>All regions</option>
-          </select>
-          <p id="alias-info" class="fine" aria-live="polite">Also find movies and series by their title in another language or region.</p>
-        </div>
-      </div>
-      <button id="build" class="catalogue-button" disabled>Prepare catalogue</button>
-      <div id="progress" class="progress" hidden>
-        <span class="spinner" aria-hidden="true"></span><span id="stage">Starting…</span>
-      </div>
-      <div class="update-settings">
-        <label class="update-toggle" for="auto-update"><input id="auto-update" type="checkbox" aria-describedby="update-info" disabled> Update automatically</label>
-        <label for="update-frequency" class="update-frequency-label">Check for new titles</label>
-        <select id="update-frequency" aria-describedby="update-info" disabled>
-          <option value="24">Every day</option>
-          <option value="48" selected>Every 2 days</option>
-          <option value="72">Every 3 days</option>
-          <option value="168">Every week</option>
-        </select>
-        <p id="update-info" class="fine" aria-live="polite">Checking update settings…</p>
-      </div>
-      <details class="download-help">
-        <summary>About the title data</summary>
-        <p>The first download from IMDb can be a few hundred MB and take several minutes. Smart Search then builds a compact local index.</p>
-        <p>With automatic updates on, Smart Search asks IMDb whether its files changed (a few bytes) and downloads them again only when they have. IMDb usually publishes new files daily, so most scheduled checks lead to a download. Updates run in the background while Smart Search is open; search keeps working, and the current catalogue stays until the new one is ready. Windows connections set as metered are skipped.</p>
-        <p>All sizes download the same source files. Larger options retain more titles and use more memory. Changing size takes effect after a successful rebuild; your current catalogue stays available while it runs.</p>
-        <p>Alternative titles add IMDb's regional title list to the download and keep only titles in your chosen language for movies and series already in your catalogue. English, original and translated names all keep working.</p>
-        <p>IMDb data is for personal, non-commercial use. <a href="https://developer.imdb.com/non-commercial-datasets/" target="_blank" rel="noreferrer">Data terms <span aria-hidden="true">↗</span></a></p>
-      </details>
-    </aside>
-
     <div class="workspace">
       <div class="workspace-header">
         <h1>Connect to Stremio</h1>
         <p>Search with typos, abbreviations and partial titles.</p>
       </div>
 
+      <section id="prepare-step" class="setup-section prepare-section" aria-labelledby="prepare-title" hidden>
+        <div class="step-heading"><span class="step-number" aria-hidden="true">01</span><h2 id="prepare-title">Download the title catalogue</h2></div>
+        <p>Smart Search runs on this computer and answers Stremio's searches from a local list of movie and series titles. Download that list once; it is a few hundred MB and takes several minutes.</p>
+        <button id="prepare" class="prepare-button">Prepare catalogue</button>
+        <p id="prepare-info" class="fine">Uses the Standard size unless you choose another under Title catalogue.</p>
+      </section>
+
       <section class="setup-section" aria-labelledby="choose-title">
-        <div class="step-heading"><span class="step-number" aria-hidden="true">01</span><h2 id="choose-title">Choose your app</h2></div>
+        <div class="step-heading"><span id="step-choose" class="step-number" aria-hidden="true">01</span><h2 id="choose-title">Choose your app</h2></div>
         <p>Each button copies the addon link and opens that app.</p>
         <div class="app-list">
-          <button id="install-stremio" class="app-option" data-client="stremio" aria-label="Copy link and open Stremio" aria-describedby="client-status-stremio" disabled>
+          <button id="install-stremio" class="app-option" data-client="stremio" aria-label="Copy link and open Stremio" aria-describedby="client-status-stremio" aria-disabled="true">
             <img class="app-mark" src="/apps/enhanced.png" width="32" height="32" alt="">
             <span class="app-description"><span class="app-name">Stremio</span><span id="client-status-stremio" class="app-status">Checking…</span></span>
             <span class="app-action">Copy & open <span aria-hidden="true">↗</span></span>
           </button>
-          <button id="install-dxbi" class="app-option" data-client="dxbi" aria-label="Copy link and open dx.bi" aria-describedby="client-status-dxbi" disabled>
+          <button id="install-dxbi" class="app-option" data-client="dxbi" aria-label="Copy link and open dx.bi" aria-describedby="client-status-dxbi" aria-disabled="true">
             <img class="app-mark" src="/apps/dxbi.png" width="32" height="32" alt="">
             <span class="app-description"><span class="app-name">dx.bi</span><span id="client-status-dxbi" class="app-status">Checking…</span></span>
             <span class="app-action">Copy & open <span aria-hidden="true">↗</span></span>
           </button>
-          <button id="install-enhanced" class="app-option" data-client="enhanced" aria-label="Copy link and open Stremio Enhanced" aria-describedby="client-status-enhanced" disabled>
+          <button id="install-enhanced" class="app-option" data-client="enhanced" aria-label="Copy link and open Stremio Enhanced" aria-describedby="client-status-enhanced" aria-disabled="true">
             <img class="app-mark" src="/apps/enhanced.png" width="32" height="32" alt="">
             <span class="app-description"><span class="app-name">Stremio Enhanced</span><span id="client-status-enhanced" class="app-status">Checking…</span></span>
             <span class="app-action">Copy & open <span aria-hidden="true">↗</span></span>
@@ -111,11 +64,11 @@
       </section>
 
       <section class="setup-section" aria-labelledby="paste-title">
-        <div class="step-heading"><span class="step-number" aria-hidden="true">02</span><h2 id="paste-title">Paste the addon link</h2></div>
+        <div class="step-heading"><span id="step-paste" class="step-number" aria-hidden="true">02</span><h2 id="paste-title">Paste the addon link</h2></div>
         <p>In your app: <strong>Addons → Add addon → paste → Install</strong>.</p>
         <label for="manifest" class="sr-only">Local addon manifest address</label>
         <div class="link-field">
-          <input id="manifest" readonly spellcheck="false" aria-label="Local addon manifest address">
+          <input id="manifest" readonly spellcheck="false">
           <button id="copy" class="copy-button">Copy link</button>
         </div>
         <p class="fine link-hint">Keep <code>http://</code> and the port number in the address.</p>
@@ -128,7 +81,7 @@
       </section>
 
       <section class="setup-section order-section" aria-labelledby="order-title">
-        <div class="step-heading"><span class="step-number" aria-hidden="true">03</span><h2 id="order-title">Move Smart Search to the top</h2></div>
+        <div class="step-heading"><span id="step-order" class="step-number" aria-hidden="true">03</span><h2 id="order-title">Move Smart Search to the top</h2></div>
         <p>Recommended, so its search results appear first. In dx.bi: <strong>Addons → Order & backup → move to top → Save order</strong>.</p>
         <details>
           <summary>Using Stremio or Stremio Enhanced?</summary>
@@ -165,6 +118,10 @@
           <svg class="local-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
           <h3 id="helper-title">You can close this page</h3>
           <p>The helper keeps running in the background. Next time, use the <strong>Stremio + Smart Search</strong> shortcut to start both.</p>
+          <div id="autostart-settings" class="autostart-settings" hidden>
+            <label class="update-toggle" for="autostart"><input id="autostart" type="checkbox" aria-describedby="autostart-info"> Start Smart Search when I sign in</label>
+            <p id="autostart-info" class="fine" aria-live="polite">Smart Search rows only appear in Stremio while the helper is running. Turn this on if you open Stremio with its own shortcut.</p>
+          </div>
           <details>
             <summary>How search works</summary>
             <p>Titles are matched in memory on this computer, so there is no remote search server to wait for. Posters and playback still use your online providers.</p>
@@ -183,6 +140,61 @@
         </section>
       </div>
     </div>
+    <aside class="catalogue" aria-labelledby="catalogue-title">
+      <h2 id="catalogue-title">Title catalogue</h2>
+      <p id="connection" class="connection" role="status">Connecting…</p>
+      <dl id="catalog-stats" class="catalog-stats" hidden>
+        <div><dt>Movies</dt><dd id="movie-count">—</dd></div>
+        <div><dt>Series</dt><dd id="series-count">—</dd></div>
+      </dl>
+      <p id="catalog-info" class="catalog-info" aria-live="polite">Checking your catalogue…</p>
+      <div class="profile-settings">
+        <label for="catalog-profile">Catalogue size</label>
+        <select id="catalog-profile" aria-describedby="profile-info" disabled>
+          <option value="compact">Compact</option>
+          <option value="standard" selected>Standard</option>
+          <option value="expanded">Expanded</option>
+        </select>
+        <p id="profile-info" class="fine" aria-live="polite">Loading catalogue options…</p>
+        <a class="comparison-link" href="https://github.com/EskimoDev/stremio-smart-search/blob/main/docs/PERFORMANCE.md" target="_blank" rel="noreferrer">Compare memory & speed <span aria-hidden="true">↗</span></a>
+        <div class="alias-settings">
+          <label for="alias-language">Alternative titles</label>
+          <select id="alias-language" aria-describedby="alias-info" disabled>
+            <option value="" selected>Off</option>
+          </select>
+          <label for="alias-region" id="alias-region-label" hidden>Regional preference</label>
+          <select id="alias-region" aria-describedby="alias-info" hidden disabled>
+            <option value="" selected>All regions</option>
+          </select>
+          <p id="alias-info" class="fine" aria-live="polite">Also find movies and series by their title in another language or region.</p>
+        </div>
+      </div>
+      <button id="build" class="catalogue-button" disabled>Prepare catalogue</button>
+      <div id="progress" class="progress" hidden>
+        <span class="spinner" aria-hidden="true"></span><span id="stage">Starting…</span>
+      </div>
+      <p id="progress-live" class="sr-only" role="status"></p>
+      <div class="update-settings">
+        <label class="update-toggle" for="auto-update"><input id="auto-update" type="checkbox" aria-describedby="update-info" disabled> Update automatically</label>
+        <label for="update-frequency" class="update-frequency-label">Check for new titles</label>
+        <select id="update-frequency" aria-describedby="update-info" disabled>
+          <option value="24">Every day</option>
+          <option value="48" selected>Every 2 days</option>
+          <option value="72">Every 3 days</option>
+          <option value="168">Every week</option>
+        </select>
+        <p id="update-info" class="fine" aria-live="polite">Checking update settings…</p>
+      </div>
+      <details class="download-help">
+        <summary>About the title data</summary>
+        <p>The first download from IMDb can be a few hundred MB and take several minutes. Smart Search then builds a compact local index.</p>
+        <p>With automatic updates on, Smart Search asks IMDb whether its files changed (a few bytes) and downloads them again only when they have. IMDb usually publishes new files daily, so most scheduled checks lead to a download. Updates run in the background while Smart Search is open; search keeps working, and the current catalogue stays until the new one is ready. Windows connections set as metered are skipped.</p>
+        <p>All sizes download the same source files. Larger options retain more titles and use more memory. Changing size takes effect after a successful rebuild; your current catalogue stays available while it runs.</p>
+        <p>Alternative titles add IMDb's regional title list to the download and keep only titles in your chosen language for movies and series already in your catalogue. English, original and translated names all keep working.</p>
+        <p>IMDb data is for personal, non-commercial use. <a href="https://developer.imdb.com/non-commercial-datasets/" target="_blank" rel="noreferrer">Data terms <span aria-hidden="true">↗</span></a></p>
+      </details>
+    </aside>
+
     <aside class="storage" aria-labelledby="storage-title">
       <div class="storage-summary">
         <h2 id="storage-title">Storage</h2>
@@ -223,6 +235,6 @@
     <span id="version">Stremio Smart Search</span>
     <span><a href="/fonts/OFL.txt" target="_blank" rel="noreferrer">Font licence</a> <span class="footer-divider" aria-hidden="true">/</span> <button id="quit" class="text-button">Quit helper</button></span>
   </footer>
-  <!--BOOTSTRAP--><script src="/app.js?v=updates" defer></script>
+  <!--BOOTSTRAP--><script src="/app.js?v=first-run-examples" defer></script>
 </body>
 </html>

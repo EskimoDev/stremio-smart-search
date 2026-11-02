@@ -38,7 +38,10 @@ Next time, use the Stremio + Smart Search shortcut to start both together.
 Portable users: run the executable with --launch to open Stremio too.
 
 You may close the browser page. The helper stays available in the background.
-To stop it, reopen settings and click Quit helper, then click again to confirm.
+Smart Search rows only appear while it runs. To start it whenever you sign in,
+turn on Start Smart Search when I sign in in settings (off by default).
+To stop it, use the Quit Smart Search shortcut, or click Quit helper in settings
+and click again to confirm.
 
 No API key, AI subscription, account login or programming tools are needed.
 The title data download is separate from the software and is subject to IMDb's

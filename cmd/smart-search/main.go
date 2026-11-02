@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/EskimoDev/stremio-smart-search/internal/app"
@@ -23,6 +24,7 @@ var version = "0.1.0-dev"
 func main() {
 	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
+		app.ShowStartupError(err.Error())
 		os.Exit(1)
 	}
 }
@@ -60,6 +62,19 @@ func run() error {
 	a, err := app.New(ctx, *dataDir, baseURL, version)
 	if err != nil {
 		return err
+	}
+	if exe, err := os.Executable(); err == nil {
+		// Start at sign-in keeps any non-default folder or address this copy uses.
+		var keep []string
+		flag.Visit(func(f *flag.Flag) {
+			if f.Name == "data-dir" || f.Name == "listen" {
+				keep = append(keep, "--"+f.Name+"="+f.Value.String())
+			}
+		})
+		if resolved, err := filepath.EvalSymlinks(exe); err == nil {
+			exe = resolved
+		}
+		a.Autostart = &app.Autostart{Exe: exe, Args: keep}
 	}
 	// Reuse the existing process only after authenticating it with this data folder's
 	// key. A different app occupying the port must not receive launch/control calls.
@@ -110,6 +125,9 @@ func run() error {
 		fmt.Fprintln(os.Stderr, "Stored catalogue could not be loaded; rebuild it from settings.")
 	}
 	listener, err := net.Listen("tcp", *listen)
+	if addressInUse(err) {
+		return fmt.Errorf("another program is already using port %s, which Smart Search needs. If another copy of Smart Search is running from a different folder, quit that copy first. Otherwise close the other program and open Smart Search again", port)
+	}
 	if err != nil {
 		return fmt.Errorf("could not start Smart Search: %w", err)
 	}
@@ -142,4 +160,10 @@ func run() error {
 		return nil
 	}
 	return err
+}
+
+// addressInUse covers both the Unix error and Windows' WSAEADDRINUSE (10048).
+func addressInUse(err error) bool {
+	var errno syscall.Errno
+	return errors.As(err, &errno) && (errno == syscall.EADDRINUSE || errno == 10048)
 }

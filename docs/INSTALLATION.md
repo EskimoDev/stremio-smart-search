@@ -41,6 +41,7 @@ Run the installer. It installs for your user, without administrator privileges, 
 
 - **Stremio + Smart Search** on the desktop and Start Menu: starts the helper and opens your chosen Stremio app, or setup if no catalogue is ready.
 - **Smart Search Settings** in the Start Menu: opens the settings page.
+- **Quit Smart Search** in the Start Menu: stops the helper.
 - An uninstaller in Windows' installed-app list.
 
 **Start helper when I sign in** is an optional installer component. Select it if you want the helper available when opening Stremio through other shortcuts.
@@ -65,7 +66,7 @@ For Debian/Ubuntu, install the downloaded `.deb` through your software installer
 sudo apt install ./StremioSmartSearch-<version>-Linux-x64.deb
 ```
 
-Replace `<version>` with the downloaded version, and use `ARM64` instead of `x64` on an ARM computer. Using `apt` also installs the `xdg-utils` dependency. The package adds **Smart Search Settings** and **Stremio + Smart Search** to the app menu.
+Replace `<version>` with the downloaded version, and use `ARM64` instead of `x64` on an ARM computer. Using `apt` also installs the `xdg-utils` dependency. The package adds **Smart Search Settings**, **Stremio + Smart Search** and **Quit Smart Search** to the app menu.
 
 On other distributions, extract the portable archive into its own folder and run `./stremio-smart-search`. The archive has no enclosing folder. Add `--launch` to open Stremio too.
 
@@ -74,7 +75,7 @@ Opening browsers and folders needs a desktop session with `xdg-open`. Stremio is
 ## First setup
 
 1. **Open Smart Search.** On Windows or Linux, choose **Smart Search Settings**. On a Mac, open **Stremio Smart Search.app**. A local settings page opens in your browser.
-2. **Prepare the catalogue.** Choose a **Catalogue size**; Standard is the default. Choose **Prepare catalogue** and wait for the status to show **Running locally**. All sizes download the same IMDb source files, a few hundred MB. Allow several minutes depending on your connection. Optional **Alternative titles** adds another source file; leave it off unless you want regional names.
+2. **Prepare the catalogue.** On first run this is step 01 on the settings page. Choose a **Catalogue size** under **Title catalogue** if you want something other than Standard. Choose **Prepare catalogue** and wait for the status to show **Running locally**. All sizes download the same IMDb source files, a few hundred MB. Allow several minutes depending on your connection. Optional **Alternative titles** adds another source file; leave it off unless you want regional names.
 3. **Choose your Stremio app.** Select **Stremio**, **dx.bi** or **Stremio Enhanced**. Its button copies the addon link and opens the app. If the app isn't detected, use **Copy link** instead.
 4. **Install the addon.** In Stremio, open **Addons → Add addon**, paste the copied link and choose **Install**. Keep the full `http://127.0.0.1:11479/manifest.json` address, including `http://` and the port.
 5. **Try a search.** Search for `dune 1984`, `game of thornes` or `hotd`. The settings page lists more examples, one for each kind of match. Look for the **Smart Search** movie and series rows. They may appear below your other search addons until you change the order.
@@ -106,7 +107,9 @@ Moving only Smart Search preserves the relative order of your other addons. SSS 
 
 Next time, use **Stremio + Smart Search** to start the helper and open the app you chose in setup. If no preference has been saved, it uses the registered Stremio URL handler. It does not change that association.
 
-The helper stays running after you close the settings page or Stremio. It does not watch Stremio's processes or your playback. Use **Quit helper** in settings, then confirm with a second click, to stop it.
+The helper stays running after you close the settings page or Stremio. It does not watch Stremio's processes or your playback. To stop it, choose **Quit Smart Search** in the Start Menu or Linux app menu, or **Quit helper** in settings and then confirm with a second click.
+
+Smart Search rows only appear while the helper is running. If you usually open Stremio with its own shortcut, turn on **Start Smart Search when I sign in** under **You can close this page** in settings. It is off by default. It starts this copy of the helper without opening settings or Stremio, keeps any custom `--data-dir` or `--listen` you started it with, and only changes your own user's sign-in items: the Windows Run entry also used by the installer option, `~/Library/LaunchAgents/community.eskimodev.smartsearch.plist` on macOS, or `~/.config/autostart/stremio-smart-search.desktop` on Linux. For a portable copy, turn it off before moving or deleting the folder.
 
 To reopen settings:
 
@@ -120,7 +123,11 @@ Portable builds use the same settings folder as installed builds unless you pass
 
 **“Failed to fetch addon manifest.”** Start the helper, then open `http://127.0.0.1:11479/manifest.json` on the same computer. It should show JSON. Copy the link from settings again, keeping HTTP and the port. Generic `stremio://` addon links can be rewritten to HTTPS, which this local HTTP service does not serve.
 
-**The Smart Search rows disappeared.** Start the helper through **Stremio + Smart Search** and search again. Closing the browser is fine; quitting the helper or shutting down the host stops SSS searches until it runs again.
+**The Smart Search rows disappeared.** Start the helper through **Stremio + Smart Search** and search again. To avoid this, turn on **Start Smart Search when I sign in** in settings. Closing the browser is fine; quitting the helper or shutting down the host stops SSS searches until it runs again.
+
+**The row shows “Smart Search needs setup.”** The helper is running but has no catalogue yet. Open settings and choose **Prepare catalogue**; results replace the message when it finishes.
+
+**“Stremio Smart Search couldn't start.”** The message says why. If another program is using port 11479, close it, or quit any other copy of Smart Search started from a different folder, then open Smart Search again.
 
 **An app is “Not detected.”** Open that app yourself, then copy and paste the addon link. Portable and unusual install locations may not be detected.
 
@@ -143,12 +150,13 @@ The manifest and image have a five-minute HTTP cache lifetime. This is separate 
 
 1. Before uninstalling, open the **Storage** card in settings and note the catalogue folder if you also want to delete downloaded data.
 2. Choose **Quit helper** and confirm with a second click.
-3. Remove the app:
+3. If you turned on **Start Smart Search when I sign in**, turn it off first; on macOS and Linux, uninstalling does not remove that sign-in entry.
+4. Remove the app:
    - **Windows installer:** use Windows' installed-app list.
    - **macOS:** delete both Smart Search apps from Applications.
    - **Linux .deb:** use your software manager or `sudo apt remove stremio-smart-search`.
    - **Portable archive:** delete its extracted folder.
-4. Remove **Stremio Smart Search** from Stremio's addon list if you no longer want its search rows.
+5. Remove **Stremio Smart Search** from Stremio's addon list if you no longer want its search rows.
 
 App removal leaves catalogue and settings files behind. Their default paths are in [catalogue storage](CATALOGUE.md#where-the-catalogue-is-stored). If you chose a custom catalogue folder, settings remain in the default folder. Your Stremio settings and other addons are untouched.
 

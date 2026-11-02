@@ -320,7 +320,7 @@ func run() error {
 				return err
 			}
 		}
-		for _, entry := range []struct{ name, title, args string }{{"stremio-smart-search", "Stremio + Smart Search", " --launch"}, {"stremio-smart-search-settings", "Smart Search Settings", ""}} {
+		for _, entry := range []struct{ name, title, args string }{{"stremio-smart-search", "Stremio + Smart Search", " --launch"}, {"stremio-smart-search-settings", "Smart Search Settings", ""}, {"stremio-smart-search-quit", "Quit Smart Search", " --quit"}} {
 			desktop := fmt.Sprintf("[Desktop Entry]\nType=Application\nName=%s\nExec=/usr/bin/stremio-smart-search%s\nIcon=stremio-smart-search\nTerminal=false\nCategories=AudioVideo;Network;\n", entry.title, entry.args)
 			if err = put(filepath.Join(data, "usr/share/applications", entry.name+".desktop"), desktop, 0644); err != nil {
 				return err
