@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0a0a0a" data-scheme="dark" media="(prefers-color-scheme: dark)">
   <title>Stremio Smart Search (SSS)</title>
   <link rel="icon" href="/icon.svg?v=sss-logo">
-  <link rel="stylesheet" href="/style.css?v=updates">
+  <link rel="stylesheet" href="/style.css?v=examples">
   <script src="/theme.js?v=theme"></script>
   <link rel="preload" href="/fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
 </head>
@@ -144,7 +144,19 @@
       </section>
 
       <div class="try-search">
-        <div><h3>Ready to try it?</h3><p>Search for <code>HOTD</code>, <code>interstelar</code> or <code>LOTR</code>.</p></div>
+        <div>
+          <h3>Ready to try it?</h3>
+          <p>Type any of these in Stremio's search. Each one finds the title shown.</p>
+          <dl class="search-examples">
+            <div><dt>Year</dt><dd><code>dune 1984</code> <span>Dune (1984)</span></dd></div>
+            <div><dt>Typo</dt><dd><code>game of thornes</code> <span>Game of Thrones</span></dd></div>
+            <div><dt>Sounds like</dt><dd><code>pulp fikshun</code> <span>Pulp Fiction</span></dd></div>
+            <div><dt>Short form</dt><dd><code>hotd</code> <span>House of the Dragon</span></dd></div>
+            <div><dt>No spaces</dt><dd><code>strangerthings</code> <span>Stranger Things</span></dd></div>
+            <div><dt>A few words</dt><dd><code>harry potter azkaban</code> <span>Harry Potter and the Prisoner of Azkaban</span></dd></div>
+            <div><dt>Original title</dt><dd><code>la casa de papel</code> <span>Money Heist</span></dd></div>
+          </dl>
+        </div>
         <button id="launch" disabled>Open Stremio</button>
       </div>
       <p id="message" class="message" role="status" aria-live="polite"></p>
