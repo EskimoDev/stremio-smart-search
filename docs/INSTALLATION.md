@@ -77,7 +77,7 @@ Opening browsers and folders needs a desktop session with `xdg-open`. Stremio is
 2. **Prepare the catalogue.** Choose a **Catalogue size**; Standard is the default. Choose **Prepare catalogue** and wait for the status to show **Running locally**. All sizes download the same IMDb source files, a few hundred MB. Allow several minutes depending on your connection. Optional **Alternative titles** adds another source file; leave it off unless you want regional names.
 3. **Choose your Stremio app.** Select **Stremio**, **dx.bi** or **Stremio Enhanced**. Its button copies the addon link and opens the app. If the app isn't detected, use **Copy link** instead.
 4. **Install the addon.** In Stremio, open **Addons → Add addon**, paste the copied link and choose **Install**. Keep the full `http://127.0.0.1:11479/manifest.json` address, including `http://` and the port.
-5. **Try a search.** Search for `HOTD`, `strangerthings` or `LOTR`. Look for the **Smart Search** movie and series rows. They may appear below your other search addons until you change the order.
+5. **Try a search.** Search for `dune 1984`, `game of thornes` or `hotd`. The settings page lists more examples, one for each kind of match. Look for the **Smart Search** movie and series rows. They may appear below your other search addons until you change the order.
 
 For Stremio Web on the same computer, expand **Using Stremio Web or a portable app?** in settings and choose **Install through Stremio Web**. Use the same account as your desktop client to sync the addon. Your browser may ask for permission to connect to the local helper.
 

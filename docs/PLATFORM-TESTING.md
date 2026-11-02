@@ -71,7 +71,7 @@ To try it:
 - [ ] From a phone on the same Wi-Fi, `http://<ip>:11479/manifest.json` shows JSON and `http://<ip>:11479/` shows "Settings are available on the host computer only".
 - [ ] In Stremio on the TV, install `http://<ip>:11479/manifest.json`, or install it from the same Stremio account elsewhere so it syncs.
 - [ ] Note whether Stremio on the TV accepts a plain-HTTP LAN address. If it requires HTTPS, LAN mode needs a different approach.
-- [ ] Search on the TV for `interstelar`, `HOTD` and `LOTR`.
+- [ ] Search on the TV for `dune 1984`, `HOTD` and `LOTR`.
 - [ ] Turn the computer off and check how Stremio behaves when the addon is unreachable.
 
 Gaps before LAN mode is a supported feature:

@@ -46,6 +46,7 @@ downloads. The following integration tests skip unless explicitly enabled:
 | `SMART_SEARCH_REAL_IMDB=1` | `TestRealIMDbFreshnessCheck` | Metadata-only requests to IMDb; no dataset bodies |
 | `SMART_SEARCH_REAL_IMDB_UPDATE=1` | `TestRealIMDbAutomaticUpdate` | About 238 MB from IMDb; no alternative-title file |
 | `SMART_SEARCH_REAL_DATA=PATH` | `TestRealDataAutomaticUpdate` | Uses all three cached IMDb files over loopback; no internet downloads |
+| `SMART_SEARCH_EXAMPLE_CATALOGS=PATHS` | `TestSettingsSearchExamplesOnRealData` | Loads locally built snapshots (separated like `PATH`) and checks the settings page's search examples; no network |
 | `SSS_BENCH_E2E=1` | `TestRunEndToEnd`, `TestPrebuiltBinaryHasHonestGaps` | Builds and runs the real application in temporary folders; no network |
 
 Select the intended test explicitly, give it `-timeout 60m` for full-data runs,
