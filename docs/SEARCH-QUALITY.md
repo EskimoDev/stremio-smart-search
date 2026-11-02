@@ -272,6 +272,64 @@ from 99.4% to 97.7%. People who type an obscure title exactly would lose it.
   yet: IMDb's original titles are romanised, and no snapshot was built with
   those languages.
 
+## Compared with Stremio's default search, 2026-11-02
+
+A spot check of the development version (main after the
+[several-misspelled-words change](#several-misspelled-words-2026-11-02))
+against Stremio's built-in search (Cinemeta), on hard queries: dropped vowels,
+several typos, acronyms, sound-alikes and number words. Smart Search used the
+real 2026-11-01 Standard catalogue; Cinemeta's answers came from its public
+search API on the same day and may differ between requests or apps.
+
+| Result on 38 queries | Before the 2026-11-02 search fixes | Development version |
+| --- | ---: | ---: |
+| Only Smart Search lists it first | 2 | 12 |
+| Both list it first | 15 | 24 |
+| Only Stremio lists it first | 10 | 1 |
+| Both miss | 11 | 1 |
+
+Examples where only Smart Search finds the title first:
+
+| You type | Smart Search | Stremio's default search |
+| --- | --- | --- |
+| `intrstllr` | *Interstellar* | nothing |
+| `plp fctn` | *Pulp Fiction* | nothing |
+| `gdfthr` | *The Godfather* | *Lust, Caution*, *Hollow Man* |
+| `brkng bd` | *Breaking Bad* | three unrelated series |
+| `bttr cll sl` | *Better Call Saul* | three unrelated series |
+| `teh dakr knight` | *The Dark Knight* | *A Knight's Tale*, *First Knight* |
+| `hous of teh dragn` | *House of the Dragon* | *Dragnet* |
+| `bak to teh futre` | *Back to the Future* | *Ong-Bak* |
+| `hotd` | *House of the Dragon* | *Highschool of the Dead* |
+
+Both now find `fther thd`, `star war`, `strngr thngs`, `twelve angry men`,
+`gma e of thr` and `rik and mortey` first; before these changes only Stremio
+did. Stremio still wins `toy story three` (*Toy Story 3* is second in Smart
+Search), and both miss `too fast too furious`.
+
+Many of these queries helped build the dropped-vowel and
+several-misspelled-words changes, so this is a demonstration, not a blind
+test; the held-back results are in those sections. On the wider set of 243
+hard queries this run comes from, the expected title came first for 205 on
+Standard, against 174 for the earlier engine, with no query worse. Standard,
+Expanded and six alternative-title catalogues all improved by 30–32 queries.
+
+Still weak in Smart Search, from the same run:
+
+- **Number words.** "twenty one jump street", "eight mile" and "too fast too
+  furious" find nothing, and "toy story three" lists *Toy Story* first:
+  "three" and "3" are not linked.
+- **Sequels** list the first film before the numbered one: "rocky 4",
+  "godfather 2" and "terminator 2" give the sequel at rank two or three.
+- **An exact obscure title beats a near-miss of a famous one**: "avenger",
+  "transformer", "gremlin", "euforia" and "kasablanka" rank the famous title
+  second or third.
+- **Mister and doctor** are not linked to Mr. and Dr. ("mister robot",
+  "doctor no"), and some acronyms ("b99", "jjk", "fmab") miss unless English
+  alternative titles are on.
+- **Joined words with a typo** ("brkingbad") and **split sound-alikes**
+  ("gost busters", "wun peace") still find nothing.
+
 ## Several misspelled words, 2026-11-02
 
 A title has to match every looked-up query word, so one word that matches
