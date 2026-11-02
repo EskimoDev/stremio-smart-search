@@ -99,7 +99,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   outline-offset: 4px;
 }
 button:disabled { background: var(--disabled-bg); color: var(--disabled-ink); }
-button:disabled .app-action { visibility: hidden; }
+button:disabled .app-action, .app-option[aria-disabled="true"] .app-action { visibility: hidden; }
 .button.disabled { opacity: .5; pointer-events: none; }
 button, .button, summary { -webkit-tap-highlight-color: transparent; }
 .page-header, .utility, .page-footer { max-width: 1080px; margin: 0 auto; }
@@ -133,7 +133,7 @@ strong { font-weight: 550; color: var(--ink); }
 .catalog-stats div + div { border-left: 1px solid var(--line); }
 .catalog-stats dt { color: var(--muted); font-size: 12px; }
 .catalog-stats dd { margin: 3px 0 0; font-family: "Geist Mono", ui-monospace, monospace; font-size: 23px; line-height: 1.3; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
-.catalog-info { font-size: 11px; margin: 12px 0 22px; text-align: center; }
+.catalog-info { font-size: 12px; margin: 12px 0 22px; text-align: center; }
 .profile-settings { padding-top: 20px; border-top: 1px solid var(--line); }
 .profile-settings label { display: block; font-size: 12px; font-weight: 500; margin-bottom: 8px; }
 .profile-settings select { display: block; width: 100%; min-height: 38px; border: 0; box-shadow: var(--ring); border-radius: 5px; padding: 8px 10px; color: var(--ink); background: var(--field); cursor: pointer; }
@@ -147,7 +147,7 @@ strong { font-weight: 550; color: var(--ink); }
 .update-frequency-label { display: block; font-size: 12px; font-weight: 500; margin: 12px 0 8px; }
 .update-settings select { display: block; width: 100%; min-height: 38px; border: 0; box-shadow: var(--ring); border-radius: 5px; padding: 8px 10px; color: var(--ink); background: var(--field); cursor: pointer; }
 #update-info { margin: 10px 0 0; font-variant-numeric: tabular-nums; }
-.comparison-link { display: inline-block; font-size: 11px; color: var(--muted); margin-bottom: 18px; }
+.comparison-link { display: inline-block; font-size: 12px; color: var(--muted); margin-bottom: 18px; }
 button, .button { min-height: 36px; border: 0; border-radius: 5px; padding: 8px 14px; font-size: 12px; font-weight: 500; background: var(--ink); color: var(--surface); text-decoration: none; transition: background .12s, box-shadow .12s; }
 :where(button, .button):hover { background: var(--primary-hover); }
 .catalogue-button { width: 100%; }
@@ -213,18 +213,22 @@ details p:last-child { margin-bottom: 0; }
 .app-list { display: grid; gap: 8px; margin-top: 14px; }
 .app-option { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; min-height: 61px; padding: 10px 14px; color: var(--ink); background: var(--field); box-shadow: var(--ring); font-weight: 400; }
 .app-option:hover { background: var(--subtle); box-shadow: 0 0 0 1px var(--ring-strong), 0 2px 4px rgb(0 0 0 / 4%); }
-.app-option:disabled { background: var(--subtle); color: var(--muted); box-shadow: var(--ring); }
+.app-option:disabled, .app-option[aria-disabled="true"], .app-option[aria-disabled="true"]:hover { background: var(--subtle); color: var(--muted); box-shadow: var(--ring); cursor: default; }
+.prepare-section .prepare-button { margin: 2px 0 10px; min-width: 180px; }
+.prepare-section .fine { margin-bottom: 0; }
+.autostart-settings { margin: 4px 0 14px; }
+.autostart-settings .fine { margin: 6px 0 0; }
 .app-mark { display: block; width: 32px; height: 32px; flex-shrink: 0; object-fit: contain; }
 .app-description { flex: 1; min-width: 0; }
 .app-name { display: block; font-size: 13px; font-weight: 500; }
 .app-status { display: block; color: var(--muted); font-size: 11px; font-weight: 400; }
 .app-action { color: var(--ink-soft); font-size: 11px; font-weight: 400; white-space: nowrap; }
 .app-action span { margin-left: 8px; font-size: 15px; }
-.fine { font-size: 11px; line-height: 1.65; }
+.fine { font-size: 12px; line-height: 1.65; }
 #install-help { margin-top: 10px; margin-bottom: 0; }
 #install-help:empty { display: none; }
 .link-field { display: flex; align-items: stretch; border-radius: 5px; box-shadow: var(--ring); background: var(--subtle); }
-.link-field input { width: 100%; min-width: 0; border: 0; background: transparent; color: var(--ink-soft); padding: 10px 12px; font-family: "Geist Mono", ui-monospace, monospace; font-size: 11px; }
+.link-field input { width: 100%; min-width: 0; border: 0; background: transparent; color: var(--ink-soft); padding: 10px 12px; font-family: "Geist Mono", ui-monospace, monospace; font-size: 12px; }
 .link-field input:focus-visible { outline-offset: -2px; }
 .copy-button { border-left: 1px solid var(--line); background: var(--field); color: var(--ink); white-space: nowrap; border-radius: 0 4px 4px 0; }
 .copy-button:hover { background: var(--subtle-hover); }
@@ -243,7 +247,7 @@ code { font-family: "Geist Mono", ui-monospace, monospace; font-size: .9em; }
 .message { font-size: 12px; padding: 12px 14px; margin: 20px 0 0; border-radius: 5px; box-shadow: var(--ring); background: var(--subtle); color: var(--ink); overflow-wrap: anywhere; }
 .message:empty { display: none; }
 .page-footer { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 20px 0 28px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
-.text-button { color: var(--muted); background: transparent; min-height: 24px; border: 0; padding: 0; font-size: 11px; font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
+.text-button { color: var(--muted); background: transparent; min-height: 24px; border: 0; padding: 0; font-size: 12px; font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
 .text-button:hover { background: transparent; color: var(--ink); }
 .footer-divider { margin: 0 10px; color: var(--divider); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }

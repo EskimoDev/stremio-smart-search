@@ -3,12 +3,12 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 const source = await readFile(new URL('../internal/app/web/app.js', import.meta.url), 'utf8');
-const ids = ['manifest','message','connection','build','progress','stage','catalog-info','catalog-stats','movie-count','series-count','catalog-profile','profile-info','web-install','launch','version','copy','quit','install-help','alias-language','alias-region','alias-region-label','alias-info','install-stremio','install-dxbi','install-enhanced','client-status-stremio','client-status-dxbi','client-status-enhanced','storage-total','storage-bar','seg-catalogue','seg-backup','seg-other','storage-catalogue','storage-backup-row','storage-backup','storage-other','storage-disk','storage-memory','storage-path','open-folder','storage-info','change-folder','reset-folder','reset-sep','move-panel','move-path','move-info','move-cancel','move-confirm','auto-update','update-frequency','update-info'];
-const nodes = Object.fromEntries(ids.map(id => [id, { value:'', disabled:false, style:{}, dataset:{}, classList:{toggle(){}}, setAttribute(){}, removeAttribute(name){delete this[name];}, addEventListener(event,callback){this[event]=callback;}, options:[], append(...items){this.options.push(...items);}, replaceChildren(...items){this.options=[...items];}, focus(){}, select(){this.selected=true;} }]));
+const ids = ['manifest','message','connection','build','progress','stage','catalog-info','catalog-stats','movie-count','series-count','catalog-profile','profile-info','web-install','launch','version','copy','quit','install-help','alias-language','alias-region','alias-region-label','alias-info','install-stremio','install-dxbi','install-enhanced','client-status-stremio','client-status-dxbi','client-status-enhanced','storage-total','storage-bar','seg-catalogue','seg-backup','seg-other','storage-catalogue','storage-backup-row','storage-backup','storage-other','storage-disk','storage-memory','storage-path','open-folder','storage-info','change-folder','reset-folder','reset-sep','move-panel','move-path','move-info','move-cancel','move-confirm','auto-update','update-frequency','update-info','prepare-step','prepare','prepare-info','step-choose','step-paste','step-order','progress-live','autostart-settings','autostart','autostart-info'];
+const nodes = Object.fromEntries(ids.map(id => [id, { value:'', disabled:false, style:{}, dataset:{}, classList:{toggle(){}}, setAttribute(name,value){this[name]=value;}, removeAttribute(name){delete this[name];}, addEventListener(event,callback){this[event]=callback;}, options:[], append(...items){this.options.push(...items);}, replaceChildren(...items){this.options=[...items];}, focus(){}, select(){this.selected=true;} }]));
 const buttons = ['stremio','dxbi','enhanced'].map(id => { const node=nodes[`install-${id}`];node.dataset.client=id;return node; });
 const manifest = 'http://127.0.0.1:11479/manifest.json';
 const webInstall = `https://web.stremio.com/#/addons?addon=${encodeURIComponent(manifest)}`;
-let copied, clipboardBlocked=false;
+let copied, clipboardBlocked=false, autostart={supported:true,enabled:false,path:'C:\\Apps\\StremioSmartSearch.exe'};
 let nextRefresh;
 let status = {ready:true,building:false,profile:'compact',profiles:[{id:'compact',name:'Compact',movies:25000,series:25000,minVotes:250},{id:'standard',name:'Standard',movies:100000,series:100000,minVotes:25},{id:'expanded',name:'Expanded',movies:250000,series:250000,minVotes:5}],movies:25000,series:12500,builtAt:'2026-10-31',manifest,webInstall,preferredClient:'system',product:'Smart Search',version:'test',updates:{auto:true,intervalHours:48,intervals:[24,48,72,168],state:'waiting',lastSuccess:'2026-10-31T09:00:00Z',nextCheck:'2999-01-01T09:00:00Z',downloadBytes:238268411,network:'unknown',failures:0}};
 const storage={path:'C:\\Users\\me\\AppData\\Roaming\\StremioSmartSearch',total:300*1024*1024,catalogue:200*1024*1024,backup:100*1024*1024-64,other:64,files:3,memory:180*1024*1024,diskFree:50*1024**3,diskSize:500*1024**3,canOpen:true,canChoose:true,custom:false,defaultPath:'C:\\Users\\me\\AppData\\Roaming\\StremioSmartSearch'};
@@ -18,13 +18,24 @@ const context = {
   window:{smartSearch:{baseURL:'http://127.0.0.1:11479',token:'fixture'}},
   navigator:{clipboard:{async writeText(value){if(clipboardBlocked)throw Error('blocked');copied=value;}}},
   setTimeout(callback){nextRefresh=callback;},clearTimeout(){},
-  async fetch(path,options){requests.push({path,options});if(path==='/api/build')status={...status,building:true,buildProfile:JSON.parse(options.body).profile};if(path==='/api/updates')status={...status,updates:{...status.updates,...JSON.parse(options.body)}};const value = path==='/api/status'||path==='/api/build'||path==='/api/updates' ? status : path==='/api/storage' ? storage : path==='/api/storage/open' ? {ok:true} : path==='/api/storage/choose' ? {path:'D:\\Media',cancelled:false} : path==='/api/storage/move' ? {path:'D:\\Media\\Stremio Smart Search'} : path==='/api/clients' ? {clients:buttons.map(node=>({id:node.dataset.client,name:node.dataset.client,available:true}))} : {name:'dx.bi'};return {ok:true,async json(){return value;}};},
+  async fetch(path,options){requests.push({path,options});if(path==='/api/build')status={...status,building:true,buildProfile:JSON.parse(options.body).profile};if(path==='/api/autostart'&&options.method==='POST')autostart={...autostart,...JSON.parse(options.body)};if(path==='/api/updates')status={...status,updates:{...status.updates,...JSON.parse(options.body)}};const value = path==='/api/autostart' ? autostart : path==='/api/status'||path==='/api/build'||path==='/api/updates' ? status : path==='/api/storage' ? storage : path==='/api/storage/open' ? {ok:true} : path==='/api/storage/choose' ? {path:'D:\\Media',cancelled:false} : path==='/api/storage/move' ? {path:'D:\\Media\\Stremio Smart Search'} : path==='/api/clients' ? {clients:buttons.map(node=>({id:node.dataset.client,name:node.dataset.client,available:true}))} : {name:'dx.bi'};return {ok:true,async json(){return value;}};},
 };
 vm.runInNewContext(source,context);
 await new Promise(resolve=>setImmediate(resolve));
 assert.equal(nodes['web-install'].href,webInstall);
 assert.equal(new URLSearchParams(new URL(nodes['web-install'].href).hash.split('?')[1]).get('addon'),manifest);
-assert(buttons.every(button=>!button.disabled));
+assert(buttons.every(button=>button['aria-disabled']==='false'));
+assert.equal(nodes['prepare-step'].hidden,true,'set-up catalogues skip the download step');
+assert.equal(nodes['step-choose'].textContent,'01');
+// Start at sign-in: offered, off by default, and explains the missing rows.
+assert.equal(nodes['autostart-settings'].hidden,false);
+assert.equal(nodes.autostart.checked,false);
+assert.match(nodes['autostart-info'].textContent,/only appear in Stremio while the helper is running/);
+nodes.autostart.checked=true;
+await nodes.autostart.change();
+await new Promise(resolve=>setImmediate(resolve));
+assert.deepEqual(JSON.parse(requests.filter(request=>request.path==='/api/autostart').at(-1).options.body),{enabled:true});
+assert.match(nodes['autostart-info'].textContent,/StremioSmartSearch\.exe/);
 assert.equal(nodes['catalog-stats'].hidden,false);
 assert.equal(nodes['movie-count'].textContent,(25000).toLocaleString());
 assert.equal(nodes['series-count'].textContent,(12500).toLocaleString());
@@ -71,7 +82,7 @@ await new Promise(resolve=>setImmediate(resolve));
 assert.equal(JSON.parse(requests.find(request=>request.path==='/api/build').options.body).profile,'expanded');
 assert.equal(nodes['catalog-profile'].disabled,true);
 assert.equal(nodes['catalog-stats'].hidden,false,'keep existing catalogue visible during refresh');
-assert(buttons.every(button=>!button.disabled),'working catalogue remains installable during refresh');
+assert(buttons.every(button=>button['aria-disabled']==='false'),'working catalogue remains installable during refresh');
 status={...status,building:false,buildProfile:'',error:'Download failed'};
 await nextRefresh();
 assert.equal(nodes['catalog-profile'].value,'expanded');
@@ -86,8 +97,15 @@ assert.equal(nodes.build.textContent,'Refresh now');
 status={...status,ready:false,movies:0,series:0};
 await nextRefresh();
 assert.equal(nodes['catalog-stats'].hidden,true);
-assert(buttons.every(button=>button.disabled));
+assert(buttons.every(button=>button['aria-disabled']==='true'&&!button.disabled),'still focusable, but marked unavailable');
 assert.match(nodes['client-status-stremio'].textContent,/prepare catalogue first/);
+const installsBefore=requests.filter(request=>request.path==='/api/install').length;
+await nodes['install-dxbi'].click();
+assert.equal(requests.filter(request=>request.path==='/api/install').length,installsBefore,'unavailable buttons do nothing');
+assert.match(nodes.message.textContent,/Prepare the catalogue first/);
+assert.equal(nodes['prepare-step'].hidden,false,'first run starts with the download');
+assert.equal(nodes['step-choose'].textContent,'02');
+assert.equal(nodes['step-order'].textContent,'04');
 assert.equal(nodes['web-install'].href,undefined);
 assert.equal(nodes.build.disabled,false);
 status={...status,building:true,stage:'Downloading title data',bytes:2*1024*1024};
@@ -95,7 +113,16 @@ await nextRefresh();
 assert.equal(nodes.progress.hidden,false);
 assert.equal(nodes.build.disabled,true);
 assert.match(nodes.stage.textContent,/2.0 MB downloaded/);
-assert(buttons.every(button=>button.disabled));
+assert.match(nodes['progress-live'].textContent,/Downloading title data · 2.0 MB/,'screen readers hear the stage');
+assert.equal(nodes.prepare.disabled,true);
+assert.match(nodes['prepare-info'].textContent,/2.0 MB downloaded/);
+status={...status,bytes:3*1024*1024};
+await nextRefresh();
+assert.match(nodes['progress-live'].textContent,/2.0 MB/,'progress is not re-announced on every poll');
+status={...status,stage:'Building local index',bytes:0};
+await nextRefresh();
+assert.match(nodes['progress-live'].textContent,/Building local index/,'a new stage is announced at once');
+assert(buttons.every(button=>button['aria-disabled']==='true'));
 // Alternative titles: off by default, selectable, applied by a rebuild.
 const languages=[{id:'en',name:'English',regions:[{id:'US',name:'United States'},{id:'GB',name:'United Kingdom'}]},{id:'fr',name:'French',regions:[{id:'FR',name:'France'},{id:'CA',name:'Canada'}]},{id:'it',name:'Italian'}];
 status={...status,ready:true,building:false,bytes:0,profile:'expanded',buildProfile:'',movies:25000,series:12500,languages,language:'',region:'',aliases:0};
@@ -193,6 +220,10 @@ const quitsBefore=requests.filter(request=>request.path==='/api/quit').length;
 await nodes.quit.click();
 assert.equal(requests.filter(request=>request.path==='/api/quit').length,quitsBefore,'one click must not quit');
 assert.match(nodes.quit.textContent,/again/);
+assert.match(nodes.message.textContent,/Click Quit helper again/,'the armed state is announced');
+nodes.quit.blur();
+assert.equal(nodes.quit.textContent,'Quit helper','moving away disarms it');
+await nodes.quit.click();
 await nodes.quit.click();
 assert.equal(requests.filter(request=>request.path==='/api/quit').length,quitsBefore+1);
 console.log('Setup UI checks passed: HTTP install, clipboard fallback, profile and alternative-title selection, refresh and failure states, automatic updates.');

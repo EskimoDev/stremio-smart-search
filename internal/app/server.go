@@ -82,6 +82,8 @@ type App struct {
 	CheckSource func(context.Context, []string, []catalog.SourceFile) (catalog.Freshness, error)
 	// NetworkCost reports metered, unmetered or unknown; see netcost_*.go.
 	NetworkCost func() string
+	// Autostart manages the start-at-sign-in entry; nil where unavailable.
+	Autostart *Autostart
 	// now is the clock for the update schedule; tests replace it.
 	now     func() time.Time
 	updates updater // guarded by mu; see updates.go
@@ -576,6 +578,27 @@ func (a *App) Handler() http.Handler {
 					return
 				}
 				writeJSON(w, 200, map[string]bool{"ok": true})
+			case r.URL.Path == "/api/autostart" && r.Method == http.MethodGet:
+				writeJSON(w, 200, a.Autostart.Status())
+			case r.URL.Path == "/api/autostart" && r.Method == http.MethodPost:
+				var request struct {
+					Enabled *bool `json:"enabled"`
+				}
+				decoder := json.NewDecoder(r.Body)
+				decoder.DisallowUnknownFields()
+				if decoder.Decode(&request) != nil || request.Enabled == nil {
+					writeJSON(w, 400, map[string]string{"error": "Send start at sign-in on or off."})
+					return
+				}
+				if !a.Autostart.Status().Supported {
+					writeJSON(w, 501, map[string]string{"error": "Starting at sign-in isn't available on this system."})
+					return
+				}
+				if err := a.Autostart.Set(*request.Enabled); err != nil {
+					writeJSON(w, 500, map[string]string{"error": "Could not change the sign-in setting (" + err.Error() + ")."})
+					return
+				}
+				writeJSON(w, 200, a.Autostart.Status())
 			case r.URL.Path == "/api/quit" && r.Method == http.MethodPost:
 				writeJSON(w, 200, map[string]bool{"ok": true})
 				if a.Quit != nil {
@@ -630,6 +653,23 @@ func (a *App) manifest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "public, max-age=300")
 	writeJSON(w, 200, map[string]any{"id": "community.eskimodev.smartsearch", "version": strings.TrimPrefix(a.Status().Version, "v"), "name": Product, "logo": logo.String(), "description": "Fast local title matching with typo and abbreviation support. Recommended: move Smart Search to the top of your addon order. Requires the Smart Search companion on this computer.", "resources": []string{"catalog"}, "types": []string{"movie", "series"}, "catalogs": catalogs, "behaviorHints": map[string]bool{"adult": false, "p2p": false, "configurable": true}})
 }
+
+// setupPlaceholder is the single search result shown until a catalogue exists.
+func (a *App) setupPlaceholder(r *http.Request, kind string) map[string]any {
+	logo := url.URL{Scheme: "http", Host: r.Host, Path: "/addon-logo.png"}
+	if r.TLS != nil {
+		logo.Scheme = "https"
+	}
+	name, description := "Smart Search needs setup", "Open Smart Search Settings on the computer running Smart Search and choose Prepare catalogue. Results appear here when it finishes."
+	if a.Status().Building {
+		name, description = "Smart Search is downloading titles", "Smart Search is preparing its title catalogue. Results appear here when it is ready, usually within a few minutes."
+	}
+	return map[string]any{"id": SetupPlaceholderID, "type": kind, "name": name, "description": description, "poster": logo.String(), "posterShape": "square"}
+}
+
+// SetupPlaceholderID marks the setup message; it is never a real title.
+const SetupPlaceholderID = "smartsearch:setup"
+
 func (a *App) catalog(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(strings.TrimPrefix(r.URL.EscapedPath(), "/catalog/"), "/")
 	if len(parts) != 3 || (parts[0] != "movie" && parts[0] != "series") || parts[1] != "smart-search" || !strings.HasSuffix(parts[2], ".json") {
@@ -650,7 +690,10 @@ func (a *App) catalog(w http.ResponseWriter, r *http.Request) {
 	}
 	engine := a.engine.Load()
 	if engine == nil {
-		writeJSON(w, 200, map[string]any{"metas": []any{}, "cacheMaxAge": 0})
+		// Without a catalogue there are no results to give, so the row says why
+		// instead of silently staying empty.
+		w.Header().Set("Cache-Control", "no-store")
+		writeJSON(w, 200, map[string]any{"metas": []any{a.setupPlaceholder(r, parts[0])}, "cacheMaxAge": 0})
 		return
 	}
 	select {

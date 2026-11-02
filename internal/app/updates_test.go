@@ -635,7 +635,7 @@ func TestSearchDuringAutomaticSwap(t *testing.T) {
 				w := request(a, "GET", "/catalog/movie/smart-search/search=frozen.json", "", "")
 				// A busy slot answers with an empty list; anything else
 				// must still find the title.
-				if w.Code != 200 || (!strings.Contains(w.Body.String(), "tt2294629") && !strings.Contains(w.Body.String(), `"metas":[]`)) {
+				if w.Code != 200 || (!strings.Contains(w.Body.String(), "tt2294629") && !strings.Contains(w.Body.String(), `"metas":[]`) && !strings.Contains(w.Body.String(), SetupPlaceholderID)) {
 					failures.Add(1)
 				}
 			}
