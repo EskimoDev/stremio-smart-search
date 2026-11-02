@@ -2,9 +2,9 @@
 
 [Download Smart Search](https://github.com/EskimoDev/stremio-smart-search/releases) for the computer where you use Stremio. SSS is a separate helper that must be running for its search rows to respond.
 
-This guide covers **0.1.0-preview.4**. Check [Releases](https://github.com/EskimoDev/stremio-smart-search/releases) for available downloads; a draft is not public. Preview.4 adds **Update automatically**, sound-alike matching, dark mode and the new icons. For preview.3, use the [older installation guide](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.3/docs/INSTALLATION.md).
+This guide covers **0.1.0-preview.5**. Check [Releases](https://github.com/EskimoDev/stremio-smart-search/releases) for available downloads; a draft is not public. Preview.5 adds **Start Smart Search when I sign in**, a Windows notification-area icon, a **Quit Smart Search** shortcut and the addon logo. Preview.4 added **Update automatically**, sound-alike matching and dark mode. For older versions, use the [preview.4](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.4/docs/INSTALLATION.md) or [preview.3](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.3/docs/INSTALLATION.md) guide.
 
-**Bandwidth:** a new preview.4 installation enables automatic checks every 2 days. A changed-data update downloads about 240 MB, plus about 520 MB weekly with alternative titles (roughly 3.6 or 5.8 GB/month). Existing catalogues stay manual until enabled. Disable **Update automatically** for manual-only updates; see [update behavior](CATALOGUE.md#automatic-updates).
+**Bandwidth:** a new installation (preview.4 or newer) enables automatic checks every 2 days. A changed-data update downloads about 240 MB, plus about 520 MB weekly with alternative titles (roughly 3.6 or 5.8 GB/month). Existing catalogues stay manual until enabled. Disable **Update automatically** for manual-only updates; see [update behavior](CATALOGUE.md#automatic-updates).
 
 [Choose a download](#choose-a-download) · [First setup](#first-setup) · [Addon order](#put-smart-search-first) · [Troubleshooting](#troubleshooting) · [Uninstall](#uninstalling)
 
@@ -137,7 +137,7 @@ Portable builds use the same settings folder as installed builds unless you pass
 
 ### Addon logo after an update
 
-**Unreleased:** the addon-logo change is newer than the tagged preview.4 build. These steps apply after installing a helper build that includes it.
+The addon logo arrived in preview.5. These steps apply after updating from preview.4 or earlier.
 
 The helper serves the logo at `/addon-logo.png` on the same address as its manifest; no external image host or settings-page visit is required. The addon ID and manifest address stay the same, so an existing installation can fetch the new manifest at its original URL. The helper must be running for the logo to load.
 

@@ -1,6 +1,6 @@
 # Architecture
 
-The application is a single Go executable with an embedded local setup page. This document describes **0.1.0-preview.4**, which adds phonetic search, automatic updates and theme controls to preview.3. There are no native media hooks, Stremio patches, browser extensions or runtime package downloads.
+The application is a single Go executable with an embedded local setup page. This document describes **0.1.0-preview.5**. Preview.4 added phonetic search, automatic updates and theme controls; preview.5 adds the Windows notification-area icon, start at sign-in and the served addon logo. There are no native media hooks, Stremio patches, browser extensions or runtime package downloads.
 
 ## Package boundaries
 

@@ -2,7 +2,7 @@
 
 New here? Start with the [project README](../README.md) for screenshots and a quick install.
 
-These guides cover **0.1.0-preview.4**, including sound-alike search, automatic updates, dark mode and new icons. Check [Releases](https://github.com/EskimoDev/stremio-smart-search/releases) for publication status; a draft is not a public download. For older preview.3 behavior, use its [tag-pinned documentation](https://github.com/EskimoDev/stremio-smart-search/tree/v0.1.0-preview.3/docs).
+These guides cover **0.1.0-preview.5**, including short-word search, the Windows notification-area icon, start at sign-in and the addon logo, on top of preview.4's sound-alike search, automatic updates and dark mode. Check [Releases](https://github.com/EskimoDev/stremio-smart-search/releases) for publication status; a draft is not a public download. For older preview.3 behavior, use its [tag-pinned documentation](https://github.com/EskimoDev/stremio-smart-search/tree/v0.1.0-preview.3/docs).
 
 ## Setup and everyday use
 
