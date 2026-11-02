@@ -39,6 +39,9 @@ type Engine struct {
 	// sounds files vocabulary words of ASCII letters by how they sound, for
 	// the last-resort sound-alike lookup (see phonetic.go).
 	sounds soundIndex
+	// skeletons lists vocabulary words in consonant-skeleton order, for
+	// queries typed without vowels (see skeleton.go).
+	skeletons []int32
 
 	scratchMu sync.Mutex
 	idle      []*scratch
@@ -297,6 +300,7 @@ func New(titles []catalog.Title) *Engine {
 	e.grams = sortedGrams
 	e.gramWords = buildPostings(gramKeys, gramWords, len(e.grams))
 	e.sounds = newSoundIndex(e.vocabulary)
+	e.skeletons = newSkeletons(e.vocabulary)
 	return e
 }
 
@@ -492,6 +496,15 @@ func (e *Engine) terms(ctx context.Context, query string, typos, alone bool) []t
 		}
 	}
 	result := sortTerms(matches)
+	// Words the query could be with its vowels left out come after the
+	// spelling matches and, like sound-alikes, are never cut by the term
+	// limit.
+	if length >= 3 {
+		for _, m := range e.skeletonTerms(query, matches) {
+			matches[m.word] = m.weight
+			result = append(result, termMatch{m.word, m.weight})
+		}
+	}
 	// Sound-alikes come last and are never cut by the term limit; a word
 	// already matched by spelling keeps its higher weight.
 	sounds := e.soundsLike(query, alone)

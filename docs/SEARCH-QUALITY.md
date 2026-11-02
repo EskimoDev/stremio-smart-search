@@ -477,3 +477,43 @@ latency, medians of three interleaved runs at `GOMAXPROCS=2`: Expanded p50
 0.610 → 0.698 ms. Still left: `rattatooey` (RTT against RTTL, a dropped
 final L), `goast` and `the prestij` (found but ranked low), `doctor hoo`
 (three letters) and `the sicksth sense` (consonant run).
+
+## Dropped vowels, 2026-11-02
+
+Queries typed without most vowels, such as `strngr thngs`, `gdfthr` or
+`blck mrrr`, are three or more edits from the words they mean, past the typo
+limit (one edit up to six letters, two from seven), and they do not sound like
+anything, so neither typo nor sound-alike matching found them. Of 25 such
+queries in a hard real-data set, 2 ranked the right title first.
+
+- **How it works.** The vocabulary is also kept in consonant-skeleton order:
+  a word without a, e, i, o, u (and y after the first letter), writing a
+  consonant that repeats the one before it once (`stranger` is `strngr`,
+  `succession` and `sccssn` are both `scsn`, `mirror` and `mrrr` are both
+  `mr`). Only word numbers are stored; skeletons are worked out while
+  comparing, as joined keys are. A query word with at most one vowel looks up
+  words with the same skeleton, or, from four consonants, one more consonant
+  at the end (`thron` for `thrones`). Every typed letter must appear in the
+  word in order, so `frnds` never means *fiends*. Up to 8 words per query word
+  are kept, those of the most popular titles first, at weight 0.7 (0.64 for
+  the longer skeleton): between one typo (0.76) and two (0.6). Words already
+  matched by spelling keep their weight.
+- **Results.** On the 2026-11-01 Standard and Expanded snapshots, 24 of the
+  25 missing-vowel queries now rank the right title first, against 2 before,
+  and two combined cases (`lrd of th rngs retrn kng`, `gdfthr 1972`) are
+  fixed too. Across the whole 261-query set, top-1 went from 176 to 200 on
+  Standard and from 173 to 197 on Expanded, with no query ranked worse. The
+  curated cases, held-out and validation sets had no regression on any of the
+  eleven snapshots; the held-out `the born identity` now finds *The Bourne
+  Identity*. `fther thd` still misses: `thd` has an extra h rather than a
+  missing vowel.
+- **Costs.** Heap after indexing grows by 0.39 MiB on Standard (28.52 →
+  28.91 MiB), 0.69 MiB on Expanded and 0.74 MiB on Expanded French, about
+  1.2%. Index build changes within run-to-run noise (best of five, Expanded:
+  2.52–2.57 → 2.56–2.81 s on the cloud VM). `sss-bench ab --profile
+  standard` on the real Standard snapshot and on the default fixture found no
+  regression in any primary metric (exit 0). Random strings of four to seven
+  letters with at most one vowel, the only inputs the new lookup sees, return
+  something 20.8% of the time on Standard instead of 19.6%, and 24.9%
+  instead of 23.5% on Expanded French; two such words together, 0.5% instead
+  of 0.3%.
