@@ -9,6 +9,7 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 ### Added
 
 - The addon manifest supplies the official SSS logo as a 256×256 PNG served by the helper. Its absolute URL follows the manifest request's origin, including custom ports. Clients that retain an older installed manifest may need to [refresh it](docs/INSTALLATION.md#addon-logo-after-an-update).
+- `sss-bench`, a developer tool for measuring a build on Windows, macOS and Linux and comparing two versions, with a manually triggered CI workflow. It runs offline against a generated fixture or a supplied snapshot, never touches an installed helper, and declines to compare results from different hardware, catalogues or workloads. It is not part of the installed app. See [Benchmarking](docs/BENCHMARKING.md).
 
 ## [0.1.0-preview.4] - 2026-11-01
 

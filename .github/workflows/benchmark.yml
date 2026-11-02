@@ -1,0 +1,92 @@
+name: Benchmark
+# Separate from "Check addon", so a benchmark problem is never mistaken for a
+# functional test failure. Nothing here gates on timings: hosted runners share
+# their hardware, so these jobs prove the harness works on each platform and keep
+# reports as artifacts. Numbers from different runners are not comparable.
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'Profile: quick is about 1 minute per platform, standard 5, full 20'
+        type: choice
+        options: [quick, standard, full]
+        default: quick
+  pull_request:
+    paths:
+      - 'tools/sss-bench/**'
+      - 'tools/internal/**'
+      - '.github/workflows/benchmark.yml'
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: linux-x64, runner: ubuntu-latest }
+          - { name: linux-arm64, runner: ubuntu-24.04-arm }
+          - { name: windows-x64, runner: windows-latest }
+          - { name: windows-arm64, runner: windows-11-arm }
+          - { name: macos-arm64, runner: macos-15 }
+          - { name: macos-x64, runner: macos-15-intel }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    env:
+      PROFILE: ${{ inputs.profile || 'quick' }}
+      PLATFORM: ${{ matrix.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.x'
+          cache: false
+      - name: Test the harness end to end on this platform
+        env:
+          SSS_BENCH_E2E: '1'
+        run: go test ./tools/sss-bench/...
+      - name: Build the harness
+        shell: bash
+        # go run reports every failure as exit code 1; the binary keeps the real one.
+        # The .exe name is needed on Windows and harmless elsewhere.
+        run: go build -o sss-bench-tool/sss-bench.exe ./tools/sss-bench
+      - name: Run the benchmark
+        shell: bash
+        run: ./sss-bench-tool/sss-bench.exe run --profile "$PROFILE" --label "$PLATFORM" --out "bench-out/$PLATFORM"
+      - name: Show the report
+        if: always()
+        shell: bash
+        run: |
+          if [ -f "bench-out/$PLATFORM.md" ]; then cat "bench-out/$PLATFORM.md" >> "$GITHUB_STEP_SUMMARY"; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-${{ matrix.name }}
+          path: bench-out/
+          if-no-files-found: warn
+
+  coverage:
+    name: Platform coverage
+    needs: benchmark
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: results
+      - name: Summarise which platforms really ran
+        run: |
+          {
+            echo '## Native benchmark runs'
+            echo
+            echo 'Every row ran natively on that runner, on shared hosted hardware. A missing row did not run. Timings are not comparable between rows.'
+            echo
+            echo '| Platform | Status | CPU | Measured | Not available here | Failed |'
+            echo '| --- | --- | --- | ---: | ---: | ---: |'
+            jq -r '[.label, .status, .environment.cpu_model,
+                    ([.metrics[] | select(.status == "ok")] | length),
+                    ([.metrics[] | select(.status == "unavailable")] | length),
+                    ([.metrics[] | select(.status == "failed")] | length)]
+                   | "| " + (map(tostring) | join(" | ")) + " |"' results/*/*.json
+          } >> "$GITHUB_STEP_SUMMARY"

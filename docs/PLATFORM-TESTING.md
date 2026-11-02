@@ -14,6 +14,8 @@ that every later main commit has been device-tested.
 | macOS (Apple Silicon, Intel) | Untested on a real Mac. CI builds, signs ad hoc and smoke-tests the app bundles and DMG |
 | Fire TV / Android TV | No native helper. Access from a computer or home server still needs client testing; see below |
 
+The developer benchmark also runs the helper natively on hosted Windows, Linux and macOS runners, ARM64 included; see [its coverage](BENCHMARKING.md#platform-coverage). Those are automated runs on shared machines, not device tests, so they do not change the table above.
+
 ## Windows x64 (published 0.1.0-preview.3)
 
 Tested 2026-11-01 on Windows x64 with the files downloaded from the public release, as an upgrade over an earlier build with an Expanded catalogue.

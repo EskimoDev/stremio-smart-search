@@ -136,6 +136,11 @@ are kept for reference.
 
 ## Reproduce
 
+To measure a build or compare two versions, use [`sss-bench`](BENCHMARKING.md): it
+needs no IMDb data and handles isolation, repetition and comparability for you.
+The steps below reproduce the tables on this page, and prepare the real
+snapshots that `sss-bench --catalog` can measure.
+
 1. Download `title.ratings.tsv.gz` and `title.basics.tsv.gz` (plus `title.akas.tsv.gz`
    for alternative titles) from [IMDb's dataset server](https://datasets.imdbws.com/)
    into a directory outside this repository, under
