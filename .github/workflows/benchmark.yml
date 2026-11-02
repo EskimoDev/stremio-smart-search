@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       profile:
-        description: 'Profile: quick is about 1 minute per platform, standard 4, full 25'
+        description: 'Profile: quick is about 1 minute per platform, standard 5, full 20'
         type: choice
         options: [quick, standard, full]
         default: quick

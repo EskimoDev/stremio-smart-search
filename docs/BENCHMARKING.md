@@ -24,13 +24,13 @@ Progress goes to stderr. The result is saved beside the repository in
 
 | Profile | Use it for | Catalogue | Repetitions | Adds | Expected cost |
 | --- | --- | ---: | ---: | --- | --- |
-| `quick` | Small changes | 20,000 titles | 4 | Search latency, basic memory, curated quality | About 40 seconds |
-| `standard` | Pull requests | 50,000 titles | 6 | Throughput, sustained memory, held-out quality suites | About 3 minutes |
-| `full` | Releases and big changes | 200,000 titles | 8 | Catalogue preparation, rebuild, live refresh, 8 clients, generated quality | About 20 minutes |
+| `quick` | Small changes | 20,000 titles | 6 | Search latency, basic memory, curated quality | About 30 seconds |
+| `standard` | Pull requests | 50,000 titles | 8 | Throughput, sustained memory, held-out quality suites | About 4 minutes |
+| `full` | Releases and big changes | 200,000 titles | 10 | Catalogue preparation, rebuild, live refresh, 8 clients, generated quality | About 16 minutes |
 
 `go run ./tools/sss-bench metrics` lists every metric and when it applies; add
-`--json` for tools. Costs are for one build on a recent desktop, and an `ab` run
-is about twice that. Temporary disk use stays under about 100 MB.
+`--json` for tools. Costs are for one build on a six-core desktop, and an `ab` run
+is about twice that. Temporary disk use was 39 MB for a `full` run.
 
 ## Compare two versions
 
@@ -63,17 +63,22 @@ Each metric gets one verdict:
 | `regressed`, `improved` | Statistically significant and larger than the metric's practical floor |
 | `no_significant_change` | The two sides overlap. This is absence of evidence, not proof of equality |
 | `below_threshold` | Probably real, but too small to matter |
-| `insufficient_samples` | Fewer than four repetitions on a side. The change is shown without a verdict |
+| `insufficient_samples` | Too few repetitions to reach significance, so the change is shown without a verdict |
 | `not_comparable` | Different hardware, catalogue, workload or counter. No percentage is shown, because any number would mislead |
 | `missing`, `failed`, `unavailable` | Absent on a side, broken, or impossible on this platform. Treat these as unknown, not as unchanged |
 
 Relative metrics show percentage change. Shares such as top-1 accuracy show
 percentage points.
 
+Only a small, fixed set of **primary metrics** decides the overall result: warm
+p50 and p95 on both paths, startup, idle and peak memory, Go heap after indexing, load
+and index time and, where the profile measures them, throughput at two clients,
+sustained memory, preparation, refresh and refresh peak. Every other metric is a
+**secondary hint**: shown, uncorrected and never decisive. Expect one or two hints even
+on identical builds.
+
 Search quality has no significance test, because ranks are deterministic: any
-changed case is a real change, and the report names it. The headline only counts
-headline metrics; per-class latency appears in the full table, since testing many
-small slices would raise false alarms.
+changed case is a real change, and the report names it.
 
 ## Exit codes and output for agents
 
@@ -117,6 +122,7 @@ unit of independence. Values are medians across repetitions.
 | Memory | After load, idle, after searching, peak, startup overhead, and growth under sustained searching. Go heap is reported apart |
 | Catalogue | File read, load and index build, separately for wall and CPU time; rebuild; preparation and live refresh without the download; stored size; titles indexed |
 | Quality | Top-1, top-5, found in 20, coverage and false positives for each suite and category |
+| Environment | Machine-wide CPU use while the application is idle, which shows other work on the machine |
 
 **HTTP and engine numbers are labelled separately on purpose.** HTTP is what Stremio
 sees, and most of it is HTTP handling; a small engine change can vanish in it. The
@@ -221,13 +227,23 @@ repository, as with [other IMDb-derived output](../DATA.md).
   request. The first pass is reported as cold and warmups are discarded.
 - **Percentiles** are nearest-rank, so each is a value that was actually observed. A
   p99 from fewer than 100 observations, or a p95 from fewer than 20, is flagged.
+- **Priming.** The first launches of a new executable are not representative. On
+  Windows 11 here they showed 48 MiB of working set against 11 MiB, four times the page
+  faults and the same private memory. Running the file clears it; waiting does not.
+  Every binary and probe is run several times, and one launch and pass discarded,
+  before anything is timed.
 - **Significance** is a two-sided exact Mann-Whitney U test at alpha 0.05 across
   fresh-process repetitions, the test benchstat uses, with ties handled exactly. It
-  assumes no distribution, which suits latency. Four repetitions per side are the
-  minimum at which p below 0.05 is possible.
+  assumes no distribution, which suits latency. Primary metrics are Holm-corrected as a
+  family, which holds the chance of even one false finding near alpha. Six repetitions
+  per side are the fewest that can reach significance across `quick`'s ten primary
+  metrics; below that a comparison reports too few samples.
 - **Practical floors** come on top: a change must also exceed a per-metric floor, for
   example 5% and 10 µs for warm latency, or 3% and 1 MiB for memory. Floors are not
   stored in results, so they can be revised without measuring again.
+- **Interference.** Machine-wide CPU is sampled while the application sits idle, and
+  a result warns above 20%. An ordinary desktop read 8 to 12% here, one busy thread 17 to
+  20%, and four about 40%. A lock detects a second `sss-bench`.
 - **Environment.** Children run with `GOMAXPROCS=2` and a 256 MiB soft limit, as the
   shipped helper sets for itself.
 
@@ -246,12 +262,19 @@ hardware, so it proves the harness works on each platform and keeps reports as
 artifacts. Do not compare timings between runners. Its summary lists which platforms
 really ran.
 
-| Platform | Runtime status |
-| --- | --- |
-PLATFORM_TABLE
+| Platform | Native runs of the harness | Not available there |
+| --- | --- | --- |
+| Windows x64 | Every profile on a Ryzen 5 5600X desktop; `quick` on a hosted runner | Nothing |
+| Windows ARM64 | `quick` on a hosted runner (Cobalt 100) | Nothing |
+| Linux x64 | `quick` on a hosted runner (EPYC 9V45) | Nothing |
+| Linux ARM64 | `quick` on a hosted runner (Neoverse N2) | Nothing |
+| macOS Apple Silicon | `quick` on a hosted runner (virtual M1) | Private memory, startup overhead, machine-wide CPU |
+| macOS Intel | `quick` on a hosted runner (Core i7-8700B) | The same |
 
-Hosted runs are real executions on shared machines. They verify behaviour, not
-performance. See [Platform testing](PLATFORM-TESTING.md) for the app itself.
+All six produced the same fixture fingerprint, workload ID and quality scores, so the
+inputs really are reproducible across systems. Hosted runs are real executions on
+shared machines: they verify behaviour, not performance. `standard` and `full` have not
+yet run outside Windows. See [Platform testing](PLATFORM-TESTING.md) for the app itself.
 
 ### What a prebuilt binary cannot show
 
@@ -262,7 +285,34 @@ because the server's 100 ms search budget can change results on a busy machine.
 
 ## How well it detects change
 
-VALIDATION_SECTION
+A harness earns trust by staying quiet when nothing changed and speaking up when
+something did, so both were tested on Windows on the 5600X, one batch at a time.
+Faults were injected into throwaway worktrees and never committed.
+
+| Test | Result |
+| --- | --- |
+| Identical builds, `quick`, 8 runs | No false finding |
+| Identical builds, `standard`, 3 runs | No false finding |
+| Slowdown of about 40 µs per search, `quick` | Regression: engine p50 +100%, p95 +35% |
+| The same slowdown, `standard` | Regression: engine p50 +69%, HTTP p50 +23%, throughput -18% |
+| 30 MiB kept alive by the index, `quick` | Regression: idle memory +174%, peak +193%, Go heap +832% |
+| Ranking bug: acronyms lose their weight, `quick` | Regression: two named cases worse, no primary timing change |
+| `v0.1.0-preview.3` as the baseline, `standard` | Both probes built. 52 quality cases better; engine p50 +24%, HTTP p50 +12%, throughput -9%, the cost of what was added since |
+
+Six of the eleven identical-build runs carried the busy-machine warning, because the
+desktop was in use. They still raised no false finding, but the warning is the reason
+to repeat a surprising result rather than trust it.
+
+Three outside references agree:
+
+- **benchstat** made the same significant-or-not call on all 78 metrics of two
+  comparisons, with p-values differing only by its three-decimal rounding.
+- **The recorded quality results** were reproduced exactly on a real Expanded catalogue
+  of 390,470 titles: 222/231 first and 228/231 in five on `cases`, 22/30 and 24/30 on
+  the held-out set, and 43/56 with 3 false positives on the validation set.
+- **The recorded load time** of 1.85 s matched 1.87 s to ready on the same PC. Latency
+  and memory ran higher than the preview.3 tables, as they should: the build and the
+  query mix both differ, so those tables are not a like-for-like reference.
 
 ## Limitations
 
@@ -271,8 +321,16 @@ VALIDATION_SECTION
 - **Laptops** throttle. Plug in, close other work and prefer `ab`.
 - **Windows process CPU** advances about every 15.6 ms. Short operations show 0 or
   one tick; their floors allow for it, and CPU per request is measured across
-  thousands of requests. Defender can also slow the first launch of a new binary,
-  which the harness's `--version` check absorbs.
+  thousands of requests.
+- **Process-to-process groups.** On the Windows desktop, HTTP p50 sat near 0.165 ms in
+  some processes and 0.21 ms in others, whatever order they ran in. The cause was not
+  established. It is why results rest on repeated fresh processes, and a reason to trust
+  the engine path for small changes.
+- **Sensitivity is not fully known.** The faults above were large. The smallest change
+  each profile can detect was not measured, and `quick` flagged only the engine path for
+  a slowdown that `standard` also caught over HTTP.
+- **Interference checks** only sample the settle periods, so a burst at another moment
+  goes unseen, and macOS has no machine-wide reading, so its warning cannot fire.
 - **File cache** is warm: startup and load times do not show a cold disk. Forcing a
   cold cache needs administrator rights and is not attempted.
 - **Network** is not measured, because nothing here uses it. Preparation and refresh
@@ -281,13 +339,14 @@ VALIDATION_SECTION
   catalogue of its size, but use `--catalog` before quoting absolute numbers.
 - **Regional titles** on the fixture use French only, so the 32 cases for other
   languages show as not applicable. Use a real snapshot built with that language.
-- **macOS and Linux peaks** have caveats: on macOS `ru_maxrss` may include memory from
-  before the child started, and macOS has no private-memory counter.
+- **macOS peak** comes from `ru_maxrss`, which may include memory from before the
+  child started.
+- **Linux** has run natively only on hosted runners and briefly under WSL2, so its
+  first-launch behaviour on a real disk is unverified.
 - **Memory growth** is an estimate from a short window, and the Go heap saws up and
   down within it. It flags a leak; it does not size one.
-- **Repeated tests** at alpha 0.05 give false alarms in about 1 test in 20. The floors
-  remove most, and the comparison states how many tests ran. Confirm a surprising
-  single-metric result by repeating it.
+- **Secondary hints** are uncorrected, so some will be false. Confirm a surprising one
+  by repeating it.
 - **Refresh** rebuilds titles only, without alternative titles, which need the large
   `title.akas` file.
 
@@ -318,4 +377,5 @@ snapshots and for reproducing the historical tables in [Performance](PERFORMANCE
 - A pinned hardware runner, which would make trend tracking between commits meaningful.
 - Sampled CPU profiles attached to a run, to explain a regression as well as find it.
 - Cold-cache startup on machines where purging the file cache is allowed.
-- Holm correction across headline metrics, if false alarms prove a problem in practice.
+- A sensitivity study with graded faults, to state the smallest change each profile finds.
+- `standard` and `full` on every platform, through the workflow's manual trigger.
