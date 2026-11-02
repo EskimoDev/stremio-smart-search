@@ -106,10 +106,10 @@ func run() error {
 				if err := app.OpenClient(existing.PreferredClient); err == nil {
 					return nil
 				}
-				return app.OpenURL(baseURL)
+				return openRunningSettings(client, baseURL, a.Token)
 			}
 			if !*noBrowser {
-				return app.OpenURL(baseURL)
+				return openRunningSettings(client, baseURL, a.Token)
 			}
 			return nil
 		}
@@ -136,7 +136,7 @@ func run() error {
 	// The notification-area icon (Windows only) opens the dashboard or quits;
 	// quitting from there, the page or --quit all cancel ctx, and the icon is
 	// removed before the process exits.
-	stopTray := app.StartTray(func() { _ = app.OpenURL(baseURL) }, cancel)
+	stopTray := app.StartTray(func() { _ = a.OpenSettings() }, cancel)
 	defer stopTray()
 	if *importCatalog == "" {
 		a.StartUpdates(ctx)
@@ -153,10 +153,10 @@ func run() error {
 	if !*noBrowser {
 		if *launch && a.Status().Ready {
 			if err := app.OpenClient(a.Status().PreferredClient); err != nil {
-				_ = app.OpenURL(baseURL)
+				_ = a.OpenSettings()
 			}
 		} else {
-			_ = app.OpenURL(baseURL)
+			_ = a.OpenSettings()
 		}
 	}
 	fmt.Printf("%s %s — %s\n", app.Product, version, baseURL)
@@ -165,6 +165,23 @@ func run() error {
 		return nil
 	}
 	return err
+}
+
+// openRunningSettings asks the copy that is already running to open its
+// settings page, because only it can issue the one-time code the page needs.
+// A running copy from before settings sessions has no such call and still
+// puts its key in the page, so the plain settings link works for it.
+func openRunningSettings(client *http.Client, baseURL, token string) error {
+	req, _ := http.NewRequest(http.MethodPost, baseURL+"/api/open-settings", nil)
+	req.Header.Set("X-Smart-Search-Key", token)
+	response, err := client.Do(req)
+	if err == nil {
+		response.Body.Close()
+		if response.StatusCode == http.StatusOK {
+			return nil
+		}
+	}
+	return app.OpenURL(baseURL)
 }
 
 // addressInUse covers both the Unix error and Windows' WSAEADDRINUSE (10048).

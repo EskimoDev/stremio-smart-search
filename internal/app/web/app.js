@@ -8,7 +8,7 @@
   $('manifest').value = `${base}/manifest.json`;
   const tell = message => { $('message').textContent = message; };
   async function api(path, method = 'GET', data) {
-    const options = { method, headers: { 'X-Smart-Search-Key': window.smartSearch.token } };
+    const options = { method, headers: { 'X-Smart-Search-Session': '1' }, credentials: 'same-origin' };
     if (data) { options.headers['Content-Type'] = 'application/json'; options.body = JSON.stringify(data); }
     const response = await fetch(`/api/${path}`, options);
     const result = await response.json();

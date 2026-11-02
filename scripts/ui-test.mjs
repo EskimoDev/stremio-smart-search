@@ -15,7 +15,7 @@ const storage={path:'C:\\Users\\me\\AppData\\Roaming\\StremioSmartSearch',total:
 const requests=[];
 const context = {
   document:{getElementById:id=>nodes[id],querySelectorAll:()=>buttons,createElement:()=>({})},
-  window:{smartSearch:{baseURL:'http://127.0.0.1:11479',token:'fixture'}},
+  window:{smartSearch:{baseURL:'http://127.0.0.1:11479'}},
   navigator:{clipboard:{async writeText(value){if(clipboardBlocked)throw Error('blocked');copied=value;}}},
   setTimeout(callback){nextRefresh=callback;},clearTimeout(){},
   async fetch(path,options){requests.push({path,options});if(path==='/api/build')status={...status,building:true,buildProfile:JSON.parse(options.body).profile};if(path==='/api/autostart'&&options.method==='POST')autostart={...autostart,...JSON.parse(options.body)};if(path==='/api/updates')status={...status,updates:{...status.updates,...JSON.parse(options.body)}};const value = path==='/api/autostart' ? autostart : path==='/api/status'||path==='/api/build'||path==='/api/updates' ? status : path==='/api/storage' ? storage : path==='/api/storage/open' ? {ok:true} : path==='/api/storage/choose' ? {path:'D:\\Media',cancelled:false} : path==='/api/storage/move' ? {path:'D:\\Media\\Stremio Smart Search'} : path==='/api/clients' ? {clients:buttons.map(node=>({id:node.dataset.client,name:node.dataset.client,available:true}))} : {name:'dx.bi'};return {ok:true,async json(){return value;}};},

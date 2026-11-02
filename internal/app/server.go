@@ -87,6 +87,9 @@ type App struct {
 	// now is the clock for the update schedule; tests replace it.
 	now     func() time.Time
 	updates updater // guarded by mu; see updates.go
+	// One-time codes that open a settings session; see session.go.
+	codesMu sync.Mutex
+	codes   map[string]time.Time
 }
 
 func New(ctx context.Context, dataDir, baseURL, version string) (*App, error) {
@@ -362,9 +365,15 @@ func (a *App) localRequest(r *http.Request) bool {
 	}
 	return true
 }
+
+// admin accepts the control key (other Smart Search processes and scripts on
+// this computer that can read control.key) or a settings session cookie with
+// the session header (the settings page).
 func (a *App) admin(w http.ResponseWriter, r *http.Request) bool {
-	if !a.localRequest(r) || subtle.ConstantTimeCompare([]byte(r.Header.Get("X-Smart-Search-Key")), []byte(a.Token)) != 1 {
-		writeJSON(w, 403, map[string]string{"error": "Open the local settings page to manage the addon."})
+	keyed := subtle.ConstantTimeCompare([]byte(r.Header.Get("X-Smart-Search-Key")), []byte(a.Token)) == 1
+	session := r.Header.Get(sessionHeader) == "1" && a.validSession(r)
+	if !a.localRequest(r) || !(keyed || session) {
+		writeJSON(w, 403, map[string]string{"error": "Open Smart Search Settings from the Start menu, app menu or notification-area icon, then try again."})
 		return false
 	}
 	return true
@@ -599,6 +608,14 @@ func (a *App) Handler() http.Handler {
 					return
 				}
 				writeJSON(w, 200, a.Autostart.Status())
+			case r.URL.Path == "/api/open-settings" && r.Method == http.MethodPost:
+				// A second launch asks the running copy to open settings, so the
+				// one-time code is made where it is checked.
+				if err := a.OpenSettings(); err != nil {
+					writeJSON(w, 500, map[string]string{"error": "Could not open the browser."})
+					return
+				}
+				writeJSON(w, 200, map[string]bool{"ok": true})
 			case r.URL.Path == "/api/quit" && r.Method == http.MethodPost:
 				writeJSON(w, 200, map[string]bool{"ok": true})
 				if a.Quit != nil {
@@ -617,16 +634,32 @@ func (a *App) Handler() http.Handler {
 			http.Error(w, "Use GET", 405)
 			return
 		}
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'nonce-"+a.Token+"'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+		nonce := randomNonce()
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'nonce-"+nonce+"'; style-src 'self' 'nonce-"+nonce+"'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+		if r.URL.Path == "/" && r.URL.Query().Has("code") {
+			// Swap the one-time code for a session, then drop the code from
+			// the address bar and history.
+			if a.redeemCode(r.URL.Query().Get("code")) {
+				a.setSessionCookie(w)
+			}
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
 		if r.URL.Path == "/configure" {
 			// Stremio's Configure button opens <addon base>/configure; send it to settings.
 			http.Redirect(w, r, "/", http.StatusFound)
 			return
 		}
 		if r.URL.Path == "/" {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if !a.validSession(r) {
+				w.WriteHeader(http.StatusForbidden)
+				_, _ = w.Write([]byte(strings.Replace(lockedPage, "NONCE", nonce, 1)))
+				return
+			}
 			html, _ := web.ReadFile("web/index.html")
-			bootstrap, _ := json.Marshal(map[string]string{"token": a.Token, "baseURL": a.BaseURL})
-			page := strings.Replace(string(html), "<!--BOOTSTRAP-->", "<script nonce=\""+a.Token+"\">window.smartSearch="+string(bootstrap)+";</script>", 1)
+			bootstrap, _ := json.Marshal(map[string]string{"baseURL": a.BaseURL})
+			page := strings.Replace(string(html), "<!--BOOTSTRAP-->", "<script nonce=\""+nonce+"\">window.smartSearch="+string(bootstrap)+";</script>", 1)
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			_, _ = w.Write([]byte(page))
 			return
