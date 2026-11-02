@@ -10,7 +10,30 @@ on:
 permissions:
   contents: read
 jobs:
+  # Publishing a draft release creates its tag, and that tag push starts this
+  # workflow again. The release is already out, so skip quietly instead of
+  # rebuilding everything and failing on "Refusing to replace a published release".
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.release.outputs.published }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - id: release
+        shell: bash
+        run: |
+          published=false
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            if draft=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME" --jq .draft 2>/dev/null) && [ "$draft" = false ]; then
+              published=true
+              echo "::notice::$GITHUB_REF_NAME is already published; nothing to build."
+            fi
+          fi
+          echo "published=$published" >> "$GITHUB_OUTPUT"
   package:
+    needs: check
+    if: needs.check.outputs.published != 'true'
     strategy:
       fail-fast: false
       matrix:
