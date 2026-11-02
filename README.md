@@ -33,7 +33,7 @@
 
 ## Installation
 
-**Version covered: 0.1.0-preview.5.** This version finds short and unfinished words such as `star war`, adds a Windows notification-area icon, an optional start at sign-in, clearer first-run setup and the addon logo in Stremio. Check [Releases](https://github.com/EskimoDev/stremio-smart-search/releases) for available downloads; draft prereleases are not public downloads. Still using preview.4? Follow its [version-specific guide](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.4/README.md#installation).
+**Version covered: 0.1.0-preview.5.** This version finds short, unfinished and vowel-less words such as `star war` and `strngr thngs`, adds a Windows notification-area icon, an optional start at sign-in, clearer first-run setup and the addon logo in Stremio. Check [Releases](https://github.com/EskimoDev/stremio-smart-search/releases) for available downloads; draft prereleases are not public downloads. Still using preview.4? Follow its [version-specific guide](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.4/README.md#installation).
 
 Choose the package for your computer:
 
