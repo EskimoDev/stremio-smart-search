@@ -200,3 +200,47 @@ func mustRead(t *testing.T, path string) []byte {
 	}
 	return b
 }
+
+// A destination folder another account can write may already hold a symlink
+// where the copy's temporary file would go. The move must never write through
+// it into the file it points at.
+func TestMoveCatalogueNeverWritesThroughPlantedLinks(t *testing.T) {
+	a := testApp(t)
+	if err := os.WriteFile(filepath.Join(a.dataDir, catalogFile), []byte("catalogue"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	target := t.TempDir()
+	dest := filepath.Join(target, MovedFolderName)
+	if err := os.MkdirAll(dest, 0700); err != nil {
+		t.Fatal(err)
+	}
+	victim := filepath.Join(t.TempDir(), "victim.txt")
+	if err := os.WriteFile(victim, []byte("keep me"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{catalogFile + ".moving", catalogFile, catalogFile + ".previous"} {
+		if err := os.Symlink(victim, filepath.Join(dest, name)); err != nil {
+			t.Skip("symlinks unavailable:", err)
+		}
+	}
+	if _, err := a.MoveCatalog(target); err != nil {
+		t.Fatal(err)
+	}
+	if data, _ := os.ReadFile(victim); string(data) != "keep me" {
+		t.Fatalf("move wrote through a planted link: %q", data)
+	}
+	info, err := os.Lstat(filepath.Join(dest, catalogFile))
+	if err != nil || !info.Mode().IsRegular() {
+		t.Fatalf("catalogue is not a regular file after the move: %v %v", info, err)
+	}
+	if data, _ := os.ReadFile(filepath.Join(dest, catalogFile)); string(data) != "catalogue" {
+		t.Fatalf("catalogue content %q", data)
+	}
+	// No temporary files are left behind (the planted link is not ours).
+	entries, _ := os.ReadDir(dest)
+	for _, e := range entries {
+		if strings.HasSuffix(e.Name(), ".moving") && e.Name() != catalogFile+".moving" {
+			t.Fatalf("left %s behind", e.Name())
+		}
+	}
+}

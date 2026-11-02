@@ -233,18 +233,21 @@ func saveCatalogDir(settings, dir string) error {
 }
 
 // copyFile writes to a temporary name and renames it into place, so an
-// interrupted copy never leaves a truncated catalogue behind.
+// interrupted copy never leaves a truncated catalogue behind. The temporary
+// file is always newly created (CreateTemp uses O_EXCL with a random name), so
+// a file or symlink already planted in the destination folder is never opened
+// and written through: the chosen folder may be one another account can write.
 func copyFile(from, to string) error {
 	in, err := os.Open(from)
 	if err != nil {
 		return err
 	}
 	defer in.Close()
-	temp := to + ".moving"
-	out, err := os.OpenFile(temp, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	out, err := os.CreateTemp(filepath.Dir(to), "."+filepath.Base(to)+"-*.moving")
 	if err != nil {
 		return err
 	}
+	temp := out.Name()
 	_, err = io.Copy(out, in)
 	if syncErr := out.Sync(); err == nil {
 		err = syncErr
