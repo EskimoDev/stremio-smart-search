@@ -72,7 +72,9 @@ type reading struct {
 	denominator float64
 }
 
-func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, want uint8) []hit {
+// matchWords returns the word matches' scores, with room for extra more
+// hits.
+func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, want uint8, extra int) []hit {
 	unique := map[string]int{}
 	var work *scratch
 	var groups [][]member
@@ -199,6 +201,9 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 	// score adds the titles a reading matched, with summed weight over
 	// matched query words.
 	score := func(list []member, matched, denominator, penalty float64, first bool) {
+		if first {
+			out = make([]hit, 0, len(list)+extra)
+		}
 		for _, c := range list {
 			s := 100*c.weight/denominator - penalty
 			// Among equally good word matches, prefer titles the query
@@ -308,7 +313,7 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 		}
 		switch {
 		case (a.short && (b.lookup || b.short)) || (b.short && a.lookup):
-			group = newGroup(e.terms(ctx, joined, true, false), 1)
+			group = newGroup(e.quickTerms(ctx, joined), 1)
 		case a.lookup && b.lookup:
 			if w := e.word(joined); w >= 0 {
 				group = newGroup([]termMatch{{w, 1}}, 1)

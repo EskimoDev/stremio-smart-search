@@ -406,6 +406,18 @@ type termMatch struct {
 // terms finds the vocabulary words a query word may stand for. With typos
 // false it keeps exact and prefix matches only.
 func (e *Engine) terms(ctx context.Context, query string, typos, alone bool) []termMatch {
+	return e.lookupTerms(ctx, query, typos, alone, false)
+}
+
+// quickTerms is terms without the trigram scan, vowel skeletons and
+// sound-alikes: exact and prefix matches and the direct one-edit probes. It
+// is for joined fragments ("gma e" as "gmae"), which are only worth a few
+// lookups.
+func (e *Engine) quickTerms(ctx context.Context, query string) []termMatch {
+	return e.lookupTerms(ctx, query, true, false, true)
+}
+
+func (e *Engine) lookupTerms(ctx context.Context, query string, typos, alone, quick bool) []termMatch {
 	matches := map[int32]float64{}
 	exact := e.word(query)
 	if exact >= 0 {
@@ -443,6 +455,9 @@ func (e *Engine) terms(ctx context.Context, query string, typos, alone bool) []t
 				matches[w] = .76
 			}
 		})
+	}
+	if quick {
+		return sortTerms(matches)
 	}
 	if length >= 4 && length <= 40 {
 		counts := map[int32]int{}
@@ -777,13 +792,14 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 			}
 		}
 	}
-	var hits []hit
-	for _, h := range e.matchWords(ctx, parts, typos, want) {
-		if old, ok := scores[h.id]; ok {
-			h.score = max(h.score, old)
-			delete(scores, h.id)
+	hits := e.matchWords(ctx, parts, typos, want, len(scores))
+	if len(scores) > 0 {
+		for i := range hits {
+			if old, ok := scores[hits[i].id]; ok {
+				hits[i].score = max(hits[i].score, old)
+				delete(scores, hits[i].id)
+			}
 		}
-		hits = append(hits, h)
 	}
 	for id, score := range scores {
 		hits = append(hits, hit{id, score})
