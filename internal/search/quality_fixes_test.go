@@ -116,3 +116,34 @@ func TestCoveredTitleWinsCloseMatches(t *testing.T) {
 		t.Fatalf("exact: %v", got)
 	}
 }
+
+// A short query word used to stand only for the first 20 vocabulary words it
+// starts, alphabetically, so "war" never reached "wars" in a real catalogue
+// and "star war" found nothing. Completions are now chosen by popularity.
+func TestShortWordPrefixPrefersPopularCompletions(t *testing.T) {
+	titles := []catalog.Title{
+		{ID: "tt0076759", Name: "Star Wars: Episode IV - A New Hope", Type: "movie", Year: 1977, Votes: 1500000},
+		{ID: "tt0944947", Name: "Game of Thrones", Type: "series", Year: 2011, Votes: 2500000},
+		{ID: "tt10872600", Name: "Spider-Man: No Way Home", Type: "movie", Year: 2021, Votes: 1080000},
+		{ID: "tt2250912", Name: "Spider-Man: Homecoming", Type: "movie", Year: 2017, Votes: 845000},
+	}
+	// Obscure titles whose words sort before "wars" and "thrones".
+	for i, word := range []string{"war", "thr"} {
+		for n := 0; n < 40; n++ {
+			suffix := string(rune('a'+n/26)) + string(rune('a'+n%26))
+			titles = append(titles, catalog.Title{ID: "tt9" + string(rune('0'+i)) + string(rune('0'+n/10)) + string(rune('0'+n%10)) + "000",
+				Name: "Star Game " + word + "a" + suffix, Type: "movie", Year: 2000, Votes: 10})
+		}
+	}
+	e := New(titles)
+	for _, tc := range []struct{ query, kind, want string }{
+		{"star war", "movie", "tt0076759"},
+		{"game of thr", "series", "tt0944947"},
+		// A completion one letter on outweighs a longer one: "hom" is "home".
+		{"spidr man no wy hom", "movie", "tt10872600"},
+	} {
+		if got := first(t, e, tc.query, tc.kind); len(got) == 0 || got[0] != tc.want {
+			t.Errorf("%s: wanted %s first, got %v", tc.query, tc.want, got)
+		}
+	}
+}

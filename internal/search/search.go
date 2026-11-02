@@ -409,14 +409,9 @@ func (e *Engine) terms(ctx context.Context, query string, typos, alone bool) []t
 	}
 	length := utf8.RuneCountInString(query)
 	if length >= 3 {
-		start := exact
-		if start < 0 {
-			i, _ := slices.BinarySearch(e.vocabulary, query)
-			start = int32(i)
-		}
-		for i := start; int(i) < len(e.vocabulary) && i < start+20 && strings.HasPrefix(e.vocabulary[i], query); i++ {
-			if _, ok := matches[i]; !ok {
-				matches[i] = .88
+		for _, w := range e.prefixWords(query, exact) {
+			if _, ok := matches[w]; !ok {
+				matches[w] = prefixWeight(length, int(e.runeLengths[w]))
 			}
 		}
 	}
@@ -514,6 +509,69 @@ func (e *Engine) terms(ctx context.Context, query string, typos, alone bool) []t
 		}
 	}
 	return result
+}
+
+const (
+	// prefixTerms is how many longer words a query word may stand for as a
+	// prefix ("war" for "wars", "thr" for "thrones").
+	prefixTerms = 20
+	// prefixScan bounds the words considered for them. The longest three-letter
+	// prefix run in the Expanded French vocabulary is about 1,000 words.
+	prefixScan = 4096
+)
+
+// prefixWords returns up to prefixTerms vocabulary words that start with
+// query and are longer than it, preferring words of more popular titles.
+// Taking the first words alphabetically instead made short query words
+// useless: "wars" is the 89th word starting with "war", so "star war" found
+// nothing. A word's postings are in popularity order, so its first title is
+// its most popular one, and ranking words by it costs two reads per word.
+func (e *Engine) prefixWords(query string, exact int32) []int32 {
+	start := exact + 1
+	if exact < 0 {
+		i, _ := slices.BinarySearch(e.vocabulary, query)
+		start = int32(i)
+	}
+	rest := e.vocabulary[start:]
+	n := sort.Search(len(rest), func(i int) bool { return !strings.HasPrefix(rest[i], query) })
+	if n <= prefixTerms {
+		words := make([]int32, n)
+		for i := range words {
+			words[i] = start + int32(i)
+		}
+		return words
+	}
+	type candidate struct{ best, word int32 }
+	candidates := make([]candidate, 0, min(n, prefixScan))
+	for w := start; w < start+int32(min(n, prefixScan)); w++ {
+		best := int32(math.MaxInt32)
+		if ids := e.words.get(w); len(ids) > 0 {
+			best = ids[0]
+		}
+		if ids := e.alternateWords.get(w); len(ids) > 0 && ids[0] < best {
+			best = ids[0]
+		}
+		candidates = append(candidates, candidate{best, w})
+	}
+	candidates = smallest(candidates, prefixTerms, func(a, b candidate) int {
+		if a.best != b.best {
+			return cmp.Compare(a.best, b.best)
+		}
+		return cmp.Compare(a.word, b.word)
+	})
+	words := make([]int32, len(candidates))
+	for i, c := range candidates {
+		words[i] = c.word
+	}
+	return words
+}
+
+// prefixWeight is a completion's weight: .88 for one more letter, a little
+// less for each further one, down to a typo's .76. A query word is more likely
+// cut short by a letter or two ("hom" in "spider man no way hom" is "home",
+// not "homecoming").
+func prefixWeight(query, word int) float64 {
+	return max(.76, .88-.02*float64(word-query-1))
 }
 
 func sortTerms(matches map[int32]float64) []termMatch {
