@@ -6,6 +6,8 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 
 ## [Unreleased]
 
+## [0.1.0-preview.5] - 2026-11-02
+
 ### Added
 
 - **Start Smart Search when I sign in** in settings, off by default. It writes only the current user's own sign-in entry (the Windows Run value the installer's optional component also uses, a macOS LaunchAgent, or a Linux XDG autostart file) and starts the helper without settings or Stremio. See [the launcher section](docs/INSTALLATION.md#launcher-and-portable-use).
@@ -13,17 +15,19 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 - A Smart Search icon in the Windows notification area while the helper runs. Double-click it (or select it and press Enter) to open the dashboard; right-click it (or press Shift+F10) for **Open dashboard** and **Quit Smart Search**. It uses Windows' own API with no extra dependency, and returns after Explorer restarts or a slow sign-in.
 - Until a catalogue exists, Smart Search's search rows show one "Smart Search needs setup" item explaining what to do, instead of staying silently empty.
 - A message box (Windows), alert (macOS) or dialog (Linux, with zenity or kdialog) when the helper cannot start, for example because another program holds port 11479. Terminal and scripted runs still print to standard error only.
-
 - The addon manifest supplies the official SSS logo as a 256×256 PNG served by the helper. Its absolute URL follows the manifest request's origin, including custom ports. Clients that retain an older installed manifest may need to [refresh it](docs/INSTALLATION.md#addon-logo-after-an-update).
 - `sss-bench`, a developer tool for measuring a build on Windows, macOS and Linux and comparing two versions, with a manually triggered CI workflow. It runs offline against a generated fixture or a supplied snapshot, never touches an installed helper, and declines to compare results from different hardware, catalogues or workloads. It is not part of the installed app. See [Benchmarking](docs/BENCHMARKING.md).
 
 ### Changed
 
 - A short or unfinished query word now stands for the words of the most popular titles it starts, not the first 20 in alphabetical order. `star war` used to find nothing because *wars* is the 89th word starting with *war*; it now lists the Star Wars films, and `game of thr` finds *Game of Thrones*. A completion that adds a letter or two counts slightly more than a longer one, so `spidr man no wy hom` ranks *No Way Home* above *Homecoming*. Sound-alike spellings no longer pay for letters that are written but not spoken (the k and gh of *knight*, the ph of *phone*), so `nite and day` finds *Knight and Day*, `nite rider` *Knight Rider* and `my nayber totoro` *My Neighbor Totoro*. No quality case regressed on 11 real catalogue snapshots.
-- The Windows installer's component list now shows full names (**Smart Search (required)** and **Start when I sign in**) with a description underneath, instead of cutting them off. The settings page wraps a long sign-in path instead of letting it run into the next column.
 - First-run settings make **Download the title catalogue** step 01 in the main column, with the Stremio steps numbered after it. The page's heading, reading and keyboard order now start with the main steps.
 - Accessibility: download progress is announced to screen readers when its stage changes and every 15 seconds; app buttons stay focusable while unavailable and say why when chosen; **Quit helper** stays armed until focus leaves it instead of a 4-second timer, and announces that state; small print rises from 11 to 12 px.
 - The settings page's **Ready to try it?** examples now show one search per kind of match: a year (`dune 1984`), a typo, a sound-alike spelling, a short form, words run together, a few words of a long title and an original title. `interstelar` was dropped because on Standard and Expanded catalogues a little-known film actually titled *Interstelar* correctly ranks first. A test checks each example against locally built catalogues when `SMART_SEARCH_EXAMPLE_CATALOGS` is set.
+
+### Fixed
+
+- The Windows installer's component list shows full names (**Smart Search (required)** and **Start when I sign in**) with a description underneath, instead of cutting them off. The settings page wraps a long sign-in path instead of letting it run into the next column.
 
 ## [0.1.0-preview.4] - 2026-11-01
 
@@ -113,7 +117,8 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 - Executable permissions are preserved in cross-built archives.
 - Platform download names are easier to identify.
 
-[Unreleased]: https://github.com/EskimoDev/stremio-smart-search/compare/v0.1.0-preview.4...main
+[Unreleased]: https://github.com/EskimoDev/stremio-smart-search/compare/v0.1.0-preview.5...main
+[0.1.0-preview.5]: https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.5
 [0.1.0-preview.4]: https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.4
 [0.1.0-preview.3]: https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.3
 [0.1.0-preview.2]: https://github.com/EskimoDev/stremio-smart-search/commit/30f644c625763da24e44de98db46d9deca06d286
