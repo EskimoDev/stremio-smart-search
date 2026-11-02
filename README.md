@@ -90,6 +90,8 @@ Choose your app, catalogue size and update schedule in one place, with light and
 
 For translated or regional names, choose a language under **Alternative titles** in settings, then rebuild. This adds another data download. [Alternative-title setup →](docs/CATALOGUE.md#alternative-titles-optional)
 
+In a 2026-11-02 spot check of 38 hard queries against Stremio's default search, the development version found the title first on 36 and Stremio on 25. Smart Search alone found `intrstllr`, `gdfthr` and `teh dakr knight`; both now find `fther thd`. [Comparison →](docs/SEARCH-QUALITY.md#compared-with-stremios-default-search-2026-11-02)
+
 Matching has limits: an exact title can rank above the similar title you meant. The sound-alike matcher finds `incepshun` and `back to the fucher`, but still misses `rattatooey`. See [tested search quality and known gaps](docs/SEARCH-QUALITY.md).
 
 ## Choose a catalogue
