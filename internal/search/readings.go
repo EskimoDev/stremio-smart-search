@@ -81,7 +81,7 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 	var years []int32
 	words := 0
 	for _, part := range parts {
-		if !stop[part] && utf8.RuneCountInString(part) >= 3 && yearOf(part) == 0 {
+		if !stop[part] && yearOf(part) == 0 && (utf8.RuneCountInString(part) >= 3 || equivalentWords[part] != nil) {
 			words++
 		}
 	}
@@ -90,6 +90,9 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 		w := queryWord{text: part}
 		switch n := utf8.RuneCountInString(part); {
 		case stop[part]:
+		case n < 3 && equivalentWords[part] != nil:
+			// "4", "ii", "dr": short, but a word with other spellings.
+			w.lookup = true
 		case n < 3:
 			// A fragment left by a misplaced space ("gma e", "squi d"). A
 			// two-letter word many titles use ("de", "la", "me") is a word of
@@ -177,7 +180,7 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 		if _, ok := unique[w.text]; ok {
 			continue
 		}
-		unique[w.text] = newGroup(e.terms(ctx, scratchArea(), w.text, typos, words == 1), 1)
+		unique[w.text] = newGroup(e.wordTerms(ctx, scratchArea(), w.text, typos, words == 1), 1)
 		base = append(base, unique[w.text])
 		baseWords = append(baseWords, w.text)
 	}
@@ -226,12 +229,16 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 	denominator := float64(len(base) + len(years))
 	// strict scores the query as typed and reports whether some title
 	// matches every word about as well as a one-letter typo.
+	perfect := false // some title matches every query word as typed
 	strict := func(first bool) bool {
 		list := e.intersect(work, groups, base, nil)
 		strong := false
 		for _, c := range list {
 			if c.weight >= strongWeight*float64(len(base)) {
 				strong = true
+			}
+			if c.weight >= float64(len(base)) {
+				perfect = true
 				break
 			}
 		}
@@ -244,9 +251,64 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 		score(list, denominator, denominator, 0, first)
 		return strong
 	}
+	without := func(skip ...string) ([]int, []float64) {
+		var g []int
+		var m []float64
+		for _, w := range typed {
+			if !w.lookup || contains(skip, w.text) {
+				continue
+			}
+			if i, ok := unique[w.text]; ok && !containsInt(g, i) {
+				g = append(g, i)
+				m = append(m, 1)
+			}
+		}
+		return g, m
+	}
+	scoreReadings := func(readings []reading) {
+		for _, r := range readings {
+			if ctx.Err() != nil {
+				break
+			}
+			list := e.intersect(work, groups, r.groups, r.mult)
+			for _, y := range years {
+				list = e.filterYear(work, list, y)
+			}
+			matched := 0.0
+			for _, m := range r.mult {
+				matched += m
+			}
+			score(list, matched+float64(len(years)), r.denominator, 0, false)
+		}
+	}
+	// wholeJoin returns a group for two query words that make an indexed
+	// word when joined ("shaw shank"), or -1.
+	wholeJoin := func(a, b queryWord) int {
+		if !a.lookup || !b.lookup || !isASCII(a.text) || !isASCII(b.text) || len(a.text)+len(b.text) > 40 {
+			return -1
+		}
+		if w := e.word(a.text + b.text); w >= 0 {
+			return newGroup([]termMatch{{w, 1}}, 1)
+		}
+		return -1
+	}
 	// When the query as typed reads fine nothing else is tried, which keeps
-	// ordinary searches as fast as before.
+	// ordinary searches as fast as before. The one exception is two words
+	// that are one word when joined: "shaw shank" reads fine as typed, as
+	// two one-letter typos of "land shark", but means The Shawshank
+	// Redemption. It costs a lookup per word pair, and is skipped when some
+	// title matches every word as typed ("spider man").
 	if len(base) > 0 && strict(true) || !typos || ctx.Err() != nil {
+		if !perfect && typos && len(base) >= 2 && ctx.Err() == nil {
+			var joins []reading
+			for i := 0; i+1 < len(typed); i++ {
+				if group := wholeJoin(typed[i], typed[i+1]); group >= 0 {
+					g, m := without(typed[i].text, typed[i+1].text)
+					joins = append(joins, reading{append(g, group), append(m, 2), denominator})
+				}
+			}
+			scoreReadings(joins)
+		}
 		return out
 	}
 	// Three-letter words get their typo variants only now: most are typed
@@ -254,7 +316,7 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 	retry := false
 	for i, w := range baseWords {
 		if extra := e.shortTypos(w); len(extra) > 0 {
-			base[i] = newGroup(append(e.terms(ctx, scratchArea(), w, typos, words == 1), extra...), 1)
+			base[i] = newGroup(append(e.wordTerms(ctx, scratchArea(), w, typos, words == 1), extra...), 1)
 			unique[w] = base[i]
 			retry = true
 		}
@@ -283,20 +345,6 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 	}
 
 	var readings []reading
-	without := func(skip ...string) ([]int, []float64) {
-		var g []int
-		var m []float64
-		for _, w := range typed {
-			if !w.lookup || contains(skip, w.text) {
-				continue
-			}
-			if i, ok := unique[w.text]; ok && !containsInt(g, i) {
-				g = append(g, i)
-				m = append(m, 1)
-			}
-		}
-		return g, m
-	}
 	for i := 0; i+1 < len(typed); i++ {
 		a, b := typed[i], typed[i+1]
 		if a.year || b.year || !isASCII(a.text) || !isASCII(b.text) {
@@ -319,9 +367,7 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 		case (a.short && (b.lookup || b.short)) || (b.short && a.lookup):
 			group = newGroup(e.quickTerms(ctx, scratchArea(), joined), 1)
 		case a.lookup && b.lookup:
-			if w := e.word(joined); w >= 0 {
-				group = newGroup([]termMatch{{w, 1}}, 1)
-			}
+			group = wholeJoin(a, b)
 		}
 		if group >= 0 {
 			g, m := without(a.text, b.text)
@@ -379,20 +425,7 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 			readings = append(readings, reading{g, m, denominator + 1})
 		}
 	}
-	for _, r := range readings {
-		if ctx.Err() != nil {
-			break
-		}
-		list := e.intersect(work, groups, r.groups, r.mult)
-		for _, y := range years {
-			list = e.filterYear(work, list, y)
-		}
-		matched := 0.0
-		for _, m := range r.mult {
-			matched += m
-		}
-		score(list, matched+float64(len(years)), r.denominator, 0, false)
-	}
+	scoreReadings(readings)
 	return out
 }
 
@@ -498,4 +531,22 @@ func containsInt(list []int, n int) bool {
 		}
 	}
 	return false
+}
+
+// wordTerms is terms for a query word in matchWords, with its other spellings
+// (see equivalents.go). A word of one or two letters is only ever looked up as
+// typed: it is too short for typo matching.
+func (e *Engine) wordTerms(ctx context.Context, work *scratch, word string, typos, alone bool) []termMatch {
+	if equivalentWords[word] == nil {
+		return e.terms(ctx, work, word, typos, alone)
+	}
+	var terms []termMatch
+	if utf8.RuneCountInString(word) < 3 {
+		if w := e.word(word); w >= 0 {
+			terms = []termMatch{{w, 1}}
+		}
+	} else {
+		terms = e.terms(ctx, work, word, typos, alone)
+	}
+	return e.withEquivalents(terms, word)
 }

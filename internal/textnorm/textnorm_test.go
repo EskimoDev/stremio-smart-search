@@ -69,3 +69,11 @@ func FuzzNormalizeMatchesReference(f *testing.F) {
 		}
 	})
 }
+
+func TestSuperscriptDigitsAreWords(t *testing.T) {
+	for in, want := range map[string]string{"Alien³": "alien 3", "Alien³ Redux": "alien 3 redux", "x²": "x 2", "E=mc²": "e mc 2"} {
+		if got := Normalize(in); got != want {
+			t.Errorf("Normalize(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
