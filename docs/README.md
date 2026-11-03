@@ -31,4 +31,4 @@ New here? Start with the [project README](../README.md) for screenshots and a qu
 
 See [Contributing](../CONTRIBUTING.md) for development and release checks, [Scripts](../scripts/README.md) for build and test helpers, and [Tools](../tools/README.md) for packaging and evaluation commands.
 
-The `images/` folder holds README screenshots. `benchmarks/` holds historical Windows measurements and synthetic Linux results; see [measurement records](PERFORMANCE.md#measurement-records) for which figures each file supports. Production catalogues are kept outside the repository.
+The `images/` folder holds README screenshots. `benchmarks/` holds [aggregate quality results](SEARCH-QUALITY.md#latest-results), historical Windows measurements and synthetic Linux results; see [performance measurement records](PERFORMANCE.md#measurement-records) for the older files. Real snapshots and generated per-title reports stay outside the repository.

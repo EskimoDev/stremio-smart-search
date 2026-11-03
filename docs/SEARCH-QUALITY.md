@@ -16,6 +16,8 @@ How often Smart Search finds the intended title, where it still struggles, and h
 
 Measured **2026-11-03**, using the **346-case, 18-category** suite and existing local IMDb snapshots, with alternative titles off. No new dataset was downloaded. This is an engine-only check of the main revision linked above, with no HTTP time budget, not a measurement of the published preview.5 binary or Stremio's complete results page.
 
+The [aggregate measurement record](benchmarks/quality-2026-11-03.json) preserves the source revision, suite and snapshot hashes, coverage counts and scores. Per-title reports and production catalogues stay outside the repository.
+
 | Catalogue | Titles | Expected answer first | In the top five |
 | --- | ---: | ---: | ---: |
 | Compact | 50,000 | 283/286 (99.0%) | 285/286 (99.7%) |
