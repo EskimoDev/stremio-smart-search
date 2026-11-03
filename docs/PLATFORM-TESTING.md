@@ -46,7 +46,7 @@ Not covered: menu entries and Stremio launch in a real desktop session, ARM64 at
 
 ## macOS
 
-No Mac was available. The `test` job already runs the Go tests, the UI test and `scripts/smoke.ps1` on `macos-latest`, but only against the bare Apple Silicon binary. The `macos-app` job in `ci.yml` adds Apple Silicon and Intel runners, ad-hoc signs and verifies both app bundles, runs the smoke test against the binary inside `Stremio Smart Search.app`, and runs both bundled binaries from a mounted DMG.
+Manual desktop testing is still pending. The `test` job runs the Go tests, UI and documentation checks, packaging and `scripts/smoke.ps1` on macOS 15 Apple Silicon. Its status name remains `test (macos-latest)` for compatibility with required checks. The image is pinned to match the `macos-app` jobs, which use macOS 15 Apple Silicon and Intel runners, ad-hoc sign and verify both app bundles, run the smoke test against the binary inside `Stremio Smart Search.app`, and run both bundled binaries from a mounted DMG.
 
 CI cannot show the Gatekeeper prompt after a browser download, or the launcher opening Stremio. Those still need a real Mac:
 

@@ -11,7 +11,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    # Pin macOS to the image used by the app-bundle checks. Keep matrix
+    # labels stable for the existing required status-check names.
+    runs-on: ${{ matrix.os == 'macos-latest' && 'macos-15' || matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
