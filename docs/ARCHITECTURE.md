@@ -1,6 +1,6 @@
 # Architecture
 
-The application is a single Go executable with an embedded local setup page. This document describes **0.1.0-preview.5**. Preview.4 added phonetic search, automatic updates and theme controls; preview.5 adds the Windows notification-area icon, start at sign-in and the served addon logo. There are no native media hooks, Stremio patches, browser extensions or runtime package downloads.
+The application is a single Go executable with an embedded local setup page. This document describes **main**. The latest public release is [0.1.0-preview.5](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.5); main also includes [unreleased search and security fixes](../CHANGELOG.md#unreleased). Preview.4 added phonetic search, automatic updates and theme controls; preview.5 adds the Windows notification-area icon, start at sign-in and the served addon logo. There are no native media hooks, Stremio patches, browser extensions or runtime package downloads.
 
 ## Package boundaries
 
@@ -14,11 +14,35 @@ The application is a single Go executable with an embedded local setup page. Thi
 
 ## Search
 
-The read-only index contains exact normalized titles, joined-title forms, acronym variants, token postings and a trigram-to-vocabulary index. A fuzzy query first selects bounded candidate words and confirms them with bounded Damerau-Levenshtein distance, including adjacent transpositions. Query terms are intersected. Exact canonical names and longer regional names outrank acronyms and fuzzy hits; short Latin regional names use the acronym band. Among close word matches, a title whose significant words the query covers gets up to 10 of 100 extra points, so "the terminater" prefers *The Terminator* over *Terminator 2*. Vote counts rank otherwise similar matches. A four-digit year (1880–2099) typed with other words is matched by a title's start year or by a title word, so "dune 1984" picks that film; if no candidate matches, the year is ignored. A single word of up to five letters that is some title's acronym gets exact and prefix matches only, no typo variants, so "hotd" does not also list "Hot Fuzz" or "Robin Hood". As a last resort, ASCII query words can gain up to eight same-code Double Metaphone matches at weight 0.4 and eight near-code matches at weight 0.3, below spelling terms (0.76 or 0.6). Query words must have at least four letters, be pronounceable and appear in fewer than 50 indexed titles. Length/edit-distance and popularity checks limit loose matches, and a one-word query has a stricter limit. Exact-title score bands remain unchanged. Accuracy is measured with [curated cases](SEARCH-QUALITY.md).
+The engine makes no network calls. Its read-only index contains normalized exact titles, joined-title forms, acronym variants, token postings and a trigram-to-vocabulary index. Optional alternative titles extend the same index; they are not a separate engine.
 
-Optional alternative titles extend the same index; they are not a separate engine. Their normalized forms live in one sorted key array with 32-bit title references. A second ordering of the same keys, which ignores spaces, serves joined queries such as "lareinedesneiges" without storing another copy. Their words have separate postings, but share the vocabulary and trigram index, and therefore all typo handling. Score bands are: exact 2200 and joined 2100, canonical and alternative alike, so popularity decides between them; acronym 1200; then word matches. Alternative-title word matches are weighted ×0.9, so canonical words win ties. Acronyms are never generated from alternative titles. Short Latin alternative titles (five letters or fewer once spaces are removed, e.g. "H.O.T.D.") rank in the acronym band, so popularity decides between titles that share them. Aliases are search keys only: results return the canonical ID and name, and a title appears once however many of its names match. Very short Latin aliases are not indexed. Normalization (`internal/textnorm`) folds accents and common Latin letters such as ß, æ, œ, ł, š and ř, and keeps non-Latin scripts. The catalogue builder and the index use it identically. For 4–6 letter ASCII terms, the matcher also probes every interior single-edit variant against the vocabulary. Trigram candidates miss central typos in short words ("rene" for "reine", "alein" for "alien"). For 7–20 letter ASCII terms it probes every deletion and adjacent transposition, which can break up to four trigrams ("thornes" for "thrones").
+### Candidate matching
 
-Input is limited to 120 Unicode characters, 16 words and eight looked-up terms (words of three or more characters other than articles); results to 20 per request. Prefix expansion, trigram candidate scans, fuzzy word checks, posting lists and simultaneous searches have explicit limits. The normal HTTP request loop never needs an external search call. A request context bounds fuzzy work and the service limits matching concurrency.
+- **Spelling.** A bounded trigram scan selects candidate words, then bounded Damerau-Levenshtein distance checks them, including adjacent transpositions. For 4–6-letter ASCII terms, direct single-edit probes also find central typos that share no trigrams (`rene` for `reine`, `alein` for `alien`). For 7–20-letter terms, direct deletion and swap probes recover cases such as `thornes` for `thrones`.
+- **Prefixes and missing vowels, since preview.5.** Short prefixes choose completions by title popularity. Rare words with missing vowels can use the consonant-skeleton index (`internal/search/skeleton.go`). Common indexed words are taken as typed.
+- **Sound-alikes, since preview.4.** As a last resort, a query word can gain up to eight same-code Double Metaphone matches at weight 0.4 and eight near-code matches at 0.3, below spelling terms (0.76 or 0.6). Words must be ASCII, at least four letters, pronounceable and used by fewer than 50 indexed titles. Length, edit-distance and popularity checks limit loose matches; a one-word query has a stricter limit.
+- **Alternative readings, unreleased on main.** A weak query can also try leaving out a word, joining or splitting a fragment, moving a space, or a rare three-letter typo (`internal/search/readings.go`). Each title keeps its best reading score. Strong queries skip this work. This behavior is not in the public preview.5 binary.
+
+Query terms are normally intersected. A single word of up to five letters that is a title's acronym suppresses typo and phonetic expansion, so `hotd` does not also list *Hot Fuzz* or *Robin Hood*. A four-digit year (1880–2099) typed with other words matches a title's start year or a title word, so `dune 1984` selects that film and *Blade Runner 2049* still works. If no candidate matches the year, it is ignored.
+
+### Ranking and alternative titles
+
+| Match | Score band |
+| --- | ---: |
+| Exact canonical or alternative title | 2200 |
+| Joined canonical or alternative title | 2100 |
+| Acronym or short Latin alternative title | 1200 |
+| Word matches | Below the acronym band |
+
+Vote counts order otherwise similar matches. Among close word matches, a title whose significant words the query covers gets up to 10 of 100 extra points, so `the terminater` prefers *The Terminator* over *Terminator 2*. Alternative-title word matches weigh ×0.9, so canonical words win ties. Exact-title bands are unaffected by the fuzzy fallbacks. Accuracy and known gaps are in [Search quality](SEARCH-QUALITY.md).
+
+Alternative forms use one sorted key array with 32-bit title references. A second ordering, ignoring spaces, serves joined queries such as `lareinedesneiges` without copying the keys. Their words have separate postings but share the vocabulary, trigram index and typo handling. Acronyms are never generated from alternatives; short Latin alternatives (five letters or fewer without spaces, such as `H.O.T.D.`) use the acronym band instead. Very short Latin alternatives are not indexed.
+
+Aliases are search keys only: results keep the canonical ID and name, and each IMDb ID appears once however many names match. Shared normalization in `internal/textnorm` folds accents and letters such as ß, æ, œ, ł, š and ř, and keeps non-Latin scripts. Catalogue building and search use it identically.
+
+### Request limits
+
+Input is limited to 120 Unicode characters, 16 words and eight looked-up terms (words of three or more characters other than articles); results to 20 per HTTP request. Prefix expansion, trigram scans, fuzzy word checks, posting lists and simultaneous searches have explicit limits. The request context bounds fuzzy work and the service limits matching concurrency.
 
 ## Catalogue preparation
 
@@ -41,18 +65,27 @@ Storage figures are read on request (two file sizes and a walk of the small sett
 ## Stremio protocol
 
 - `/manifest.json`: advertises two search-only catalogs, `movie/smart-search` and `series/smart-search`.
+- `/addon-logo.png`: serves the embedded 256×256 addon logo independently of settings or catalogue setup. Its manifest URL uses the request host/port and direct TLS state; forwarded scheme headers are not interpreted.
 - `/catalog/{type}/smart-search/search={query}.json`: returns standard metadata previews with stable IMDb IDs.
 - No `stream` resource; existing addons handle playback.
 - No account authentication, watch-activity events or library events.
 - Extra values are decoded exactly once from the escaped URL path; punctuation in a query cannot become a route separator.
 
-Protocol responses include CORS headers for Stremio clients. `/api/*` management routes do not expose CORS and require a loopback peer, an expected Host, a matching browser Origin when present, and either the private control key (other Smart Search processes and scripts that can read `control.key`) or a settings session. The settings page never contains the key: Smart Search opens it with a one-time code (single use, two minutes), which the page swaps for an HttpOnly, SameSite=Lax cookie derived from the key; API calls from the page must also send an `X-Smart-Search-Session` header, which cannot be sent cross-site without a CORS preflight. A browser without a session gets a short page with no data. The settings page rejects framing and uses a content security policy with a fresh nonce per page. No arbitrary local path or external URL can be executed through a search request.
+Protocol responses include CORS headers for Stremio clients. `/api/*` management routes do not expose CORS and require a loopback peer, an expected Host and a matching browser Origin when present. Processes/scripts can authenticate with the private key in `control.key`.
+
+**Unreleased settings-session hardening on main:** browser requests can instead use a settings session. The settings page never contains the key: Smart Search opens it with a one-time code (single use, two minutes), which the page swaps for an HttpOnly, SameSite=Lax cookie derived from the key; API calls from the page must also send an `X-Smart-Search-Session` header, which cannot be sent cross-site without a CORS preflight. A browser without a session gets a short page with no data. The settings page rejects framing and uses a content security policy with a fresh nonce per page. No arbitrary local path or external URL can be executed through a search request.
 
 ## Lifecycle
 
 The launcher starts the companion and opens the client chosen in setup. With no saved preference, it opens the registered Stremio URL handler. An authenticated existing instance is reused instead of starting another engine. The service remains available without polling Stremio's processes. The browser page may be closed. Quit and OS shutdown cancel any active data preparation.
 
-Automatic catalogue updates run inside the helper (`internal/app/updates.go`); there is no separate service. One goroutine wakes three minutes after start-up and then every 30 minutes. A wake-up that is not due compares a few persisted timestamps and does no I/O. When the interval has passed since the last success (and no backoff or six-hour re-check spacing applies), it sends conditional `HEAD` requests for the dataset files and, if a file changed or the server gives nothing to compare, starts the same build as a manual refresh. With alternative titles on, a routine automatic build skips `title.akas` while the last one is under seven days old and copies aliases by type and ID from the current snapshot (`catalog.CarryAliases`, which decodes only IDs and aliases); an unreadable snapshot falls back to downloading it. User settings (`updates.json`) are kept apart from bookkeeping (`update-state.json`: last success, last check and result, failures, retry time, an in-progress marker and per-file `ETag`, `Last-Modified` and size, and when `title.akas` was last downloaded). Persisted times in the future are clamped to now. On Windows the machine-wide connection cost comes from the Network List Manager (`INetworkCostManager`) through COM; other systems report it as unknown. See [CATALOGUE.md](CATALOGUE.md#automatic-updates) for the user-facing behaviour.
+Automatic catalogue updates run inside the helper (`internal/app/updates.go`); there is no separate service. One goroutine wakes three minutes after start-up and then every 30 minutes. A wake-up that is not due compares a few persisted timestamps and does no I/O. When the interval has passed since the last success (and no backoff or six-hour re-check spacing applies), it sends conditional `HEAD` requests for the dataset files and, if a file changed or the server gives nothing to compare, starts the same build as a manual refresh.
+
+With alternative titles on, a routine automatic build skips `title.akas` while the last one is under seven days old and copies aliases by type and ID from the current snapshot (`catalog.CarryAliases`, which decodes only IDs and aliases); an unreadable snapshot falls back to downloading it.
+
+User settings (`updates.json`) are kept apart from bookkeeping (`update-state.json`: last success, last check and result, failures, retry time, an in-progress marker and per-file `ETag`, `Last-Modified` and size, and when `title.akas` was last downloaded). Persisted times in the future are clamped to now.
+
+On Windows the machine-wide connection cost comes from the Network List Manager (`INetworkCostManager`) through COM; other systems report it as unknown. See [CATALOGUE.md](CATALOGUE.md#automatic-updates) for the user-facing behaviour.
 
 The helper is loopback-only by default. An advanced `--listen` option permits server hosting, but remote settings remain blocked. Cross-device use requires client-compatible transport, commonly HTTPS through a reverse proxy. These paths require separate verification from a local desktop install.
 

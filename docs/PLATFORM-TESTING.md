@@ -1,9 +1,8 @@
 # Platform testing
 
-Recorded platform testing as of 2026-11-01. Windows includes a test of the
-published `0.1.0-preview.3` packages; the sections below distinguish earlier
-source/package checks from release-download tests. These records do not establish
-that every later main commit has been device-tested.
+Historical device/package testing recorded on 2026-11-01, with later automated benchmark coverage linked below. The latest public download is preview.5; these records do not establish a new interactive device test for its packages or every current-main change.
+
+Windows includes a test of the published `0.1.0-preview.3` packages. The sections below distinguish source/package checks, release-download tests and remaining manual checks.
 
 | Platform | Status |
 |---|---|
@@ -38,7 +37,7 @@ Tested on Ubuntu 24.04.5 x64 with the packages built by `tools/package`.
 
 - `go vet`, `go test ./...` and `node scripts/ui-test.mjs` pass.
 - linux/amd64 and linux/arm64 builds are static binaries (about 7 MB); the .deb and .tar.gz are about 3 MB each.
-- `sudo apt install ./StremioSmartSearch-<version>-Linux-x64.deb` installs `/usr/bin/stremio-smart-search`, two menu entries and the icon, and pulls in `xdg-utils`. Plain `dpkg -i` stops with an unmet dependency when `xdg-utils` is missing, so prefer `apt install ./file.deb`.
+- `sudo apt install ./StremioSmartSearch-<version>-Linux-x64.deb` installs `/usr/bin/stremio-smart-search`, two menu entries and the icon at the time of this test (preview.5 also adds **Quit Smart Search**), and pulls in `xdg-utils`. Plain `dpkg -i` stops with an unmet dependency when `xdg-utils` is missing, so prefer `apt install ./file.deb`.
 - With the test catalogue: the status API returns 200 with the control key and 403 without it. `/manifest.json` lists both catalogs. `HOTD`, `interstelar` and `LOTR` return the expected first result. The settings page and its assets load, and `/api/quit` stops the helper cleanly.
 - Search latency was about 0.5 ms and resident memory about 9 MB with the test catalogue. These are not full-catalogue figures.
 - Starting without a browser or display works; the failed browser launch is ignored.
@@ -61,7 +60,7 @@ CI cannot show the Gatekeeper prompt after a browser download, or the launcher o
 
 The companion does not run on the TV. It runs on a computer on the same network, and Stremio on the TV installs the addon from that computer's address.
 
-By default the helper listens on `127.0.0.1:11479`, so other devices cannot reach it. Starting it with `--listen 0.0.0.0:11479` makes it reachable. Tested from a non-loopback address, `/manifest.json` and catalog searches return 200, while the settings page and every `/api/` route return 403 even with the control key. Only search is exposed, and settings stay on the host computer.
+By default the helper listens on `127.0.0.1:11479`, so other devices cannot reach it. Starting it with `--listen 0.0.0.0:11479` makes it reachable. Tested from a non-loopback address, `/manifest.json` and catalog searches return 200, while the settings page and every `/api/` route return 403 even with the control key. Only addon routes are exposed (manifest, catalogue search and, since preview.5, logo); settings stay on the host computer.
 
 To try it:
 
@@ -84,4 +83,4 @@ Gaps before LAN mode is a supported feature:
 ## Small packaging notes
 
 - The Linux .tar.gz has no top-level folder, so it extracts into the current directory.
-- The published preview.3 macOS app bundles have no icon (`Contents/Resources/*.icns`). Preview.4 now packages `AppIcon.icns`; the icon's desktop appearance still needs native verification.
+- The published preview.3 macOS app bundles have no icon (`Contents/Resources/*.icns`). Preview.4 and later package `AppIcon.icns`; the icon's desktop appearance still needs native verification.

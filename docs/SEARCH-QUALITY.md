@@ -1,62 +1,76 @@
 # Search quality
 
-How accurately Smart Search finds the title someone meant, measured on real
-catalogues with known IMDb answers.
+How often Smart Search finds the intended title, where it still struggles, and how to repeat the checks.
 
-## Preview.4 search quality
+[Latest results](#latest-results) · [Known limits](#remaining-weaknesses) · [Stremio comparison](#compared-with-stremios-default-search-2026-11-02) · [Reproduce](#reproduce) · [Historical measurements](#historical-measurements)
 
-The sound-alike matcher is included in preview.4 but is not in preview.3. The suite then contained **288 cases in 16 categories** (346 in 18 since the [several-misspelled-words change](#several-misspelled-words-2026-11-02)). With alternative
-titles off, the current engine produced the following results on the existing
-local real catalogues during documentation verification:
+## Release and measurement scope
 
-| Catalogue | Titles | Expected answer first | Expected answer in the top five |
+| Version | What these records cover |
+| --- | --- |
+| [Public preview.5](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.5) | Short-word completions, silent-letter spellings and dropped vowels, in addition to preview.4's phonetic matching |
+| Main, not yet released | Several misspelled words and misplaced spaces; measured below at [0ca27a3](https://github.com/EskimoDev/stremio-smart-search/commit/0ca27a321bdadb7e919e8b885c8a91db7ed5c849) |
+| Preview.4 and preview.3 | Earlier, smaller suites; preserved under historical measurements |
+
+## Latest results
+
+Measured **2026-11-03**, using the **346-case, 18-category** suite and existing local IMDb snapshots, with alternative titles off. No new dataset was downloaded. This is an engine-only check of the main revision linked above, with no HTTP time budget, not a measurement of the published preview.5 binary or Stremio's complete results page.
+
+| Catalogue | Titles | Expected answer first | In the top five |
 | --- | ---: | ---: | ---: |
-| Compact | 50,000 | 224/228 (98.2%) | 225/228 (98.7%) |
-| Standard | 184,588 | 222/229 (96.9%) | 226/229 (98.7%) |
-| Expanded | 390,449 | 222/231 (96.1%) | 228/231 (98.7%) |
+| Compact | 50,000 | 283/286 (99.0%) | 285/286 (99.7%) |
+| Standard | 184,588 | 281/287 (97.9%) | 286/287 (99.7%) |
+| Expanded | 390,449 | 281/289 (97.2%) | 288/289 (99.7%) |
 
-Each row also ran three no-answer checks with no false positives. The 54
-language-specific cases did not apply; three additional expected titles were
-outside Compact's coverage and two outside Standard's. Those are excluded from
-the ranking denominator. The current suite adds difficult phonetic cases, so
-these aggregate percentages cannot be compared directly with the smaller
-preview.3 suite below. These snapshots also slightly predate the larger title
-counts in the recorded Windows performance baseline.
+All three catalogues passed the three no-answer checks without false positives. The 54 language-specific cases do not apply with alternatives off. Three expected titles are outside Compact's coverage, two outside Standard's and none outside Expanded's; those are excluded from the ranking denominator.
 
-The [near-code and confidence results](#sound-alike-follow-up-near-codes-and-confidence-2026-11-01)
-cover the latest phonetic-specific checks, including a separate blind validation
-set with known false positives. Tests do not establish accuracy on every search
-or language.
+These snapshots are the same sizes used in the earlier preview.4 quality check. Their counts slightly predate the 184,606/390,470-title performance snapshots. **Do not compare aggregate percentages across different suites or catalogue coverage.** These curated cases are regression evidence, not a claim about every search or language.
 
-## Released preview.3 baseline
+The two additional phonetic suites were rerun separately:
 
-On the original **248-case suite**, after the coverage-ranking follow-up and
-before phonetic matching, the recorded results with alternative titles **off**
-were:
+**Phonetic holdout**
 
-| Catalogue | Expected answer first | Expected answer in the top five |
+| Catalogue | Answer first | In top five |
 | --- | ---: | ---: |
-| Compact | 191/192 (99.5%) | 191/192 (99.5%) |
-| Standard | 190/192 (99.0%) | 191/192 (99.5%) |
-| Expanded | 188/192 (97.9%) | 191/192 (99.5%) |
+| Compact | 26/30 | 27/30 |
+| Standard | 25/30 | 27/30 |
+| Expanded | 25/30 | 27/30 |
 
-These percentages describe a curated test set, not all searches someone might
-make. Each catalogue runs 194 applicable cases: 192 with an expected answer and
-two no-answer checks. The other 54 cases require a particular alternative-title
-language; they are not included in these percentages. The release-era suite had
-248 cases; the current expanded suite is described above. Titles outside a
-catalogue's coverage and unavailable regional names are reported separately
-rather than counted as ranking failures.
+**Phonetic validation**
 
-The earlier-ranking tables below preserve historical before/after comparisons.
-The [coverage-ranking follow-up](#follow-up-prefer-titles-the-query-covers) produced
-this release baseline; the phonetic sections describe later preview.4 work.
-See [remaining weaknesses](#remaining-weaknesses) for examples that still fail.
+| Catalogue | Answer first | False-positive cases |
+| --- | ---: | ---: |
+| Compact | 49/56 | 1 |
+| Standard | 48/56 | 3 |
+| Expanded | 48/56 | 3 |
+
+The holdout has 30 answer cases and one negative; validation has 56 answer cases and 15 negatives. “False-positive cases” counts queries, not the number of wrong results. The files were held back for the original phonetic experiments; rerunning them now is a regression check, not a new blind evaluation.
+
+## Remaining weaknesses
+
+Confirmed in the 2026-11-03 rerun on main, with alternative titles off:
+
+| Query | Expected title | Result |
+| --- | --- | --- |
+| `interstelar` | *Interstellar* | Second on Standard/Expanded, behind the exact title *Interstelar* |
+| `the dark night` | *The Dark Knight* | Second on Expanded, behind the exact title *The Dark Night* |
+| `avatar` (series) | *Avatar: The Last Airbender* | Second on Expanded, behind a series titled *Avatar* |
+| `rattatooey` | *Ratatouille* | Not found on any of the three catalogues |
+| `fone booth` | *Phone Booth* | Second on all three; retrieved, but not ranked first |
+| `toy storee 3` | *Toy Story 3* | Second on all three, behind the first film |
+| `the sicksth sense` | *The Sixth Sense* | Not found in the holdout check on any of the three |
+
+The validation suite still has false positives: one negative query on Compact and three on Standard/Expanded return results. Broader number-word, sequel and spelling gaps from the [Stremio spot check](#compared-with-stremios-default-search-2026-11-02) are recorded separately; that comparison was not rerun for this audit.
+
+Regional cases cover five languages, with Japanese the only non-Latin script tested. Cyrillic, Korean and other scripts still need real-data evaluation. A title outside a catalogue's coverage is not a ranking failure; changing size or enabling alternatives can change which answers are available.
 
 ## The cases
 
 [`testdata/quality/cases.json`](../testdata/quality/cases.json) holds 346
 curated queries in 18 categories:
+
+<details>
+<summary>View all 18 categories and examples</summary>
 
 | Category | What it tests | Example |
 | --- | --- | --- |
@@ -79,14 +93,13 @@ curated queries in 18 categories:
 | multi-typo | several misspelled words, or a space in the wrong place | `gma e of thr`, `bak to teh futre` |
 | negative | queries with no right answer | `qzxqvvnonexistent` |
 
+</details>
+
 A separate file, [`phonetic-holdout.json`](../testdata/quality/phonetic-holdout.json),
-holds 31 more phonetic queries that were written before sound-alike matching
-was designed and were never used to tune it. Score it with
+holds 31 more phonetic queries originally held back for the first sound-alike experiment. Score it with
 `-cases testdata/quality/phonetic-holdout.json`. A third file,
 [`phonetic-validation.json`](../testdata/quality/phonetic-validation.json),
-holds 71 cases (45 sound-alikes, 11 exact-title guards, 15 negatives) written
-before the second round of tuning and scored only after each variant was
-fixed; its per-case results were not inspected while tuning.
+holds 71 cases (45 sound-alikes, 11 exact-title guards, 15 negatives), originally held back for the second round. The historical sections describe those experiments; both files are now also used for regression checks.
 
 Each case lists every acceptable answer as an IMDb ID together with its title
 and start year. Where several answers are right, such as both versions of *The
@@ -99,7 +112,7 @@ IMDb's own data. The type, title (primary or original) and year must all
 match, or the run stops with a ground-truth error. A regional-title case only
 runs on a catalogue built with that language, and only if its title is among
 the regional titles stored for that film. A title missing from a smaller
-catalogue counts as out of coverage, not as a miss. For this baseline, all 121
+catalogue counts as out of coverage, not as a miss. For the original 248-case baseline, all 121
 IDs were also checked against IMDb's `title.basics` file. That check caught
 one wrong case before any scoring: *Harry Potter and the Philosopher's Stone*
 is a regional title in IMDb, not the original title. It moved to the English
@@ -129,16 +142,254 @@ percentages. The tables' **Cases** column includes both kinds.
 
 ## Reproduce
 
+Run from the repository root with Go installed. Use existing real snapshots outside the repository; see [snapshot preparation](PERFORMANCE.md#reproduce) if you do not have them. Preparing new snapshots downloads IMDb data; the quality commands below only read the files supplied.
+
 ```sh
-go run ./tools/quality -v -out ../sss-quality/after -baseline ../sss-quality/before \
-    path/to/compact.json.gz path/to/standard-fr.json.gz ...
+go run ./tools/quality -v -out ../sss-quality/current ../sss-catalogues/standard.json.gz
 ```
 
-Snapshots come from `tools/benchmark -phase prepare` (see
-[PERFORMANCE.md](PERFORMANCE.md#reproduce)) and must stay outside the
-repository. The harness is deterministic: the same build and snapshot always
-give the same report. `go test ./internal/quality` checks the case file and
-the metric code without real data.
+Replace the snapshot path with your own. Add more snapshot paths to the same command to score other sizes or languages. Check the additional suites separately:
+
+```sh
+go run ./tools/quality -cases testdata/quality/phonetic-holdout.json -out ../sss-quality/holdout ../sss-catalogues/standard.json.gz
+go run ./tools/quality -cases testdata/quality/phonetic-validation.json -out ../sss-quality/validation ../sss-catalogues/standard.json.gz
+```
+
+For a before/after comparison, save a run from each build using the **same case file and snapshots**, then add `-baseline ../sss-quality/before` to the candidate command. Reports list per-case rank and false-positive changes. A successful exit does not mean perfect accuracy: review the scores and regression list. Ground-truth errors stop the run.
+
+`go test ./internal/quality` checks the case files and metric code without real data. Keep real snapshots and generated per-title reports outside Git. The same engine, suite and snapshot produce deterministic results; [`sss-bench`](BENCHMARKING.md#search-quality) also checks agreement across fresh processes and HTTP.
+
+## Compared with Stremio's default search, 2026-11-02
+
+**Development result, not the released preview.5 binary.** A spot check of main after the
+[several-misspelled-words change](#several-misspelled-words-2026-11-02)
+against Stremio's built-in search (Cinemeta), on hard queries: dropped vowels,
+several typos, acronyms, sound-alikes and number words. Smart Search used the
+real 2026-11-01 Standard catalogue; Cinemeta's answers came from its public
+search API on 2026-11-02 and may differ between requests or apps.
+
+| Result on 38 queries | Before the 2026-11-02 search fixes | Development version |
+| --- | ---: | ---: |
+| Only Smart Search lists it first | 2 | 12 |
+| Both list it first | 15 | 24 |
+| Only Stremio lists it first | 10 | 1 |
+| Both miss | 11 | 1 |
+
+Examples where only Smart Search finds the title first:
+
+| You type | Smart Search | Stremio's default search |
+| --- | --- | --- |
+| `intrstllr` | *Interstellar* | nothing |
+| `plp fctn` | *Pulp Fiction* | nothing |
+| `gdfthr` | *The Godfather* | *Lust, Caution*, *Hollow Man* |
+| `brkng bd` | *Breaking Bad* | three unrelated series |
+| `bttr cll sl` | *Better Call Saul* | three unrelated series |
+| `teh dakr knight` | *The Dark Knight* | *A Knight's Tale*, *First Knight* |
+| `hous of teh dragn` | *House of the Dragon* | *Dragnet* |
+| `bak to teh futre` | *Back to the Future* | *Ong-Bak* |
+| `hotd` | *House of the Dragon* | *Highschool of the Dead* |
+
+Both now find `fther thd`, `star war`, `strngr thngs`, `twelve angry men`,
+`gma e of thr` and `rik and mortey` first; before these changes only Stremio
+did. Stremio still wins `toy story three` (*Toy Story 3* is second in Smart
+Search), and both miss `too fast too furious`.
+
+Many of these queries helped build the dropped-vowel and
+several-misspelled-words changes, so this is a demonstration, not a blind
+test; the held-back results are in those sections. On the wider set of 243
+hard queries this run comes from, the expected title came first for 205 on
+Standard, against 174 for the earlier engine, with no query worse. Standard,
+Expanded and six alternative-title catalogues all improved by 30–32 queries.
+
+Still weak in Smart Search, from the same run:
+
+- **Number words.** "twenty one jump street", "eight mile" and "too fast too
+  furious" find nothing, and "toy story three" lists *Toy Story* first:
+  "three" and "3" are not linked.
+- **Sequels** list the first film before the numbered one: "rocky 4",
+  "godfather 2" and "terminator 2" give the sequel at rank two or three.
+- **An exact obscure title beats a near-miss of a famous one**: "avenger",
+  "transformer", "gremlin", "euforia" and "kasablanka" rank the famous title
+  second or third.
+- **Mister and doctor** are not linked to Mr. and Dr. ("mister robot",
+  "doctor no"), and some acronyms ("b99", "jjk", "fmab") miss unless English
+  alternative titles are on.
+- **Joined words with a typo** ("brkingbad") and **split sound-alikes**
+  ("gost busters", "wun peace") still find nothing.
+
+<details>
+<summary>Main: several misspelled words — implementation, results and cost</summary>
+
+## Several misspelled words, 2026-11-02
+
+**On main, not yet released:** [PR #40](https://github.com/EskimoDev/stremio-smart-search/pull/40), with the cost follow-up in [#42](https://github.com/EskimoDev/stremio-smart-search/pull/42).
+
+A title has to match every looked-up query word, so one word that matches
+nothing empties the result. With several typos that is common: a three-letter
+word had no typo matching at all ("bda", "rik", "teh"), and a letter pushed
+across a space left a fragment too short to look up ("gma e of thr" for "game
+of thr"). Main returned nothing for 11 of 55 such tuning queries.
+
+The query as typed is still scored first. Only when no title matches every
+word at least as well as a one-letter typo are other readings tried, and each
+title keeps its best score:
+
+- **One word left out**, scoring nothing for it and 10 points less. In a
+  two-word query only a word of up to four letters may be left out, and the
+  words that do match must average a two-letter typo or better, so gibberish
+  such as "zarnet bluve" still finds nothing.
+- **A fragment joined to its neighbour**: "gma e" is read as "gmae", one swap
+  from "game". A fragment is one letter, or two letters few titles use, so
+  "de" and "la" are not joined to everything.
+- **Spaces moved or added**: two words that form an indexed word when joined
+  ("shaw shank"), two words split at another point into indexed words ("gam
+  eof" as "game of"), and a word that is two indexed words run together
+  ("maxfury"). Words found this way weigh .8.
+- **Three-letter typos**: a rare three-letter word is tried with a swapped pair
+  (.72, "gyu" for "guy") or one missing letter (.68, "bak" for "back"). Stop
+  words are not targets.
+
+Results on real 2026-11-01 snapshots, Standard and Expanded:
+
+| Set | Before PR #40 | After the change |
+| --- | ---: | ---: |
+| Tuning set, 55 queries | 44 | 55 |
+| Held-back set 1, 30 queries | 28 | 29 |
+| Held-back set 2, 32 queries | 21 | 32 |
+
+Set 1 was written before any change and never tuned on; set 2 was written
+after the first version, and two of its misses ("family gyu", "bak to teh
+futre") led to the three-letter typo probes, so it is not fully blind. The
+remaining set-1 miss, "the witch" for *The Witcher*, ranks third behind two
+films titled *The Witch*, which is a fair answer.
+
+33 of these queries are now the `multi-typo` category in `cases.json`, and the
+25 dropped-vowel showcase queries are the `dropped-vowel` category. Top-1 on
+the new categories, main → this change, on Compact, Standard and Expanded:
+multi-typo 30.3% → 100%, dropped-vowel 96.0% → 100%. Across the existing
+suites (`cases.json`, the phonetic held-out and validation files) on all 11
+snapshots no case got worse; 67 case results improved, among them "doctor
+hoo", "the sicksth sense", "lay mizerables" and "fone booth".
+
+Speed: the first version tried the other readings for every query and made
+typical searches about 28% slower in `sss-bench`. Trying them only when the
+query as typed matches poorly brought the real Standard A/B back to no
+significant change on all 12 primary metrics (exit 0). Uncorrected hints
+remain: engine-only throughput 7–10% lower and 6% more bytes per search, from
+the queries that do take the slower path.
+
+</details>
+
+<details>
+<summary>Preview.5: dropped vowels — implementation, results and cost</summary>
+
+## Dropped vowels, 2026-11-02
+
+**Released in preview.5.** These are the original before/after measurements for [PR #39](https://github.com/EskimoDev/stremio-smart-search/pull/39).
+
+Queries typed without most vowels, such as `strngr thngs`, `gdfthr` or
+`blck mrrr`, are three or more edits from the words they mean, past the typo
+limit (one edit up to six letters, two from seven), and they do not sound like
+anything, so neither typo nor sound-alike matching found them. Of 25 such
+queries in a hard real-data set, 2 ranked the right title first.
+
+- **How it works.** The vocabulary is also kept in consonant-skeleton order:
+  a word without a, e, i, o, u (and y after the first letter), writing a
+  consonant that repeats the one before it once (`stranger` is `strngr`,
+  `succession` and `sccssn` are both `scsn`, `mirror` and `mrrr` are both
+  `mr`). Only word numbers are stored; skeletons are worked out while
+  comparing, as joined keys are. A query word with at most one vowel looks up
+  words with the same skeleton, or, from four consonants, one more consonant
+  at the end (`thron` for `thrones`). Every typed letter must appear in the
+  word in order, so `frnds` never means *fiends*. Up to 8 words per query word
+  are kept, those of the most popular titles first, at weight 0.7 (0.64 for
+  the longer skeleton): between one typo (0.76) and two (0.6). Words already
+  matched by spelling keep their weight. A query word that is itself used by
+  50 or more titles (`star`, `dark`, `born`) is taken as typed and skips the
+  lookup, which keeps ordinary queries as fast as before.
+- **Results.** On the 2026-11-01 Standard and Expanded snapshots, 24 of the
+  25 missing-vowel queries now rank the right title first, against 2 before,
+  and two combined cases (`lrd of th rngs retrn kng`, `gdfthr 1972`) are
+  fixed too. Across the whole 261-query set, top-1 went from 176 to 200 on
+  Standard and from 173 to 197 on Expanded, with no query ranked worse. The
+  curated cases, held-out and validation sets had no regression on any of the
+  eleven snapshots. `fther thd` still missed at this stage (the later multi-typo change finds it): `thd` has an extra h rather than a
+  missing vowel.
+- **Costs.** Heap after indexing grows by 0.39 MiB on Standard (28.52 →
+  28.91 MiB), 0.69 MiB on Expanded and 0.74 MiB on Expanded French, about
+  1.2%. Index build changes within run-to-run noise (best of five, Expanded:
+  2.52–2.57 → 2.56–2.81 s on the cloud VM). A first version that also looked
+  up common words cost 6% on warm median engine time on Standard on a Ryzen
+  5600X (0.191 → 0.203 ms, the one regression `sss-bench ab` flagged), with
+  the international class up 8–12%. With common words skipped, `sss-bench ab --profile standard` on the real Standard snapshot shows warm engine p50
+  0.401 → 0.403 ms, p95 0.968 → 0.990 ms and international p95 0.685 → 0.684
+  ms on the cloud VM, with no primary metric changed (exit 0). Random strings
+  of four to seven letters with at most one vowel, the only inputs the new
+  lookup sees, return something 20.8% of the time on Standard instead of
+  19.6%, and 24.9% instead of 23.5% on Expanded French; two such words
+  together, 0.5% instead of 0.3%.
+
+</details>
+
+## Historical measurements
+
+These records preserve earlier suites, implementation choices and costs. Their “before” and “after” refer to that experiment, not today’s main. They are not interchangeable accuracy claims.
+
+<details>
+<summary>Preview.4 and preview.3 full-suite baselines</summary>
+
+## Preview.4 search quality
+
+Historical preview.4 check on **288 cases in 16 categories**, with alternative titles off. These are not current-main results; the latest suite and its denominators are shown at the top of this page:
+
+| Catalogue | Titles | Expected answer first | Expected answer in the top five |
+| --- | ---: | ---: | ---: |
+| Compact | 50,000 | 224/228 (98.2%) | 225/228 (98.7%) |
+| Standard | 184,588 | 222/229 (96.9%) | 226/229 (98.7%) |
+| Expanded | 390,449 | 222/231 (96.1%) | 228/231 (98.7%) |
+
+Each row also ran three no-answer checks with no false positives. The 54
+language-specific cases did not apply; three additional expected titles were
+outside Compact's coverage and two outside Standard's. Those are excluded from
+the ranking denominator. This suite added difficult phonetic cases, so
+these aggregate percentages cannot be compared directly with the smaller
+preview.3 suite below. These snapshots also slightly predate the larger title
+counts in the recorded Windows performance baseline.
+
+The [near-code and confidence results](#sound-alike-follow-up-near-codes-and-confidence-2026-11-01)
+cover the preview.4 phonetic-specific checks, including a separate blind validation
+set with known false positives. Tests do not establish accuracy on every search
+or language.
+
+## Released preview.3 baseline
+
+On the original **248-case suite**, after the coverage-ranking follow-up and
+before phonetic matching, the recorded results with alternative titles **off**
+were:
+
+| Catalogue | Expected answer first | Expected answer in the top five |
+| --- | ---: | ---: |
+| Compact | 191/192 (99.5%) | 191/192 (99.5%) |
+| Standard | 190/192 (99.0%) | 191/192 (99.5%) |
+| Expanded | 188/192 (97.9%) | 191/192 (99.5%) |
+
+These percentages describe a curated test set, not all searches someone might
+make. Each catalogue runs 194 applicable cases: 192 with an expected answer and
+two no-answer checks. The other 54 cases require a particular alternative-title
+language; they are not included in these percentages. The release-era suite had
+248 cases; the current expanded suite is described in [The cases](#the-cases). Titles outside a
+catalogue's coverage and unavailable regional names are reported separately
+rather than counted as ranking failures.
+
+The earlier-ranking tables below preserve historical before/after comparisons.
+The [coverage-ranking follow-up](#follow-up-prefer-titles-the-query-covers) produced
+this release baseline; the phonetic sections describe later preview.4 work.
+See [remaining weaknesses](#remaining-weaknesses) for examples that still fail.
+
+</details>
+
+<details>
+<summary>Preview.3 ranking experiments and coverage follow-up</summary>
 
 ## Earlier ranking fixes, 2026-11-01
 
@@ -150,19 +401,37 @@ which preserved the pre-rewrite search results. "After" includes the first five
 fixes below, before the later coverage-ranking follow-up. These are historical
 comparisons, not the final preview.3 totals.
 
-| Catalogue | Cases | Top-1 | Recall@5 | MRR | Missing | False-positive cases |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Compact | 194 | 92.7% → 98.4% | 93.8% → 99.5% | 0.932 → 0.990 | 12 → 1 | 1 → 0 |
-| Standard | 194 | 92.2% → 97.9% | 93.8% → 99.5% | 0.930 → 0.987 | 12 → 1 | 0 → 0 |
-| Expanded | 194 | 91.1% → 96.9% | 93.8% → 99.5% | 0.924 → 0.982 | 12 → 1 | 0 → 0 |
-| Compact, French | 216 | 92.5% → 98.1% | 93.9% → 99.1% | 0.932 → 0.986 | 13 → 2 | 1 → 0 |
-| Standard, French | 216 | 92.1% → 97.7% | 93.9% → 99.1% | 0.929 → 0.984 | 13 → 2 | 0 → 0 |
-| Expanded, French | 216 | 90.2% → 96.7% | 93.5% → 99.1% | 0.917 → 0.979 | 14 → 2 | 0 → 0 |
-| Standard, English | 198 | 92.3% → 98.0% | 93.9% → 99.5% | 0.931 → 0.987 | 12 → 1 | 0 → 0 |
-| Standard, Spanish | 203 | 91.0% → 98.0% | 93.5% → 99.5% | 0.923 → 0.988 | 13 → 1 | 0 → 0 |
-| Standard, Spanish (Spain) | 203 | 91.0% → 98.0% | 93.5% → 99.5% | 0.923 → 0.988 | 13 → 1 | 0 → 0 |
-| Standard, German | 205 | 92.6% → 98.0% | 94.1% → 99.5% | 0.933 → 0.988 | 12 → 1 | 0 → 0 |
-| Standard, Japanese | 202 | 92.5% → 98.0% | 94.0% → 99.5% | 0.932 → 0.988 | 12 → 1 | 0 → 0 |
+**Ranking**
+
+| Catalogue | Cases | Top-1 | Recall@5 | MRR |
+| --- | ---: | ---: | ---: | ---: |
+| Compact | 194 | 92.7% → 98.4% | 93.8% → 99.5% | 0.932 → 0.990 |
+| Standard | 194 | 92.2% → 97.9% | 93.8% → 99.5% | 0.930 → 0.987 |
+| Expanded | 194 | 91.1% → 96.9% | 93.8% → 99.5% | 0.924 → 0.982 |
+| Compact, French | 216 | 92.5% → 98.1% | 93.9% → 99.1% | 0.932 → 0.986 |
+| Standard, French | 216 | 92.1% → 97.7% | 93.9% → 99.1% | 0.929 → 0.984 |
+| Expanded, French | 216 | 90.2% → 96.7% | 93.5% → 99.1% | 0.917 → 0.979 |
+| Standard, English | 198 | 92.3% → 98.0% | 93.9% → 99.5% | 0.931 → 0.987 |
+| Standard, Spanish | 203 | 91.0% → 98.0% | 93.5% → 99.5% | 0.923 → 0.988 |
+| Standard, Spanish (Spain) | 203 | 91.0% → 98.0% | 93.5% → 99.5% | 0.923 → 0.988 |
+| Standard, German | 205 | 92.6% → 98.0% | 94.1% → 99.5% | 0.933 → 0.988 |
+| Standard, Japanese | 202 | 92.5% → 98.0% | 94.0% → 99.5% | 0.932 → 0.988 |
+
+**Missing answers and false positives**
+
+| Catalogue | Cases | Missing | False-positive cases |
+| --- | ---: | ---: | ---: |
+| Compact | 194 | 12 → 1 | 1 → 0 |
+| Standard | 194 | 12 → 1 | 0 → 0 |
+| Expanded | 194 | 12 → 1 | 0 → 0 |
+| Compact, French | 216 | 13 → 2 | 1 → 0 |
+| Standard, French | 216 | 13 → 2 | 0 → 0 |
+| Expanded, French | 216 | 14 → 2 | 0 → 0 |
+| Standard, English | 198 | 12 → 1 | 0 → 0 |
+| Standard, Spanish | 203 | 13 → 1 | 0 → 0 |
+| Standard, Spanish (Spain) | 203 | 13 → 1 | 0 → 0 |
+| Standard, German | 205 | 12 → 1 | 0 → 0 |
+| Standard, Japanese | 202 | 12 → 1 | 0 → 0 |
 
 No case got worse on any catalogue. The "hotd" movie case scores top-1 either
 way, so its fix shows only in the false-positive column. On Compact, *Hot
@@ -246,145 +515,10 @@ obscure exact title, so that "interstelar" lists *Interstellar* first. It
 fixed four curated cases, but generated exact-title top-5 on Expanded fell
 from 99.4% to 97.7%. People who type an obscure title exactly would lose it.
 
-## Remaining weaknesses
+</details>
 
-- **An exact obscure title beats a near-miss of a famous one.** "interstelar"
-  lists the 2016 film *Interstelar* before *Interstellar*, and "the dark
-  night" does the same with *The Dark Night*. Both are listed second. Making
-  popularity outweigh an exact match would need a vote-ratio rule that the
-  current cases cannot justify.
-- **Phonetic spellings, partly (preview.4).** "rattatooey", "fone
-  booth", "the dark nite" and "nite rider" still miss. The near-code follow-up
-  finds "back to the fucher", "the wocking dead" and "brekin bad"; "pinokkio"
-  reaches rank four on Expanded. Three-letter words such as "hoo" and long
-  consonant runs such as "sicksth" are excluded. See the
-  [latest follow-up](#sound-alike-follow-up-near-codes-and-confidence-2026-11-01).
-- **Three-letter typos, partly.** Since the
-  [several-misspelled-words change](#several-misspelled-words-2026-11-02), a
-  rare three-letter word gets a swapped pair or one missing letter ("gyu",
-  "bak"), but only when the query as typed matches poorly. Other three-letter
-  typos still rely on the rest of the query.
-- **Shared exact names.** "avatar" as a series lists the 2024 series
-  *Avatar* before *Avatar: The Last Airbender*. The exact name is a fair
-  answer.
-- **Coverage.** Regional cases exist for five languages, and only Japanese
-  tests non-Latin script. No case covers Cyrillic, Korean or other scripts
-  yet: IMDb's original titles are romanised, and no snapshot was built with
-  those languages.
-
-## Compared with Stremio's default search, 2026-11-02
-
-A spot check of the development version (main after the
-[several-misspelled-words change](#several-misspelled-words-2026-11-02))
-against Stremio's built-in search (Cinemeta), on hard queries: dropped vowels,
-several typos, acronyms, sound-alikes and number words. Smart Search used the
-real 2026-11-01 Standard catalogue; Cinemeta's answers came from its public
-search API on the same day and may differ between requests or apps.
-
-| Result on 38 queries | Before the 2026-11-02 search fixes | Development version |
-| --- | ---: | ---: |
-| Only Smart Search lists it first | 2 | 12 |
-| Both list it first | 15 | 24 |
-| Only Stremio lists it first | 10 | 1 |
-| Both miss | 11 | 1 |
-
-Examples where only Smart Search finds the title first:
-
-| You type | Smart Search | Stremio's default search |
-| --- | --- | --- |
-| `intrstllr` | *Interstellar* | nothing |
-| `plp fctn` | *Pulp Fiction* | nothing |
-| `gdfthr` | *The Godfather* | *Lust, Caution*, *Hollow Man* |
-| `brkng bd` | *Breaking Bad* | three unrelated series |
-| `bttr cll sl` | *Better Call Saul* | three unrelated series |
-| `teh dakr knight` | *The Dark Knight* | *A Knight's Tale*, *First Knight* |
-| `hous of teh dragn` | *House of the Dragon* | *Dragnet* |
-| `bak to teh futre` | *Back to the Future* | *Ong-Bak* |
-| `hotd` | *House of the Dragon* | *Highschool of the Dead* |
-
-Both now find `fther thd`, `star war`, `strngr thngs`, `twelve angry men`,
-`gma e of thr` and `rik and mortey` first; before these changes only Stremio
-did. Stremio still wins `toy story three` (*Toy Story 3* is second in Smart
-Search), and both miss `too fast too furious`.
-
-Many of these queries helped build the dropped-vowel and
-several-misspelled-words changes, so this is a demonstration, not a blind
-test; the held-back results are in those sections. On the wider set of 243
-hard queries this run comes from, the expected title came first for 205 on
-Standard, against 174 for the earlier engine, with no query worse. Standard,
-Expanded and six alternative-title catalogues all improved by 30–32 queries.
-
-Still weak in Smart Search, from the same run:
-
-- **Number words.** "twenty one jump street", "eight mile" and "too fast too
-  furious" find nothing, and "toy story three" lists *Toy Story* first:
-  "three" and "3" are not linked.
-- **Sequels** list the first film before the numbered one: "rocky 4",
-  "godfather 2" and "terminator 2" give the sequel at rank two or three.
-- **An exact obscure title beats a near-miss of a famous one**: "avenger",
-  "transformer", "gremlin", "euforia" and "kasablanka" rank the famous title
-  second or third.
-- **Mister and doctor** are not linked to Mr. and Dr. ("mister robot",
-  "doctor no"), and some acronyms ("b99", "jjk", "fmab") miss unless English
-  alternative titles are on.
-- **Joined words with a typo** ("brkingbad") and **split sound-alikes**
-  ("gost busters", "wun peace") still find nothing.
-
-## Several misspelled words, 2026-11-02
-
-A title has to match every looked-up query word, so one word that matches
-nothing empties the result. With several typos that is common: a three-letter
-word had no typo matching at all ("bda", "rik", "teh"), and a letter pushed
-across a space left a fragment too short to look up ("gma e of thr" for "game
-of thr"). Main returned nothing for 11 of 55 such tuning queries.
-
-The query as typed is still scored first. Only when no title matches every
-word at least as well as a one-letter typo are other readings tried, and each
-title keeps its best score:
-
-- **One word left out**, scoring nothing for it and 10 points less. In a
-  two-word query only a word of up to four letters may be left out, and the
-  words that do match must average a two-letter typo or better, so gibberish
-  such as "zarnet bluve" still finds nothing.
-- **A fragment joined to its neighbour**: "gma e" is read as "gmae", one swap
-  from "game". A fragment is one letter, or two letters few titles use, so
-  "de" and "la" are not joined to everything.
-- **Spaces moved or added**: two words that form an indexed word when joined
-  ("shaw shank"), two words split at another point into indexed words ("gam
-  eof" as "game of"), and a word that is two indexed words run together
-  ("maxfury"). Words found this way weigh .8.
-- **Three-letter typos**: a rare three-letter word is tried with a swapped pair
-  (.72, "gyu" for "guy") or one missing letter (.68, "bak" for "back"). Stop
-  words are not targets.
-
-Results on real 2026-11-01 snapshots, Standard and Expanded:
-
-| Set | Main | This change |
-| --- | ---: | ---: |
-| Tuning set, 55 queries | 44 | 55 |
-| Held-back set 1, 30 queries | 28 | 29 |
-| Held-back set 2, 32 queries | 21 | 32 |
-
-Set 1 was written before any change and never tuned on; set 2 was written
-after the first version, and two of its misses ("family gyu", "bak to teh
-futre") led to the three-letter typo probes, so it is not fully blind. The
-remaining set-1 miss, "the witch" for *The Witcher*, ranks third behind two
-films titled *The Witch*, which is a fair answer.
-
-33 of these queries are now the `multi-typo` category in `cases.json`, and the
-25 dropped-vowel showcase queries are the `dropped-vowel` category. Top-1 on
-the new categories, main → this change, on Compact, Standard and Expanded:
-multi-typo 30.3% → 100%, dropped-vowel 96.0% → 100%. Across the existing
-suites (`cases.json`, the phonetic held-out and validation files) on all 11
-snapshots no case got worse; 67 case results improved, among them "doctor
-hoo", "the sicksth sense", "lay mizerables" and "fone booth".
-
-Speed: the first version tried the other readings for every query and made
-typical searches about 28% slower in `sss-bench`. Trying them only when the
-query as typed matches poorly brought the real Standard A/B back to no
-significant change on all 12 primary metrics (exit 0). Uncorrected hints
-remain: engine-only throughput 7–10% lower and 6% more bytes per search, from
-the queries that do take the slower path.
+<details>
+<summary>Preview.4: first sound-alike implementation</summary>
 
 ## Sound-alike fallback, 2026-11-01
 
@@ -463,19 +597,53 @@ was picked, confirms most of the gain.
 Curated cases, before → after, on all eleven real snapshots. No case got
 worse on any catalogue in either file, and no false positive was added.
 
-| Catalogue | All cases top-1 | All cases top-5 | Phonetic top-1 | Phonetic top-5 | Held-out top-1 | Held-out top-5 |
-| --- | --- | --- | --- | --- | --- | --- |
-| Compact | 89.0% → 96.9% | 89.0% → 97.4% | 33.3% → 80.6% | 33.3% → 83.3% | 43.3% → 70.0% | 46.7% → 76.7% |
-| Standard | 87.3% → 95.6% | 88.2% → 96.9% | 27.0% → 75.7% | 29.7% → 81.1% | 43.3% → 63.3% | 46.7% → 73.3% |
-| Expanded | 86.1% → 94.8% | 87.9% → 97.0% | 28.2% → 76.9% | 30.8% → 82.1% | 43.3% → 63.3% | 46.7% → 73.3% |
-| Compact, French | 90.4% → 96.8% | 90.4% → 97.2% | 38.9% → 80.6% | 38.9% → 83.3% | 43.3% → 66.7% | 46.7% → 76.7% |
-| Standard, French | 88.8% → 95.6% | 89.6% → 96.8% | 32.4% → 75.7% | 35.1% → 81.1% | 43.3% → 66.7% | 46.7% → 73.3% |
-| Expanded, French | 87.7% → 94.9% | 89.3% → 96.8% | 33.3% → 76.9% | 35.9% → 82.1% | 43.3% → 66.7% | 46.7% → 73.3% |
-| Standard, English | 87.6% → 95.7% | 88.4% → 97.0% | 27.0% → 75.7% | 29.7% → 81.1% | 43.3% → 63.3% | 46.7% → 73.3% |
-| Standard, Spanish | 87.4% → 95.8% | 88.2% → 97.5% | 24.3% → 75.7% | 27.0% → 83.8% | 43.3% → 63.3% | 50.0% → 76.7% |
-| Standard, Spanish (Spain) | 87.8% → 95.8% | 88.7% → 97.5% | 27.0% → 75.7% | 29.7% → 83.8% | 40.0% → 60.0% | 46.7% → 73.3% |
-| Standard, German | 87.5% → 95.8% | 88.3% → 97.1% | 24.3% → 75.7% | 27.0% → 81.1% | 43.3% → 63.3% | 46.7% → 70.0% |
-| Standard, Japanese | 88.2% → 95.8% | 89.5% → 97.5% | 29.7% → 75.7% | 35.1% → 83.8% | 43.3% → 63.3% | 46.7% → 73.3% |
+**All curated cases**
+
+| Catalogue | All cases top-1 | All cases top-5 |
+| --- | ---: | ---: |
+| Compact | 89.0% → 96.9% | 89.0% → 97.4% |
+| Standard | 87.3% → 95.6% | 88.2% → 96.9% |
+| Expanded | 86.1% → 94.8% | 87.9% → 97.0% |
+| Compact, French | 90.4% → 96.8% | 90.4% → 97.2% |
+| Standard, French | 88.8% → 95.6% | 89.6% → 96.8% |
+| Expanded, French | 87.7% → 94.9% | 89.3% → 96.8% |
+| Standard, English | 87.6% → 95.7% | 88.4% → 97.0% |
+| Standard, Spanish | 87.4% → 95.8% | 88.2% → 97.5% |
+| Standard, Spanish (Spain) | 87.8% → 95.8% | 88.7% → 97.5% |
+| Standard, German | 87.5% → 95.8% | 88.3% → 97.1% |
+| Standard, Japanese | 88.2% → 95.8% | 89.5% → 97.5% |
+
+**Phonetic category**
+
+| Catalogue | Phonetic top-1 | Phonetic top-5 |
+| --- | ---: | ---: |
+| Compact | 33.3% → 80.6% | 33.3% → 83.3% |
+| Standard | 27.0% → 75.7% | 29.7% → 81.1% |
+| Expanded | 28.2% → 76.9% | 30.8% → 82.1% |
+| Compact, French | 38.9% → 80.6% | 38.9% → 83.3% |
+| Standard, French | 32.4% → 75.7% | 35.1% → 81.1% |
+| Expanded, French | 33.3% → 76.9% | 35.9% → 82.1% |
+| Standard, English | 27.0% → 75.7% | 29.7% → 81.1% |
+| Standard, Spanish | 24.3% → 75.7% | 27.0% → 83.8% |
+| Standard, Spanish (Spain) | 27.0% → 75.7% | 29.7% → 83.8% |
+| Standard, German | 24.3% → 75.7% | 27.0% → 81.1% |
+| Standard, Japanese | 29.7% → 75.7% | 35.1% → 83.8% |
+
+**Held-out queries**
+
+| Catalogue | Held-out top-1 | Held-out top-5 |
+| --- | ---: | ---: |
+| Compact | 43.3% → 70.0% | 46.7% → 76.7% |
+| Standard | 43.3% → 63.3% | 46.7% → 73.3% |
+| Expanded | 43.3% → 63.3% | 46.7% → 73.3% |
+| Compact, French | 43.3% → 66.7% | 46.7% → 76.7% |
+| Standard, French | 43.3% → 66.7% | 46.7% → 73.3% |
+| Expanded, French | 43.3% → 66.7% | 46.7% → 73.3% |
+| Standard, English | 43.3% → 63.3% | 46.7% → 73.3% |
+| Standard, Spanish | 43.3% → 63.3% | 50.0% → 76.7% |
+| Standard, Spanish (Spain) | 40.0% → 60.0% | 46.7% → 73.3% |
+| Standard, German | 43.3% → 63.3% | 46.7% → 70.0% |
+| Standard, Japanese | 43.3% → 63.3% | 46.7% → 73.3% |
 
 "All cases" now includes the phonetic category, so its "before" is lower
 than in the tables above. On the original 248 cases alone, the only change
@@ -527,8 +695,7 @@ generated one-typo queries and 500 random strings), five passes each.
 | Expanded | 65.0 → 66.6 MiB | 1,730 → 1,814 ms | 0.314 → 0.352 ms | 1.010 → 1.090 ms | 1.641 → 1.749 ms |
 
 The fixed HTTP workload in [PERFORMANCE.md](PERFORMANCE.md) showed no change
-beyond run-to-run noise, and RSS stayed within noise. The Windows figures
-there have not been re-run.
+beyond run-to-run noise, and RSS stayed within noise. This experiment did not rerun the Windows workload; later preview.4 measurements are recorded on the performance page.
 
 ### Limits
 
@@ -542,6 +709,11 @@ there have not been re-run.
   halves the random-string rate at the cost of two held-out titles.
 - Words of three letters (`hoo`) and words with long consonant runs
   (`sicksth`) get no sound-alikes.
+
+</details>
+
+<details>
+<summary>Preview.4: near-code and confidence follow-up</summary>
 
 ## Sound-alike follow-up: near codes and confidence, 2026-11-01
 
@@ -575,11 +747,21 @@ Real snapshots, PR #20's fallback → this follow-up. "Random" is the share of
 anything. "Validation" counts the 56 positive cases of the new set; "fp"
 the negatives that returned something.
 
-| Catalogue | Phonetic top-1 / top-5 | Held-out top-1 / top-5 | Validation top-1 (fp) | Two typos top-1 | Random |
-| --- | --- | --- | --- | --- | --- |
-| Compact | 80.6 / 83.3 → 88.9 / 91.7% | 70.0 / 76.7 → 76.7 / 80.0% | 75.0% (3) → 80.4% (1) | 82.9 → 83.1% | 23.1 → 6.9% |
-| Standard | 75.7 / 81.1 → 83.8 / 91.9% | 63.3 / 73.3 → 73.3 / 80.0% | 73.2% (5) → 78.6% (3) | 76.6 → 77.3% | 31.8 → 10.2% |
-| Expanded | 76.9 / 82.1 → 84.6 / 92.3% | 63.3 / 73.3 → 73.3 / 80.0% | 71.4% (5) → 76.8% (3) | 71.8 → 73.5% | 36.8 → 12.7% |
+**Curated and validation results**
+
+| Catalogue | Phonetic top-1 / top-5 | Held-out top-1 / top-5 | Validation top-1 (fp) |
+| --- | ---: | ---: | ---: |
+| Compact | 80.6 / 83.3 → 88.9 / 91.7% | 70.0 / 76.7 → 76.7 / 80.0% | 75.0% (3) → 80.4% (1) |
+| Standard | 75.7 / 81.1 → 83.8 / 91.9% | 63.3 / 73.3 → 73.3 / 80.0% | 73.2% (5) → 78.6% (3) |
+| Expanded | 76.9 / 82.1 → 84.6 / 92.3% | 63.3 / 73.3 → 73.3 / 80.0% | 71.4% (5) → 76.8% (3) |
+
+**Generated queries and random matches**
+
+| Catalogue | Two typos top-1 | Random |
+| --- | ---: | ---: |
+| Compact | 82.9 → 83.1% | 23.1 → 6.9% |
+| Standard | 76.6 → 77.3% | 31.8 → 10.2% |
+| Expanded | 71.8 → 73.5% | 36.8 → 12.7% |
 
 On main, before any sound-alike matching, Expanded scored 41.1% on the
 validation set and 8.1% on random strings. Exact, one-typo, prefix and joined
@@ -596,47 +778,4 @@ latency, medians of three interleaved runs at `GOMAXPROCS=2`: Expanded p50
 final L), `goast` and `the prestij` (found but ranked low), `doctor hoo`
 (three letters) and `the sicksth sense` (consonant run).
 
-## Dropped vowels, 2026-11-02
-
-Queries typed without most vowels, such as `strngr thngs`, `gdfthr` or
-`blck mrrr`, are three or more edits from the words they mean, past the typo
-limit (one edit up to six letters, two from seven), and they do not sound like
-anything, so neither typo nor sound-alike matching found them. Of 25 such
-queries in a hard real-data set, 2 ranked the right title first.
-
-- **How it works.** The vocabulary is also kept in consonant-skeleton order:
-  a word without a, e, i, o, u (and y after the first letter), writing a
-  consonant that repeats the one before it once (`stranger` is `strngr`,
-  `succession` and `sccssn` are both `scsn`, `mirror` and `mrrr` are both
-  `mr`). Only word numbers are stored; skeletons are worked out while
-  comparing, as joined keys are. A query word with at most one vowel looks up
-  words with the same skeleton, or, from four consonants, one more consonant
-  at the end (`thron` for `thrones`). Every typed letter must appear in the
-  word in order, so `frnds` never means *fiends*. Up to 8 words per query word
-  are kept, those of the most popular titles first, at weight 0.7 (0.64 for
-  the longer skeleton): between one typo (0.76) and two (0.6). Words already
-  matched by spelling keep their weight. A query word that is itself used by
-  50 or more titles (`star`, `dark`, `born`) is taken as typed and skips the
-  lookup, which keeps ordinary queries as fast as before.
-- **Results.** On the 2026-11-01 Standard and Expanded snapshots, 24 of the
-  25 missing-vowel queries now rank the right title first, against 2 before,
-  and two combined cases (`lrd of th rngs retrn kng`, `gdfthr 1972`) are
-  fixed too. Across the whole 261-query set, top-1 went from 176 to 200 on
-  Standard and from 173 to 197 on Expanded, with no query ranked worse. The
-  curated cases, held-out and validation sets had no regression on any of the
-  eleven snapshots. `fther thd` still misses: `thd` has an extra h rather than a
-  missing vowel.
-- **Costs.** Heap after indexing grows by 0.39 MiB on Standard (28.52 →
-  28.91 MiB), 0.69 MiB on Expanded and 0.74 MiB on Expanded French, about
-  1.2%. Index build changes within run-to-run noise (best of five, Expanded:
-  2.52–2.57 → 2.56–2.81 s on the cloud VM). A first version that also looked
-  up common words cost 6% on warm median engine time on Standard on a Ryzen
-  5600X (0.191 → 0.203 ms, the one regression `sss-bench ab` flagged), with
-  the international class up 8–12%. With common words skipped, `sss-bench ab
-  --profile standard` on the real Standard snapshot shows warm engine p50
-  0.401 → 0.403 ms, p95 0.968 → 0.990 ms and international p95 0.685 → 0.684
-  ms on the cloud VM, with no primary metric changed (exit 0). Random strings
-  of four to seven letters with at most one vowel, the only inputs the new
-  lookup sees, return something 20.8% of the time on Standard instead of
-  19.6%, and 24.9% instead of 23.5% on Expanded French; two such words
-  together, 0.5% instead of 0.3%.
+</details>
