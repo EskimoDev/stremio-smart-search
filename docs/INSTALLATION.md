@@ -117,7 +117,9 @@ To reopen settings:
 
 - Choose **Configure** next to Smart Search in Stremio's addon list. If it was installed before that button was added, remove and reinstall **only Smart Search** to refresh its manifest.
 - Open **Smart Search Settings** on Windows/Linux, or **Stremio Smart Search.app** on macOS.
-- Visit `http://127.0.0.1:11479/` on the computer running the helper.
+- Choose the Smart Search icon in the Windows notification area.
+
+Settings open only from Smart Search itself. It opens the page with a one-time code, and that browser then remembers it, so a bookmark to `http://127.0.0.1:11479/` and the **Configure** button keep working there. A browser Smart Search has never opened shows a page explaining this instead. Other programs and user accounts on the computer can no longer read the settings key from the page.
 
 Portable builds use the same settings folder as installed builds unless you pass `--data-dir`. They do not keep data beside the executable automatically. To open both apps, run the executable with `--launch`; to keep the helper running without opening settings, use `--no-browser`. See [command-line options](ARCHITECTURE.md#command-line-options).
 

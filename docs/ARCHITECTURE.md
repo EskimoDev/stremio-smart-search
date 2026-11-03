@@ -46,7 +46,7 @@ Storage figures are read on request (two file sizes and a walk of the small sett
 - No account authentication, watch-activity events or library events.
 - Extra values are decoded exactly once from the escaped URL path; punctuation in a query cannot become a route separator.
 
-Protocol responses include CORS headers for Stremio clients. `/api/*` management routes do not expose CORS and require a private control key, a loopback peer, an expected Host and a matching browser Origin when present. The settings page rejects framing and uses a content security policy. No arbitrary local path or external URL can be executed through a search request.
+Protocol responses include CORS headers for Stremio clients. `/api/*` management routes do not expose CORS and require a loopback peer, an expected Host, a matching browser Origin when present, and either the private control key (other Smart Search processes and scripts that can read `control.key`) or a settings session. The settings page never contains the key: Smart Search opens it with a one-time code (single use, two minutes), which the page swaps for an HttpOnly, SameSite=Lax cookie derived from the key; API calls from the page must also send an `X-Smart-Search-Session` header, which cannot be sent cross-site without a CORS preflight. A browser without a session gets a short page with no data. The settings page rejects framing and uses a content security policy with a fresh nonce per page. No arbitrary local path or external URL can be executed through a search request.
 
 ## Lifecycle
 

@@ -6,6 +6,11 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 
 ## [Unreleased]
 
+### Security
+
+- The settings page no longer contains the private control key. Any program or other user account on the computer could fetch the page and use the key to change settings, quit the helper or move the catalogue. Smart Search now opens settings with a one-time code that the browser swaps for a session cookie. Bookmarks and Stremio's **Configure** button keep working in a browser Smart Search has opened; another browser shows a page explaining how to open settings.
+- Moving the catalogue no longer writes through a file or link already planted in the destination folder.
+
 ### Changed
 
 - Queries with several misspelled words now find what they mean. A title used to have to match every word, so one word that matched nothing emptied the results: `gma e of thr` and `the wakling ded` found nothing. When the query as typed matches poorly, Smart Search now also tries leaving out one short word, joining a stray letter to its neighbour (`gma e` as *game*), moving a space (`shaw shank`, `gam eof thrones`, `mad maxfury road`) and simple typos in rare three-letter words (`family gyu`, `bak to teh futre`). On real Standard and Expanded catalogues 116 of 117 such test queries now rank the right title first, against 93 before, and no quality case regressed on 11 snapshots. The quality suite gains `multi-typo` and `dropped-vowel` categories (58 cases). Searches that read fine as typed do no extra work. See [Search quality](docs/SEARCH-QUALITY.md#several-misspelled-words-2026-11-02).
