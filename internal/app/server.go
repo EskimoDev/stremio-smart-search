@@ -57,6 +57,10 @@ type Status struct {
 	WebInstall      string             `json:"webInstall"`
 	PreferredClient string             `json:"preferredClient"`
 	Updates         UpdateStatus       `json:"updates"`
+	// RunMode is "always" or "stremio"; Standby is true while the index is
+	// dropped because no Stremio app is open. See standby.go.
+	RunMode string `json:"runMode"`
+	Standby bool   `json:"standby"`
 }
 type App struct {
 	ctx             context.Context
@@ -87,6 +91,7 @@ type App struct {
 	// now is the clock for the update schedule; tests replace it.
 	now     func() time.Time
 	updates updater // guarded by mu; see updates.go
+	standby standby // guarded by mu; see standby.go
 	// One-time codes that open a settings session; see session.go.
 	codesMu sync.Mutex
 	codes   map[string]time.Time
@@ -113,6 +118,8 @@ func New(ctx context.Context, dataDir, baseURL, version string) (*App, error) {
 	a.now = time.Now
 	a.status = Status{Product: Product, Version: version, Profile: catalog.DefaultProfile, Profiles: catalog.Profiles(), Languages: catalog.Languages(), Stage: "Set up your local catalogue", Manifest: baseURL + "/manifest.json", WebInstall: "https://web.stremio.com/#/addons?addon=" + url.QueryEscape(baseURL+"/manifest.json"), PreferredClient: loadClientPreference(dataDir)}
 	a.loadUpdates()
+	a.standby = standby{mode: loadRunMode(dataDir), seen: a.now(), changed: make(chan struct{}, 1)}
+	a.status.RunMode = a.standby.mode
 	return a, nil
 }
 
@@ -167,6 +174,7 @@ func (a *App) setCatalog(c *catalog.Catalog) {
 	defer a.mu.Unlock()
 	a.status.Ready = true
 	a.status.Building = false
+	a.standby.asleep, a.status.Standby = false, false // a new index is a loaded one
 	a.status.BuildProfile = ""
 	a.status.BuildLanguage, a.status.BuildRegion = "", ""
 	a.status.Language, a.status.Region = c.AliasLanguage, c.AliasRegion
@@ -587,6 +595,21 @@ func (a *App) Handler() http.Handler {
 					return
 				}
 				writeJSON(w, 200, map[string]bool{"ok": true})
+			case r.URL.Path == "/api/run-mode" && r.Method == http.MethodPost:
+				var request struct {
+					Mode string `json:"mode"`
+				}
+				decoder := json.NewDecoder(r.Body)
+				decoder.DisallowUnknownFields()
+				if decoder.Decode(&request) != nil || !validRunMode(request.Mode) {
+					writeJSON(w, 400, map[string]string{"error": "Choose always or only while Stremio is open."})
+					return
+				}
+				if err := a.SetRunMode(request.Mode); err != nil {
+					writeJSON(w, 500, map[string]string{"error": "Could not save the setting (" + err.Error() + ")."})
+					return
+				}
+				writeJSON(w, 200, a.Status())
 			case r.URL.Path == "/api/autostart" && r.Method == http.MethodGet:
 				writeJSON(w, 200, a.Autostart.Status())
 			case r.URL.Path == "/api/autostart" && r.Method == http.MethodPost:
@@ -721,6 +744,9 @@ func (a *App) catalog(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, map[string]any{"metas": []any{}})
 		return
 	}
+	// In standby this loads the index first, so the search waits for it
+	// instead of coming back empty.
+	a.noteSearch()
 	engine := a.engine.Load()
 	if engine == nil {
 		// Without a catalogue there are no results to give, so the row says why

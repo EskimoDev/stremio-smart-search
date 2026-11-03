@@ -6,6 +6,10 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 
 ## [Unreleased]
 
+### Added
+
+- **Only load search while Stremio is open**, an optional setting under **You can close this page**, off by default. The helper keeps its port open but drops its search index while no Stremio, dx.bi or Stremio Enhanced window is open, and loads it again when one opens. A search that arrives in standby, for example from web.stremio.com, loads the index straight away and waits for it. Most of the helper's memory is the index, so in standby it uses about 10 MiB instead of 20 to 110 MiB depending on catalogue size. It checks for a running Stremio app every 5 seconds, and goes into standby 2 minutes after the last Stremio window closes (15 minutes after a browser search). Automatic updates wait until the index is loaded. With the setting off, nothing changes and no process checks run.
+
 ## [0.1.0-preview.6] - 2026-11-03
 
 ### Security
