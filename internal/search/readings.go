@@ -102,10 +102,14 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 		}
 		typed = append(typed, w)
 	}
-	newGroup := func(terms []termMatch, scale float64) int {
+	scratchArea := func() *scratch {
 		if work == nil {
 			work = e.scratch()
 		}
+		return work
+	}
+	newGroup := func(terms []termMatch, scale float64) int {
+		scratchArea()
 		gen := work.next()
 		var group []member
 		if len(groups) < len(work.groups) {
@@ -115,11 +119,11 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 			if e.kinds[id] != want {
 				return
 			}
-			if work.stamp[id] != gen {
-				work.stamp[id] = gen
-				work.slot[id] = int32(len(group))
+			if work.marks[id].stamp != gen {
+				work.marks[id].stamp = gen
+				work.marks[id].slot = int32(len(group))
 				group = append(group, member{id, weight})
-			} else if m := &group[work.slot[id]]; weight > m.weight {
+			} else if m := &group[work.marks[id].slot]; weight > m.weight {
 				m.weight = weight
 			}
 		}
@@ -173,7 +177,7 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 		if _, ok := unique[w.text]; ok {
 			continue
 		}
-		unique[w.text] = newGroup(e.terms(ctx, w.text, typos, words == 1), 1)
+		unique[w.text] = newGroup(e.terms(ctx, scratchArea(), w.text, typos, words == 1), 1)
 		base = append(base, unique[w.text])
 		baseWords = append(baseWords, w.text)
 	}
@@ -250,7 +254,7 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 	retry := false
 	for i, w := range baseWords {
 		if extra := e.shortTypos(w); len(extra) > 0 {
-			base[i] = newGroup(append(e.terms(ctx, w, typos, words == 1), extra...), 1)
+			base[i] = newGroup(append(e.terms(ctx, scratchArea(), w, typos, words == 1), extra...), 1)
 			unique[w] = base[i]
 			retry = true
 		}
@@ -313,7 +317,7 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 		}
 		switch {
 		case (a.short && (b.lookup || b.short)) || (b.short && a.lookup):
-			group = newGroup(e.quickTerms(ctx, joined), 1)
+			group = newGroup(e.quickTerms(ctx, scratchArea(), joined), 1)
 		case a.lookup && b.lookup:
 			if w := e.word(joined); w >= 0 {
 				group = newGroup([]termMatch{{w, 1}}, 1)
@@ -400,12 +404,12 @@ func (e *Engine) dropOne(work *scratch, groups [][]member, use []int, droppable 
 	tallies := work.tallies[:0]
 	for i, g := range use {
 		for _, m := range groups[g] {
-			if work.stamp[m.id] != gen {
-				work.stamp[m.id] = gen
-				work.slot[m.id] = int32(len(tallies))
+			if work.marks[m.id].stamp != gen {
+				work.marks[m.id].stamp = gen
+				work.marks[m.id].slot = int32(len(tallies))
 				tallies = append(tallies, tally{m.id, 1, 1 << i, m.weight})
 			} else {
-				t := &tallies[work.slot[m.id]]
+				t := &tallies[work.marks[m.id].slot]
 				t.count++
 				t.seen |= 1 << i
 				t.weight += m.weight
@@ -450,13 +454,13 @@ func (e *Engine) intersect(work *scratch, groups [][]member, use []int, mult []f
 		}
 		gen := work.next()
 		for j, m := range groups[g] {
-			work.stamp[m.id] = gen
-			work.slot[m.id] = int32(j)
+			work.marks[m.id].stamp = gen
+			work.marks[m.id].slot = int32(j)
 		}
 		kept := list[:0]
 		for _, c := range list {
-			if work.stamp[c.id] == gen {
-				c.weight += groups[g][work.slot[c.id]].weight * factor(mult, i)
+			if work.marks[c.id].stamp == gen {
+				c.weight += groups[g][work.marks[c.id].slot].weight * factor(mult, i)
 				kept = append(kept, c)
 			}
 		}
