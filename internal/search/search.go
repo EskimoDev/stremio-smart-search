@@ -25,7 +25,15 @@ type Engine struct {
 	// vocabulary is every indexed word, sorted; a word is referred to by its
 	// position. words and alternateWords give each word's titles in popularity
 	// order; gramWords gives each trigram's (or short word's bigram's) words.
-	vocabulary     []string
+	vocabulary []string
+	// starts[k] is the first vocabulary position whose leading two bytes
+	// give bucket k (see bucketOf), so a word lookup binary searches a few
+	// hundred words instead of the whole vocabulary.
+	starts []int32
+	// filter is a Bloom filter over the vocabulary. Typo probes look up
+	// hundreds of variants per query word and almost none are words, so most
+	// lookups end here without a binary search.
+	filter         wordFilter
 	runeLengths    []uint8
 	words          postingList
 	alternateWords postingList
@@ -255,6 +263,8 @@ func New(titles []catalog.Title) *Engine {
 		e.runeLengths[position] = uint8(min(255, utf8.RuneCountInString(word)))
 	}
 	table = wordTable{}
+	e.starts = newStarts(e.vocabulary)
+	e.filter = newWordFilter(e.vocabulary)
 	for i := range wordKeys {
 		wordKeys[i] = final[wordKeys[i]]
 	}
@@ -306,11 +316,89 @@ func New(titles []catalog.Title) *Engine {
 
 // word returns a word's position in the vocabulary, or -1.
 func (e *Engine) word(text string) int32 {
-	i, found := slices.BinarySearch(e.vocabulary, text)
+	if !e.filter.mayContain(text) {
+		return -1
+	}
+	i, found := e.find(text)
 	if !found {
 		return -1
 	}
 	return int32(i)
+}
+
+// find is slices.BinarySearch over the vocabulary, narrowed to text's bucket.
+func (e *Engine) find(text string) (int, bool) {
+	if text == "" {
+		return slices.BinarySearch(e.vocabulary, text)
+	}
+	k := bucketOf(text)
+	lo, hi := int(e.starts[k]), int(e.starts[k+1])
+	i, found := slices.BinarySearch(e.vocabulary[lo:hi], text)
+	return lo + i, found
+}
+
+// wordFilter is a Bloom filter with two probes per word and at least 16 bits
+// per word, so about one absent word in seventy gets past it.
+type wordFilter struct {
+	bits []uint64
+	mask uint64
+}
+
+func newWordFilter(vocabulary []string) wordFilter {
+	n := uint64(64)
+	for n < 16*uint64(len(vocabulary)) {
+		n *= 2
+	}
+	f := wordFilter{bits: make([]uint64, n/64), mask: n - 1}
+	for _, word := range vocabulary {
+		a, b := filterHash(word)
+		f.bits[(a&f.mask)/64] |= 1 << (a % 64)
+		f.bits[(b&f.mask)/64] |= 1 << (b % 64)
+	}
+	return f
+}
+
+func (f wordFilter) mayContain(word string) bool {
+	if len(f.bits) == 0 {
+		return true
+	}
+	a, b := filterHash(word)
+	return f.bits[(a&f.mask)/64]&(1<<(a%64)) != 0 && f.bits[(b&f.mask)/64]&(1<<(b%64)) != 0
+}
+
+// filterHash is 64-bit FNV-1a, split into two probe positions.
+func filterHash(word string) (uint64, uint64) {
+	h := uint64(14695981039346656037)
+	for i := 0; i < len(word); i++ {
+		h ^= uint64(word[i])
+		h *= 1099511628211
+	}
+	h ^= h >> 29 // FNV's high bits are weak for short keys
+	h *= 0xbf58476d1ce4e5b9
+	h ^= h >> 32
+	return h, h>>32 | h<<32
+}
+
+// bucketOf numbers a non-empty word by its first two bytes. It never
+// decreases along sorted string order, so each bucket is one run of the
+// vocabulary.
+func bucketOf(word string) int {
+	if len(word) == 1 {
+		return int(word[0]) << 8
+	}
+	return int(word[0])<<8 | int(word[1])
+}
+
+func newStarts(vocabulary []string) []int32 {
+	starts := make([]int32, 1<<16+1)
+	w := 0
+	for k := range starts {
+		for w < len(vocabulary) && (vocabulary[w] == "" || bucketOf(vocabulary[w]) < k) {
+			w++
+		}
+		starts[k] = int32(w)
+	}
+	return starts
 }
 
 func (e *Engine) gram(text string) []int32 {
@@ -358,19 +446,49 @@ func forEachEdit(word string, visit func([]byte)) {
 	}
 }
 
-// Damerau-Levenshtein with adjacent transpositions; inputs are bounded title words.
+// Damerau-Levenshtein with adjacent transpositions; inputs are bounded title
+// words. It runs on bytes when both words are ASCII, the usual case, and keeps
+// its rows on the stack for words of up to maxStackWord letters, so a typo
+// lookup that compares a hundred candidates allocates nothing.
 func distance(a, b string, limit int) int {
-	x, y := []rune(a), []rune(b)
+	if len(a) <= maxStackWord && len(b) <= maxStackWord {
+		if abs(len(a)-len(b)) > limit && isASCII(a) && isASCII(b) {
+			return limit + 1
+		}
+		var xs, ys [maxStackWord]byte
+		var high byte
+		for i := 0; i < len(a); i++ {
+			xs[i] = a[i]
+			high |= a[i]
+		}
+		for i := 0; i < len(b); i++ {
+			ys[i] = b[i]
+			high |= b[i]
+		}
+		if high < utf8.RuneSelf {
+			return editDistance(xs[:len(a)], ys[:len(b)], limit)
+		}
+	}
+	return editDistance([]rune(a), []rune(b), limit)
+}
+
+const maxStackWord = 48
+
+func editDistance[T byte | rune](x, y []T, limit int) int {
 	if abs(len(x)-len(y)) > limit {
 		return limit + 1
 	}
-	previousPrevious := make([]int, len(y)+1)
-	previous := make([]int, len(y)+1)
+	var rows [3][maxStackWord + 1]int
+	var previousPrevious, previous, current []int
+	if len(y) <= maxStackWord {
+		previousPrevious, previous, current = rows[0][:len(y)+1], rows[1][:len(y)+1], rows[2][:len(y)+1]
+	} else {
+		previousPrevious, previous, current = make([]int, len(y)+1), make([]int, len(y)+1), make([]int, len(y)+1)
+	}
 	for j := range previous {
 		previous[j] = j
 	}
 	for i := 1; i <= len(x); i++ {
-		current := make([]int, len(y)+1)
 		current[0] = i
 		rowMin := i
 		for j := 1; j <= len(y); j++ {
@@ -387,7 +505,7 @@ func distance(a, b string, limit int) int {
 		if rowMin > limit {
 			return limit + 1
 		}
-		previousPrevious, previous = previous, current
+		previousPrevious, previous, current = previous, current, previousPrevious
 	}
 	return previous[len(y)]
 }
@@ -405,19 +523,24 @@ type termMatch struct {
 
 // terms finds the vocabulary words a query word may stand for. With typos
 // false it keeps exact and prefix matches only.
-func (e *Engine) terms(ctx context.Context, query string, typos, alone bool) []termMatch {
-	return e.lookupTerms(ctx, query, typos, alone, false)
+func (e *Engine) terms(ctx context.Context, work *scratch, query string, typos, alone bool) []termMatch {
+	return e.lookupTerms(ctx, work, query, typos, alone, false)
 }
 
 // quickTerms is terms without the trigram scan, vowel skeletons and
 // sound-alikes: exact and prefix matches and the direct one-edit probes. It
 // is for joined fragments ("gma e" as "gmae"), which are only worth a few
 // lookups.
-func (e *Engine) quickTerms(ctx context.Context, query string) []termMatch {
-	return e.lookupTerms(ctx, query, true, false, true)
+func (e *Engine) quickTerms(ctx context.Context, work *scratch, query string) []termMatch {
+	return e.lookupTerms(ctx, work, query, true, false, true)
 }
 
-func (e *Engine) lookupTerms(ctx context.Context, query string, typos, alone, quick bool) []termMatch {
+// work is the search's scratch area; with nil, lookupTerms borrows one.
+func (e *Engine) lookupTerms(ctx context.Context, work *scratch, query string, typos, alone, quick bool) []termMatch {
+	if work == nil {
+		work = e.scratch()
+		defer e.release(work)
+	}
 	matches := map[int32]float64{}
 	exact := e.word(query)
 	if exact >= 0 {
@@ -460,7 +583,10 @@ func (e *Engine) lookupTerms(ctx context.Context, query string, typos, alone, qu
 		return sortTerms(matches)
 	}
 	if length >= 4 && length <= 40 {
-		counts := map[int32]int{}
+		// Count shared trigrams per word in the scratch area: a map here was
+		// most of a search's garbage.
+		gen := work.nextWordGen(len(e.vocabulary))
+		touched := work.touched[:0]
 		scanned := 0
 		for _, gram := range uniqueGrams(query) {
 			for _, word := range e.gram(gram) {
@@ -468,24 +594,27 @@ func (e *Engine) lookupTerms(ctx context.Context, query string, typos, alone, qu
 					break
 				}
 				if abs(int(e.runeLengths[word])-length) <= 2 {
-					counts[word]++
+					if mark := work.wordMark[word]; mark>>wordCountBits != gen {
+						work.wordMark[word] = gen<<wordCountBits | 1
+						touched = append(touched, word)
+					} else {
+						work.wordMark[word] = mark + 1
+					}
 				}
 			}
 			if scanned > 20000 {
 				break
 			}
 		}
-		type candidate struct {
-			word    int32
-			overlap int
+		work.touched = touched
+		candidates := work.candidates[:0]
+		for _, word := range touched {
+			candidates = append(candidates, gramCandidate{word, int32(work.wordMark[word] & wordCountMask)})
 		}
-		candidates := make([]candidate, 0, len(counts))
-		for word, count := range counts {
-			candidates = append(candidates, candidate{word, count})
-		}
+		work.candidates = candidates
 		// Only the 96 best candidates are compared; select them rather than
 		// sorting thousands. Word number order is string order.
-		better := func(a, b candidate) int {
+		better := func(a, b gramCandidate) int {
 			if a.overlap != b.overlap {
 				return cmp.Compare(b.overlap, a.overlap)
 			}
@@ -595,7 +724,7 @@ const (
 func (e *Engine) prefixWords(query string, exact int32) []int32 {
 	start := exact + 1
 	if exact < 0 {
-		i, _ := slices.BinarySearch(e.vocabulary, query)
+		i, _ := e.find(query)
 		start = int32(i)
 	}
 	rest := e.vocabulary[start:]
@@ -687,20 +816,63 @@ type member struct {
 }
 
 // scratch is per-search working memory, reused between searches so broad
-// queries do not allocate large maps each time. stamp marks which generation
-// a title's slot belongs to, so nothing needs clearing between uses.
+// queries do not allocate large maps each time. A title's stamp marks which
+// generation its slot belongs to, so nothing needs clearing between uses.
 type scratch struct {
-	stamp  []uint32
-	slot   []int32
+	marks  []mark // per title
 	gen    uint32
 	groups [][]member
 	// tallies is matchWords' per-title count of matched query words.
 	tallies []tally
+	// wordMark counts, per vocabulary word, the trigrams it shares with a
+	// query word: the low wordCountBits bits are the count and the rest is
+	// wordGen, so nothing needs clearing between lookups. touched lists the
+	// words counted in the current lookup.
+	wordMark   []uint16
+	wordGen    uint16
+	touched    []int32
+	candidates []gramCandidate
+}
+
+// mark is a title's slot in the current generation. Stamp and slot sit
+// together so that looking a title up touches one cache line, not two.
+type mark struct {
+	stamp uint32
+	slot  int32
+}
+
+// gramCandidate is a vocabulary word and how many trigrams it shares with a
+// query word.
+type gramCandidate struct {
+	word    int32
+	overlap int32
+}
+
+const (
+	// wordCountBits holds a trigram count: a query word of up to 40 letters
+	// has at most 38 distinct trigrams.
+	wordCountBits = 6
+	wordCountMask = 1<<wordCountBits - 1
+)
+
+// nextWordGen starts a new trigram count over a vocabulary of n words. The
+// generation wraps every thousand lookups, and clearing then is cheaper than
+// wider marks would be to keep.
+func (w *scratch) nextWordGen(n int) uint16 {
+	if len(w.wordMark) != n {
+		w.wordMark = make([]uint16, n)
+		w.wordGen = 0
+	}
+	if w.wordGen++; w.wordGen >= 1<<(16-wordCountBits) {
+		clear(w.wordMark)
+		w.wordGen = 1
+	}
+	return w.wordGen
 }
 
 func (w *scratch) next() uint32 {
 	if w.gen++; w.gen == 0 {
-		clear(w.stamp)
+		clear(w.marks)
 		w.gen = 1
 	}
 	return w.gen
@@ -718,7 +890,7 @@ func (e *Engine) scratch() *scratch {
 		e.idle = e.idle[:n-1]
 		return w
 	}
-	return &scratch{stamp: make([]uint32, len(e.titles)), slot: make([]int32, len(e.titles))}
+	return &scratch{marks: make([]mark, len(e.titles))}
 }
 
 func (e *Engine) release(w *scratch) {
@@ -853,12 +1025,12 @@ func (e *Engine) filterYear(work *scratch, candidates []member, year int32) []me
 	}
 	if w := e.word(string(digits[:])); w >= 0 {
 		for _, id := range e.words.get(w) {
-			work.stamp[id] = gen
+			work.marks[id].stamp = gen
 		}
 	}
 	matched := 0
 	for _, c := range candidates {
-		if e.titles[c.id].year == year || work.stamp[c.id] == gen {
+		if e.titles[c.id].year == year || work.marks[c.id].stamp == gen {
 			matched++
 		}
 	}
@@ -867,7 +1039,7 @@ func (e *Engine) filterYear(work *scratch, candidates []member, year int32) []me
 	}
 	kept := candidates[:0]
 	for _, c := range candidates {
-		if e.titles[c.id].year == year || work.stamp[c.id] == gen {
+		if e.titles[c.id].year == year || work.marks[c.id].stamp == gen {
 			c.weight++
 			kept = append(kept, c)
 		}
