@@ -32,25 +32,60 @@ func kindOf(kind string) uint8 {
 	return 0
 }
 
-// entry is what a result needs from a catalogue title. The identifier is kept
-// as a number plus its digit count ("tt0816692" is 816692 and 7), which
-// reproduces the original text exactly without storing a string per title.
+// entry is what a result needs from a catalogue title, in 32 bytes: the
+// index holds one per title, so every byte here is about 0.4 MB on Expanded.
+// The identifier is kept as a number plus its digit count ("tt0816692" is
+// 816692 and 7), which reproduces the original text exactly without storing a
+// string per title, and the rating in tenths, which is how IMDb gives it. A
+// title whose number or rating does not fit (none in IMDb's data) is marked
+// wide and keeps both exactly in Engine.wide.
 type entry struct {
 	name   string
-	number uint64
-	rating float64
+	number uint32
 	votes  int32
 	year   int32
-	digits uint8
+	rating uint16 // tenths
+	digits uint8  // wideEntry is set for a wide title
 	// words is how many distinct significant words the primary name has
-	// (articles excluded, at most 255; see significantWords). It fits in the
-	// struct's padding.
+	// (articles excluded, at most 255; see significantWords).
 	words uint8
 }
 
-func newEntry(t catalog.Title) entry {
+const wideEntry = 0x80 // in entry.digits; Validate allows at most 18 digits
+
+// wide is a title's number and rating when they do not fit an entry.
+type wide struct {
+	number uint64
+	rating float64
+}
+
+// newEntry makes t's entry, and reports t's number and rating when they do
+// not fit it.
+func newEntry(t catalog.Title) (entry, *wide) {
 	number, _ := strconv.ParseUint(t.ID[2:], 10, 64) // Validate guarantees 1–18 digits
-	return entry{name: t.Name, number: number, rating: t.Rating, votes: clamp32(t.Votes), year: clamp32(t.Year), digits: uint8(len(t.ID) - 2)}
+	e := entry{name: t.Name, votes: clamp32(t.Votes), year: clamp32(t.Year), digits: uint8(len(t.ID) - 2)}
+	tenths := math.Round(t.Rating * 10)
+	if number > math.MaxUint32 || !(tenths >= 0 && tenths <= math.MaxUint16 && tenths/10 == t.Rating) || math.Signbit(t.Rating) {
+		e.digits |= wideEntry
+		return e, &wide{number, t.Rating}
+	}
+	e.number, e.rating = uint32(number), uint16(tenths)
+	return e, nil
+}
+
+// numberOf and ratingOf read title i's identifier number and rating.
+func (e *Engine) numberOf(i int32) uint64 {
+	if t := &e.titles[i]; t.digits&wideEntry == 0 {
+		return uint64(t.number)
+	}
+	return e.wide[i].number
+}
+
+func (e *Engine) ratingOf(i int32) float64 {
+	if t := &e.titles[i]; t.digits&wideEntry == 0 {
+		return float64(t.rating) / 10
+	}
+	return e.wide[i].rating
 }
 
 // significantWords counts the distinct words of a normalized name that are
@@ -67,24 +102,24 @@ func significantWords(parts []string) uint8 {
 
 func clamp32(n int) int32 { return int32(max(math.MinInt32, min(math.MaxInt32, n))) }
 
-// appendID writes the original "tt…" identifier to buf.
-func (e *entry) appendID(buf []byte) []byte {
+// appendID writes title i's original "tt…" identifier to buf.
+func (e *Engine) appendID(buf []byte, i int32) []byte {
 	buf = append(buf, 't', 't')
 	var digits [20]byte
-	n := strconv.AppendUint(digits[:0], e.number, 10)
-	for i := len(n); i < int(e.digits); i++ {
+	n := strconv.AppendUint(digits[:0], e.numberOf(i), 10)
+	for j := len(n); j < int(e.titles[i].digits&^wideEntry); j++ {
 		buf = append(buf, '0')
 	}
 	return append(buf, n...)
 }
 
-func (e *entry) id() string { return string(e.appendID(make([]byte, 0, 2+int(e.digits)))) }
+func (e *Engine) id(i int32) string { return string(e.appendID(make([]byte, 0, 20), i)) }
 
-// compareIDs orders two entries by their identifier text, as the original
+// compareIDs orders two titles by their identifier text, as the original
 // string comparison did ("tt10000000" sorts before "tt9999999").
-func compareIDs(a, b *entry) int {
+func (e *Engine) compareIDs(a, b int32) int {
 	var x, y [24]byte
-	return strings.Compare(string(a.appendID(x[:0])), string(b.appendID(y[:0])))
+	return strings.Compare(string(e.appendID(x[:0], a)), string(e.appendID(y[:0], b)))
 }
 
 // postingList maps dense key numbers 0..n-1 to runs of title numbers stored in

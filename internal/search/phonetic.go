@@ -708,17 +708,34 @@ func (e *Engine) bestVotes(word int32) int32 {
 // letters of its length and within about half its letters of it by edit
 // distance, so a shared consonant skeleton alone ("dorman", "truman") is
 // not enough.
-func (e *Engine) soundsLike(query string, alone bool) []int32 {
+// work, if not nil, lends its candidate buffer.
+func (e *Engine) soundsLike(work *scratch, query string, alone bool) []int32 {
 	self, ok := e.soundQuery(query)
 	if !ok {
 		return nil
 	}
 	codes, n := soundCodes(new(metaphone), query) // empty unless query is ASCII letters only
-	var candidates []soundCandidate
+	candidates := work.soundBuffer()
 	for _, code := range codes[:n] {
 		candidates = e.soundCandidates(candidates, code, query, self, nil)
 	}
+	work.keepSounds(candidates)
 	return e.closeSounds(candidates, query, len(query)/2+1, alone)
+}
+
+// soundBuffer is an empty candidate list backed by the scratch area's.
+func (w *scratch) soundBuffer() []soundCandidate {
+	if w == nil {
+		return nil
+	}
+	return w.sounds[:0]
+}
+
+// keepSounds keeps a grown candidate list's storage for the next lookup.
+func (w *scratch) keepSounds(candidates []soundCandidate) {
+	if w != nil && cap(candidates) <= 1<<12 {
+		w.sounds = candidates[:0]
+	}
 }
 
 // nearSounds returns up to soundWords words, other than exact, whose code is
@@ -730,7 +747,7 @@ func (e *Engine) soundsLike(query string, alone bool) []int32 {
 // in spelling than plain sound-alikes (half the query's letters), which
 // keeps random pronounceable strings from gaining matches. Dropping a
 // sound is not tried: shorter codes match too many common short words.
-func (e *Engine) nearSounds(query string, exact []int32, alone bool) []int32 {
+func (e *Engine) nearSounds(work *scratch, query string, exact []int32, alone bool) []int32 {
 	self, ok := e.soundQuery(query)
 	if !ok {
 		return nil
@@ -740,7 +757,7 @@ func (e *Engine) nearSounds(query string, exact []int32, alone bool) []int32 {
 		return nil
 	}
 	own := [2]uint64{packCode(m.primary), packCode(m.alternat)}
-	var candidates []soundCandidate
+	candidates := work.soundBuffer()
 	var tried []uint64
 	var buf [maxCode + 1]byte
 	try := func(code []byte) {
@@ -774,6 +791,7 @@ func (e *Engine) nearSounds(query string, exact []int32, alone bool) []int32 {
 			}
 		}
 	}
+	work.keepSounds(candidates)
 	return e.closeSounds(candidates, query, len(query)/2, alone)
 }
 

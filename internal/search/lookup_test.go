@@ -99,9 +99,25 @@ func TestDistanceMatchesReference(t *testing.T) {
 	for i := 0; i < 20000; i++ {
 		pairs = append(pairs, [2]string{word(9), word(9)})
 	}
+	// ASCII words take the bit-parallel path: few letters make transpositions
+	// and repeats common, and lengths reach its 64-letter bound.
+	for i := 0; i < 20000; i++ {
+		n := 2 + rng.IntN(4)
+		ascii := func(max int) string {
+			b := make([]byte, rng.IntN(max+1))
+			for j := range b {
+				b[j] = 'a' + byte(rng.IntN(n))
+			}
+			return string(b)
+		}
+		pairs = append(pairs, [2]string{ascii(12), ascii(12)})
+		if i%100 == 0 {
+			pairs = append(pairs, [2]string{ascii(64), ascii(64)})
+		}
+	}
 	for _, p := range pairs {
 		for limit := 0; limit <= 3; limit++ {
-			if got, want := distance(p[0], p[1], limit), reference(p[0], p[1], limit); got != want {
+			if got, want := distance(p[0], p[1], limit), min(reference(p[0], p[1], limit), limit+1); got != want {
 				t.Fatalf("distance(%q, %q, %d) = %d; want %d", p[0], p[1], limit, got, want)
 			}
 		}
