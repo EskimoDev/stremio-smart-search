@@ -11,7 +11,7 @@ Follow [docs/DESIGN.md](docs/DESIGN.md) for setup-page styling. Use locally bund
 ## Development setup
 
 Requires Go 1.24 or newer; CI currently uses Go 1.27.x. Node.js is needed for
-the setup-page tests only, and PowerShell is used for packaging and smoke checks.
+the setup-page and documentation checks, and PowerShell is used for packaging and smoke checks.
 The installed app needs none of these tools.
 
 From the repository root:
@@ -35,6 +35,16 @@ That fixture has a few illustrative titles, not a production catalogue. Keep any
 real IMDb downloads, snapshots and quality reports outside this repository.
 [Scripts](scripts/README.md) and [Tools](tools/README.md) explain the build and
 evaluation commands.
+
+## Documentation changes
+
+Run `node scripts/docs-test.mjs` and `git diff --check`. Read the rendered Markdown as well: the link check cannot catch an unreadable table or a misleading claim.
+
+- Keep the primary README focused on installation, examples and the main trade-offs; link to detailed measurements.
+- Label public-release behavior, unreleased main changes and historical experiments separately. Never advertise open-PR results as released.
+- For a measurement, record the source revision, suite/workload, catalogue, platform and date. Keep denominators and coverage gaps visible, and distinguish engine time from HTTP time and full-app behavior.
+- Preserve useful historical results, but put the latest relevant evidence first. Use short tables and expandable experimental detail rather than a chronological wall of results.
+- After a case-file change, update suite counts and rerun quality checks before changing accuracy figures. Do not commit real datasets, snapshots or per-title generated reports.
 
 ## Optional real-data tests
 

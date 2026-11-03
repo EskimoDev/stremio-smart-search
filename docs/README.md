@@ -2,7 +2,7 @@
 
 New here? Start with the [project README](../README.md) for screenshots and a quick install.
 
-These guides cover **0.1.0-preview.5**, including short-word search, the Windows notification-area icon, start at sign-in and the addon logo, on top of preview.4's sound-alike search, automatic updates and dark mode. Check [Releases](https://github.com/EskimoDev/stremio-smart-search/releases) for publication status; a draft is not a public download. For older preview.3 behavior, use its [tag-pinned documentation](https://github.com/EskimoDev/stremio-smart-search/tree/v0.1.0-preview.3/docs).
+**Latest public release: [0.1.0-preview.5](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.5).** These pages also track [unreleased changes on main](../CHANGELOG.md#unreleased), labelled where behavior differs. For the exact instructions shipped with a download, use its tag-pinned docs: [preview.5](https://github.com/EskimoDev/stremio-smart-search/tree/v0.1.0-preview.5/docs), [preview.4](https://github.com/EskimoDev/stremio-smart-search/tree/v0.1.0-preview.4/docs) or [preview.3](https://github.com/EskimoDev/stremio-smart-search/tree/v0.1.0-preview.3/docs).
 
 ## Setup and everyday use
 
@@ -20,7 +20,8 @@ These guides cover **0.1.0-preview.5**, including short-word search, the Windows
 | Topic | Read |
 |---|---|
 | Memory, search latency, download sizes and reproduction steps | [Performance](PERFORMANCE.md) |
-| Accuracy cases, scoring rules and known search gaps | [Search quality](SEARCH-QUALITY.md) |
+| Latest measured accuracy, scoring rules and known search gaps | [Search quality](SEARCH-QUALITY.md) |
+| Examples compared with Stremio’s default search | [Cinemeta comparison](SEARCH-QUALITY.md#compared-with-stremios-default-search-2026-11-02) |
 | Measuring a build and comparing two versions | [Benchmarking](BENCHMARKING.md) |
 | How the helper works, its HTTP routes and command-line options | [Architecture](ARCHITECTURE.md) |
 | Local setup-page styling and interaction rules | [Design](DESIGN.md) |
@@ -30,4 +31,4 @@ These guides cover **0.1.0-preview.5**, including short-word search, the Windows
 
 See [Contributing](../CONTRIBUTING.md) for development and release checks, [Scripts](../scripts/README.md) for build and test helpers, and [Tools](../tools/README.md) for packaging and evaluation commands.
 
-The `images/` folder holds README screenshots. `benchmarks/` holds historical Windows measurements and synthetic Linux results; see [measurement records](PERFORMANCE.md#measurement-records) for which figures each file supports. Production catalogues are kept outside the repository.
+The `images/` folder holds README screenshots. `benchmarks/` holds [aggregate quality results](SEARCH-QUALITY.md#latest-results), historical Windows measurements and synthetic Linux results; see [performance measurement records](PERFORMANCE.md#measurement-records) for the older files. Real snapshots and generated per-title reports stay outside the repository.

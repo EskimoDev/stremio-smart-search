@@ -33,7 +33,7 @@
 
 ## Installation
 
-**Version covered: 0.1.0-preview.5.** This version finds short, unfinished and vowel-less words such as `star war` and `strngr thngs`, adds a Windows notification-area icon, an optional start at sign-in, clearer first-run setup and the addon logo in Stremio. Check [Releases](https://github.com/EskimoDev/stremio-smart-search/releases) for available downloads; draft prereleases are not public downloads. Still using preview.4? Follow its [version-specific guide](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.4/README.md#installation).
+**Latest public preview: [0.1.0-preview.5](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.5).** It adds short-word and missing-vowel searches, a Windows notification-area icon, optional start at sign-in and clearer first-run setup. Later search and security fixes are [on main, not yet released](CHANGELOG.md#unreleased). For instructions matching an older download, use its tag-pinned guide: [preview.4](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.4/README.md#installation).
 
 Choose the package for your computer:
 
@@ -83,14 +83,16 @@ Choose your app, catalogue size and update schedule in one place, with light and
 | `hotd` | *House of the Dragon* |
 | `strangerthings` | *Stranger Things* |
 | `game of thornes` | *Game of Thrones* |
-| `pulp fikshun` | *Pulp Fiction* — preview.4 or newer |
+| `pulp fikshun` | *Pulp Fiction* |
+| `star war` | Star Wars films |
+| `strngr thngs` | *Stranger Things* |
 | `dune 1984` | *Dune* (1984) |
 | `les miserables` | *Les Misérables* |
 | `la rene des neige` | *Frozen*, with French alternative titles enabled |
 
 For translated or regional names, choose a language under **Alternative titles** in settings, then rebuild. This adds another data download. [Alternative-title setup →](docs/CATALOGUE.md#alternative-titles-optional)
 
-In a 2026-11-02 spot check of 38 hard queries against Stremio's default search, the development version found the title first on 36 and Stremio on 25. Smart Search alone found `intrstllr`, `gdfthr` and `teh dakr knight`; both now find `fther thd`. [Comparison →](docs/SEARCH-QUALITY.md#compared-with-stremios-default-search-2026-11-02)
+A [38-query demonstration against Stremio’s default search](docs/SEARCH-QUALITY.md#compared-with-stremios-default-search-2026-11-02) found the expected title first on 36 queries with development SSS and 25 with Cinemeta. It used main after preview.5, includes queries used during development, and is not a blind accuracy test or a timing comparison.
 
 Matching has limits: an exact title can rank above the similar title you meant. The sound-alike matcher finds `incepshun` and `back to the fucher`, but still misses `rattatooey`. See [tested search quality and known gaps](docs/SEARCH-QUALITY.md).
 
