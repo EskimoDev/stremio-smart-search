@@ -2,7 +2,7 @@
 
 New here? Start with the [project README](../README.md) for screenshots and a quick install.
 
-**Latest public release: [0.1.0-preview.5](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.5).** These pages also track [unreleased changes on main](../CHANGELOG.md#unreleased), labelled where behavior differs. For the exact instructions shipped with a download, use its tag-pinned docs: [preview.5](https://github.com/EskimoDev/stremio-smart-search/tree/v0.1.0-preview.5/docs), [preview.4](https://github.com/EskimoDev/stremio-smart-search/tree/v0.1.0-preview.4/docs) or [preview.3](https://github.com/EskimoDev/stremio-smart-search/tree/v0.1.0-preview.3/docs).
+**Latest public release: [0.1.0-preview.6](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.6).** These pages also track [unreleased changes on main](../CHANGELOG.md#unreleased), labelled where behavior differs. For the exact instructions shipped with a download, use its tag-pinned docs: [preview.6](https://github.com/EskimoDev/stremio-smart-search/tree/v0.1.0-preview.6/docs), [preview.5](https://github.com/EskimoDev/stremio-smart-search/tree/v0.1.0-preview.5/docs), [preview.4](https://github.com/EskimoDev/stremio-smart-search/tree/v0.1.0-preview.4/docs) or [preview.3](https://github.com/EskimoDev/stremio-smart-search/tree/v0.1.0-preview.3/docs).
 
 ## Setup and everyday use
 

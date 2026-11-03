@@ -4,13 +4,16 @@ Memory, speed and disk use for each catalogue size, measured on real IMDb data.
 Standard is the default for new setups. Existing installations keep their size
 until you rebuild.
 
-**These are historical preview.3/preview.4 measurements, not fresh preview.5 or current-main benchmarks.** Later search changes need a new like-for-like run before replacing these figures. For current accuracy checks, see [Search quality](SEARCH-QUALITY.md#latest-results).
+**Current figures are for preview.6 on Windows**, measured on 2026-11-03. Older preview.3 and preview.4 tables are kept below for history; they used different workloads and catalogues, so do not read the differences between sections as speed-ups. For accuracy checks, see [Search quality](SEARCH-QUALITY.md#latest-results).
 
-[Windows preview.4](#preview4-on-windows) · [Linux preview.4](#preview4-on-a-linux-cloud-vm) · [Download sizes](#download-and-disk) · [Updates](#automatic-updates) · [Reproduce](#reproduce)
+[Windows preview.6](#preview6-on-windows) · [Windows preview.4](#preview4-on-windows) · [Linux preview.4](#preview4-on-a-linux-cloud-vm) · [Download sizes](#download-and-disk) · [Updates](#automatic-updates) · [Reproduce](#reproduce)
 
-Three sets of real-data measurements are on this page. Each is labelled with the
+Four sets of real-data measurements are on this page. Each is labelled with the
 machine it ran on, and they should not be mixed:
 
+- **Preview.6, Windows PC** (2026-11-03): `sss-bench` A/B comparisons on the
+  Expanded catalogue with French alternative titles. Ryzen 5 5600X, 12 threads,
+  32 GiB RAM.
 - **Preview.4, Windows PC** (2026-11-02): [`sss-bench`](BENCHMARKING.md) on the
   Expanded catalogue. Ryzen 5 5600X, 12 threads, 32 GiB RAM.
 - **Preview.4, Linux cloud VM** (2026-11-02): all three sizes, with the same
@@ -25,6 +28,55 @@ Every run used two Go execution threads, a 256 MiB Go soft memory target, Go
 on process memory. Linux RSS and Windows working set are different counters, so
 do not compare memory across the two machines as though they were the same. Mac,
 ARM and TV performance still need measurements.
+
+## Preview.6 on Windows
+
+Preview.6 makes typo lookups allocation-free ([#46](https://github.com/EskimoDev/stremio-smart-search/pull/46))
+and reads the catalogue and builds the index on every core
+([#49](https://github.com/EskimoDev/stremio-smart-search/pull/49)). Search results
+and the built index are unchanged: the top 20 results were byte-identical on about
+3,700 queries across 11 snapshots, and the index hash was identical on the same
+snapshots.
+
+Measured 2026-11-03 with two `sss-bench ab --profile standard --catalog` runs on
+the Windows PC above, using the real Expanded catalogue **with French alternative
+titles on** (390,470 titles plus 75,501 alternative titles). Values are medians over
+8 fresh processes per build, each making 10 passes over 347 queries after 2 warmup
+passes. Both runs exited 0 with no regressions and identical search-quality results.
+
+- **Search** compares main before #46 (0ca27a3, which already has the preview.6
+  multi-typo search) with main after it (9dea118). The machine was otherwise idle,
+  with 6 to 9% background CPU.
+- **Startup** compares 9dea118 with the #49 branch (73b65e6, the same source tree as
+  the preview.6 commit). Something else on the PC used 11 to 16% CPU (median) and
+  peaked near 30% during this run, so `sss-bench` flagged it and its absolute times
+  read slightly high: the same 9dea118 build started in 2.15 s in the quiet run and
+  2.33 s here. The startup gains are far larger than that difference.
+
+| Measure | Before | Preview.6 | Change |
+| --- | ---: | ---: | ---: |
+| Median request (HTTP, warm) | 0.51 ms | 0.33 ms | −36% |
+| 95th percentile (HTTP, warm) | 0.98 ms | 0.57 ms | −42% |
+| 99th percentile (HTTP, warm) | 1.59 ms | 0.83 ms | −48% |
+| Matching alone, median / 95th percentile | 0.32 / 0.72 ms | 0.16 / 0.35 ms | −50% / −52% |
+| Application CPU per request | 0.60 ms | 0.35 ms | −41% |
+| Throughput, 1 client / 2 clients | 1,825 / 3,383 req/s | 2,946 / 5,905 req/s | +61% / +75% |
+| Memory allocated per search | 214 KiB | 16 KiB | −92% |
+| Startup to ready (startup run) | 2.33 s | 1.42 s | −39% |
+| Catalogue load / index build (startup run) | 0.66 / 1.58 s | 0.36 / 0.91 s | −46% / −42% |
+| Working set after startup (startup run) | 115 MiB | 110 MiB | −5% |
+| Peak working set, including sustained searching | 264 MiB | 263 MiB | no change |
+| Search-quality cases, top result correct | 302 of 311 | 302 of 311 | no change |
+
+The search rows come from the quiet run and the startup rows from the second run;
+neither change measurably affected the other's measures. These numbers are not
+directly comparable with the preview.4 table below: that run had alternative titles
+off, 289 queries instead of 347, and none of the multi-typo cases. Alternative
+titles add memory, so the 110 MiB here is not an increase over preview.4's 103 MiB.
+
+The same comparisons on the Linux cloud VM gave similar gains: matching median and
+95th percentile both about 47% lower, 2-client throughput 52% higher, and startup
+4.5 s to 2.3 s (−48%), with idle memory 5% lower.
 
 ## Preview.4 on Windows
 

@@ -1,6 +1,6 @@
 # Architecture
 
-The application is a single Go executable with an embedded local setup page. This document describes **main**. The latest public release is [0.1.0-preview.5](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.5); main also includes [unreleased search and security fixes](../CHANGELOG.md#unreleased). Preview.4 added phonetic search, automatic updates and theme controls; preview.5 adds the Windows notification-area icon, start at sign-in and the served addon logo. There are no native media hooks, Stremio patches, browser extensions or runtime package downloads.
+The application is a single Go executable with an embedded local setup page. This document describes **0.1.0-preview.6**. Preview.4 added phonetic search, automatic updates and theme controls; preview.5 added the Windows notification-area icon, start at sign-in and the served addon logo; preview.6 adds alternative readings for misspelled queries, settings sessions and faster matching and startup. There are no native media hooks, Stremio patches, browser extensions or runtime package downloads.
 
 ## Package boundaries
 
@@ -21,7 +21,7 @@ The engine makes no network calls. Its read-only index contains normalized exact
 - **Spelling.** A bounded trigram scan selects candidate words, then bounded Damerau-Levenshtein distance checks them, including adjacent transpositions. For 4–6-letter ASCII terms, direct single-edit probes also find central typos that share no trigrams (`rene` for `reine`, `alein` for `alien`). For 7–20-letter terms, direct deletion and swap probes recover cases such as `thornes` for `thrones`.
 - **Prefixes and missing vowels, since preview.5.** Short prefixes choose completions by title popularity. Rare words with missing vowels can use the consonant-skeleton index (`internal/search/skeleton.go`). Common indexed words are taken as typed.
 - **Sound-alikes, since preview.4.** As a last resort, a query word can gain up to eight same-code Double Metaphone matches at weight 0.4 and eight near-code matches at 0.3, below spelling terms (0.76 or 0.6). Words must be ASCII, at least four letters, pronounceable and used by fewer than 50 indexed titles. Length, edit-distance and popularity checks limit loose matches; a one-word query has a stricter limit.
-- **Alternative readings, unreleased on main.** A weak query can also try leaving out a word, joining or splitting a fragment, moving a space, or a rare three-letter typo (`internal/search/readings.go`). Each title keeps its best reading score. Strong queries skip this work. This behavior is not in the public preview.5 binary.
+- **Alternative readings, since preview.6.** A weak query can also try leaving out a word, joining or splitting a fragment, moving a space, or a rare three-letter typo (`internal/search/readings.go`). Each title keeps its best reading score. Strong queries skip this work.
 
 Query terms are normally intersected. A single word of up to five letters that is a title's acronym suppresses typo and phonetic expansion, so `hotd` does not also list *Hot Fuzz* or *Robin Hood*. A four-digit year (1880–2099) typed with other words matches a title's start year or a title word, so `dune 1984` selects that film and *Blade Runner 2049* still works. If no candidate matches the year, it is ignored.
 
@@ -73,7 +73,7 @@ Storage figures are read on request (two file sizes and a walk of the small sett
 
 Protocol responses include CORS headers for Stremio clients. `/api/*` management routes do not expose CORS and require a loopback peer, an expected Host and a matching browser Origin when present. Processes/scripts can authenticate with the private key in `control.key`.
 
-**Unreleased settings-session hardening on main:** browser requests can instead use a settings session. The settings page never contains the key: Smart Search opens it with a one-time code (single use, two minutes), which the page swaps for an HttpOnly, SameSite=Lax cookie derived from the key; API calls from the page must also send an `X-Smart-Search-Session` header, which cannot be sent cross-site without a CORS preflight. A browser without a session gets a short page with no data. The settings page rejects framing and uses a content security policy with a fresh nonce per page. No arbitrary local path or external URL can be executed through a search request.
+**Settings sessions, since preview.6:** browser requests can instead use a settings session. The settings page never contains the key: Smart Search opens it with a one-time code (single use, two minutes), which the page swaps for an HttpOnly, SameSite=Lax cookie derived from the key; API calls from the page must also send an `X-Smart-Search-Session` header, which cannot be sent cross-site without a CORS preflight. A browser without a session gets a short page with no data. The settings page rejects framing and uses a content security policy with a fresh nonce per page. No arbitrary local path or external URL can be executed through a search request.
 
 ## Lifecycle
 

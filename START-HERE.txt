@@ -1,4 +1,4 @@
-STREMIO SMART SEARCH — 0.1.0-preview.5
+STREMIO SMART SEARCH — 0.1.0-preview.6
 
 1. Open Stremio Smart Search. A local setup page opens in your browser.
 2. Choose Catalogue size, then Prepare catalogue. Standard is the new-setup default.
