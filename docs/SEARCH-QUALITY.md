@@ -282,6 +282,16 @@ search and no index memory change. Uncorrected hints on the real snapshot:
 cold HTTP p50/p95 11–15% higher (p = .04–.05) with engine times flat. Most
 queries pay for two name lookups (the plural forms) and nothing else.
 
+On Windows (Ryzen 5 5600X, real Standard and Expanded snapshots) the A/B
+also gave exit 0 on both, with engine warm p50 +3% and p95 +3% or less and
+no memory change. The cost sits on queries with a number or a famous
+sequel title: on Expanded, the ambiguous class's engine p95 went from 0.27
+to 0.32 ms (+18%) and the joined class's from 0.29 to 0.31 ms (+6%),
+because "toy story 2" now looks up every title with "2", "two" or "ii".
+Building that group only from titles matching the other words was tried
+and reverted: it was faster in a cloud micro-benchmark but slower on
+Windows, with 14% more bytes per search.
+
 <details>
 <summary>Preview.6: several misspelled words — implementation, results and cost</summary>
 
