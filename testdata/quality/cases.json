@@ -1997,6 +1997,202 @@
    "source": "curated"
   },
   {
+   "name": "punctuation/eight-mile",
+   "query": "eight mile",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0298203",
+     "title": "8 Mile",
+     "year": 2002
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "punctuation/21-jump-street",
+   "query": "twenty one jump street",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt1232829",
+     "title": "21 Jump Street",
+     "year": 2012
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "punctuation/2-fast-2-furious",
+   "query": "too fast too furious",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0322259",
+     "title": "2 Fast 2 Furious",
+     "year": 2003
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "punctuation/toy-story-three",
+   "query": "toy story three",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0435761",
+     "title": "Toy Story 3",
+     "year": 2010
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "punctuation/rocky-4",
+   "query": "rocky 4",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0089927",
+     "title": "Rocky IV",
+     "year": 1985
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "punctuation/godfather-2",
+   "query": "godfather 2",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0071562",
+     "title": "The Godfather Part II",
+     "year": 1974
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "punctuation/terminator-2",
+   "query": "terminator 2",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0103064",
+     "title": "Terminator 2: Judgment Day",
+     "year": 1991
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "punctuation/mission-impossible-3",
+   "query": "mission impossible 3",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0317919",
+     "title": "Mission: Impossible III",
+     "year": 2006
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "punctuation/fast-5",
+   "query": "fast 5",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt1596343",
+     "title": "Fast Five",
+     "year": 2011
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "punctuation/alien-3",
+   "query": "alien 3",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0103644",
+     "title": "Alien³",
+     "year": 1992
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "punctuation/mister-robot",
+   "query": "mister robot",
+   "kind": "series",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt4158110",
+     "title": "Mr. Robot",
+     "year": 2015
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "punctuation/mister-bean",
+   "query": "mister bean",
+   "kind": "series",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0096657",
+     "title": "Mr. Bean",
+     "year": 1990
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "punctuation/doctor-no",
+   "query": "doctor no",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt0055928",
+     "title": "Dr. No",
+     "year": 1962
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "punctuation/dr-strange",
+   "query": "dr strange",
+   "kind": "movie",
+   "category": "punctuation",
+   "expect": [
+    {
+     "id": "tt1211837",
+     "title": "Doctor Strange",
+     "year": 2016
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
    "name": "accent/amelie/amelie",
    "query": "amelie",
    "kind": "movie",
@@ -2623,6 +2819,104 @@
     }
    ],
    "source": "curated"
+  },
+  {
+   "name": "similar/avenger",
+   "query": "avenger",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0848228",
+     "title": "The Avengers",
+     "year": 2012
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "similar/transformer",
+   "query": "transformer",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0418279",
+     "title": "Transformers",
+     "year": 2007
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "similar/gremlin",
+   "query": "gremlin",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0087363",
+     "title": "Gremlins",
+     "year": 1984
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "similar/the-incredible",
+   "query": "the incredible",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0317705",
+     "title": "The Incredibles",
+     "year": 2004
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "similar/winter-soldier",
+   "query": "winter soldier",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt1843866",
+     "title": "Captain America: The Winter Soldier",
+     "year": 2014
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "similar/no-way-home",
+   "query": "no way home",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt10872600",
+     "title": "Spider-Man: No Way Home",
+     "year": 2021
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
+  },
+  {
+   "name": "similar/fast-and-furious",
+   "query": "fast and furious",
+   "kind": "movie",
+   "category": "similar",
+   "expect": [
+    {
+     "id": "tt0232500",
+     "title": "The Fast and the Furious",
+     "year": 2001
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
   },
   {
    "name": "year/dune 1984",
@@ -5037,6 +5331,20 @@
     }
    ],
    "source": "curated (2026-11-02 multi-word misspelling set)"
+  },
+  {
+   "name": "multi-typo/shaw-shank",
+   "query": "shaw shank",
+   "kind": "movie",
+   "category": "multi-typo",
+   "expect": [
+    {
+     "id": "tt0111161",
+     "title": "The Shawshank Redemption",
+     "year": 1994
+    }
+   ],
+   "source": "curated (2026-11-03 gaps from the Stremio comparison)"
   }
  ]
 }

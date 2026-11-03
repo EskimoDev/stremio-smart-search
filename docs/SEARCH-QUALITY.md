@@ -59,16 +59,15 @@ Confirmed in the 2026-11-03 rerun on main, with alternative titles off:
 | `avatar` (series) | *Avatar: The Last Airbender* | Second on Expanded, behind a series titled *Avatar* |
 | `rattatooey` | *Ratatouille* | Not found on any of the three catalogues |
 | `fone booth` | *Phone Booth* | Second on all three; retrieved, but not ranked first |
-| `toy storee 3` | *Toy Story 3* | Second on all three, behind the first film |
 | `the sicksth sense` | *The Sixth Sense* | Not found in the holdout check on any of the three |
 
-The validation suite still has false positives: one negative query on Compact and three on Standard/Expanded return results. Broader number-word, sequel and spelling gaps from the [Stremio spot check](#compared-with-stremios-default-search-2026-11-02) are recorded separately; that comparison was not rerun for this audit.
+The validation suite still has false positives: one negative query on Compact and three on Standard/Expanded return results. Remaining gaps from the [Stremio spot check](#compared-with-stremios-default-search-2026-11-02) are listed there. *Toy Story 3* for `toy storee 3` is first since the [number change](#numbers-abbreviations-and-famous-titles-2026-11-03).
 
 Regional cases cover five languages, with Japanese the only non-Latin script tested. Cyrillic, Korean and other scripts still need real-data evaluation. A title outside a catalogue's coverage is not a ranking failure; changing size or enabling alternatives can change which answers are available.
 
 ## The cases
 
-[`testdata/quality/cases.json`](../testdata/quality/cases.json) holds 346
+[`testdata/quality/cases.json`](../testdata/quality/cases.json) holds 368
 curated queries in 18 categories:
 
 <details>
@@ -205,19 +204,93 @@ Expanded and six alternative-title catalogues all improved by 30–32 queries.
 
 Still weak in Smart Search, from the same run:
 
-- **Number words.** "twenty one jump street", "eight mile" and "too fast too
-  furious" find nothing, and "toy story three" lists *Toy Story* first:
-  "three" and "3" are not linked.
-- **Sequels** list the first film before the numbered one: "rocky 4",
-  "godfather 2" and "terminator 2" give the sequel at rank two or three.
-- **An exact obscure title beats a near-miss of a famous one**: "avenger",
-  "transformer", "gremlin", "euforia" and "kasablanka" rank the famous title
-  second or third.
-- **Mister and doctor** are not linked to Mr. and Dr. ("mister robot",
-  "doctor no"), and some acronyms ("b99", "jjk", "fmab") miss unless English
-  alternative titles are on.
+- **Number words, sequels, mister and doctor, and famous titles behind an
+  obscure exact one** ("eight mile", "rocky 4", "mister robot", "avenger").
+  These are fixed on main since; see
+  [numbers, abbreviations and famous titles](#numbers-abbreviations-and-famous-titles-2026-11-03).
+  With that change Smart Search also lists `toy story three` and `too fast
+  too furious` first, so on the stored Stremio answers for these 38 queries
+  it is first alone on 13 and Stremio on none.
+- **Sound-alikes of a misspelled famous title** still rank an exact obscure
+  title first: "euforia" (*Eufòria*) and "kasablanka" (*Kasablanka*) give the
+  famous title second.
+- Some **acronyms** ("b99", "jjk", "fmab") miss unless English alternative
+  titles are on.
 - **Joined words with a typo** ("brkingbad") and **split sound-alikes**
   ("gost busters", "wun peace") still find nothing.
+
+## Numbers, abbreviations and famous titles, 2026-11-03
+
+**On main, not yet in a release.** Fixes the gaps the
+[Stremio spot check](#compared-with-stremios-default-search-2026-11-02) found
+in number words, sequels, Mr./Dr. and famous titles.
+
+- **Numbers.** A number up to twenty also matches its other spellings at
+  weight .95: digits, word and Roman numeral (`4`, `four`, `iv`). Digits and
+  Roman numerals of two letters were too short to be looked up before, so
+  "rocky 4" was searched as "rocky". One-letter numerals (i, v, x) stay
+  ordinary words. Tens with a unit are one number ("twenty one" is 21), and
+  "too" is also 2.
+- **Respelled names.** The query with its numbers and abbreviations swapped
+  (mister/mr, doctor/dr, missus/mrs), or with its last word made plural, is
+  looked up as a name: "eight mile" is *8 Mile*, "doctor no" *Dr. No*,
+  "avenger" *The Avengers*. Such a title scores above every word match but
+  far below an exact title, and only when it has at least a twentieth of the
+  votes of the best word match: "doctor hoo" means *Doctor Who*, not a series
+  called *Dr Hoo* with 15 votes. Abbreviations are only swapped in whole
+  names, not word by word, for the same reason.
+- **Famous titles.** An exact title used to rank first however obscure. Now
+  a title joins the exact band when the query names all of it or all of its
+  subtitle word for word (allowing plurals and other spellings), it matches
+  every query word nearly exactly, and it has at least 20 times the votes of
+  every exact match and at least 10,000: "winter soldier" lists *Captain
+  America: The Winter Soldier* before a 1972 documentary, "dr strange" the
+  2016 film before the 1978 one. A title that merely contains the query
+  ("the blind" in *The Blind Side*) is not promoted.
+- **Two words that are one** ("shaw shank") are now tried even when the
+  query reads fine as typed, unless some title matches every word exactly.
+  "shaw shank" read as two one-letter typos of *Land Shark*.
+- Superscript digits are words: *Alien³* is indexed as "alien 3".
+
+Results on the real 2026-11-01 snapshots:
+
+| Check | Before | After |
+| --- | ---: | ---: |
+| Showcase file (261 queries), top-1 Standard / Expanded | 205 / 202 | 225 / 224 |
+| `cases.json` with 22 new cases, top-1 Standard / Expanded | 90.9% / 90.4% | 98.4% / 97.7% |
+| Generated exact titles, top-1 Standard / Expanded | 93.9% / 92.5% | 93.6% / 92.2% |
+| Generated exact titles, top-5 | unchanged | unchanged |
+| Generated one-typo queries, top-1 Compact / Standard / Expanded | 87.1% / 82.7% / 79.6% | 89.9% / 84.5% / 81.0% |
+
+No case got worse in `cases.json` or the two phonetic files on any of the 11
+snapshots, and nothing got worse in the showcase file. Improved: "toy storee
+3" everywhere and "the dark night" on Expanded. The generated one-typo gain
+comes from sequels ("enola holmse 2", "kimll bill vol 2"), which now find the
+numbered film. The small exact-title loss is the intended trade: "the cube"
+now lists *Cube* (265,000 votes) before *The Cube* (421), and "running man"
+*The Running Man*. On Spanish alternative titles, "terminator 2" lists
+*Shocking Dark*, released in Spain as *Terminator 2*, before *Terminator 2:
+Judgment Day*.
+
+Not fixed: sound-alikes of a famous title behind an exact obscure one
+("euforia", "kasablanka"), since a sound-alike is not nearly exact.
+
+Speed: `sss-bench ab` against main on the cloud VM gave exit 0 on both the
+Standard fixture and the real Standard snapshot: no significant change on any
+primary metric, engine warm p50 and p95 within 4%, 1% more allocations per
+search and no index memory change. Uncorrected hints on the real snapshot:
+cold HTTP p50/p95 11–15% higher (p = .04–.05) with engine times flat. Most
+queries pay for two name lookups (the plural forms) and nothing else.
+
+On Windows (Ryzen 5 5600X, real Standard and Expanded snapshots) the A/B
+also gave exit 0 on both, with engine warm p50 +3% and p95 +3% or less and
+no memory change. The cost sits on queries with a number or a famous
+sequel title: on Expanded, the ambiguous class's engine p95 went from 0.27
+to 0.32 ms (+18%) and the joined class's from 0.29 to 0.31 ms (+6%),
+because "toy story 2" now looks up every title with "2", "two" or "ii".
+Building that group only from titles matching the other words was tried
+and reverted: it was faster in a cloud micro-benchmark but slower on
+Windows, with 14% more bytes per search.
 
 <details>
 <summary>Preview.6: several misspelled words — implementation, results and cost</summary>

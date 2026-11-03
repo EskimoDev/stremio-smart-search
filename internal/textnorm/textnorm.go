@@ -55,6 +55,14 @@ func Normalize(text string) string {
 		if unicode.Is(unicode.Mn, r) || r == '\'' || r == '’' {
 			continue
 		}
+		// A superscript digit is a word of its own: Alien³ is "alien 3".
+		if digit := superscriptDigit(r); digit != 0 {
+			space = true
+			word()
+			out = append(out, digit)
+			space = true
+			continue
+		}
 		if replacement, ok := fold[r]; ok {
 			word()
 			out = append(out, replacement...)
@@ -85,4 +93,20 @@ func Meaningful(normal string) bool {
 		}
 	}
 	return letters >= 3 || (nonLatin && letters >= 2)
+}
+
+// superscriptDigit returns the ASCII digit a superscript digit stands for, or 0.
+func superscriptDigit(r rune) byte {
+	switch r {
+	case '¹':
+		return '1'
+	case '²':
+		return '2'
+	case '³':
+		return '3'
+	}
+	if r >= '⁰' && r <= '⁹' && r != 'ⁱ' && r != '⁲' && r != '⁳' {
+		return byte('0' + r - '⁰')
+	}
+	return 0
 }

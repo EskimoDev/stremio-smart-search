@@ -1035,6 +1035,7 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 	seed(e.alternate.lookup(q), scoreAlternate)
 	e.alternate.eachJoined(joined, func(id int32) { seedOne(id, scoreAlternateCompact) })
 	seed(e.acronyms.lookup(q), scoreAcronym)
+	guesses := e.respelled(q, parts)
 	// "it 2017": the name without its year, released that year, is exact.
 	if rest, year := splitYear(parts); year != 0 && rest != "" {
 		for _, id := range e.names.lookup(rest) {
@@ -1055,7 +1056,10 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 			}
 		}
 	}
-	hits := e.matchWords(ctx, parts, typos, want, len(scores))
+	hits := e.matchWords(ctx, parts, typos, want, len(scores)+len(guesses))
+	if len(guesses) > 0 {
+		e.scoreGuesses(hits, guesses, seedOne)
+	}
 	if len(scores) > 0 {
 		for i := range hits {
 			if old, ok := scores[hits[i].id]; ok {
@@ -1067,6 +1071,7 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 	for id, score := range scores {
 		hits = append(hits, hit{id, score})
 	}
+	e.promoteFamous(hits, parts)
 	for i := range hits {
 		hits[i].score += math.Log1p(float64(max(0, e.titles[hits[i].id].votes))) * 5
 	}
