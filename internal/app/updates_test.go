@@ -891,6 +891,61 @@ func TestSettingsChangeDuringCheckStartsNoDownload(t *testing.T) {
 	}
 }
 
+func TestStandbyDuringCheckStartsNoDownload(t *testing.T) {
+	f := newFakeIMDb(t)
+	c := &clock{now: startTime()}
+	a, _ := installed(t, f, c)
+	if err := a.SetRunMode(RunStremio); err != nil {
+		t.Fatal(err)
+	}
+	c.Advance(49 * time.Hour)
+	started, release := blockingCheck(a, catalog.Changed)
+	done := make(chan struct{})
+	go func() { a.UpdateTick(context.Background()); close(done) }()
+	<-started
+	slept := a.sleep()
+	_, gets := f.requests()
+	close(release)
+	<-done
+	if !slept {
+		t.Fatal("could not enter standby during the metadata check")
+	}
+	waitBuild(t, a)
+	if _, got := f.requests(); got != gets {
+		t.Errorf("downloaded %d files after entering standby", got-gets)
+	}
+	if !a.Status().Standby || a.engine.Load() != nil {
+		t.Fatal("a metadata check woke the search index")
+	}
+}
+
+func TestBuildInStandbyOnlyAllowsManual(t *testing.T) {
+	for _, automatic := range []bool{true, false} {
+		t.Run(fmt.Sprintf("automatic=%t", automatic), func(t *testing.T) {
+			f := newFakeIMDb(t)
+			c := &clock{now: startTime()}
+			a, _ := installed(t, f, c)
+			if err := a.SetRunMode(RunStremio); err != nil {
+				t.Fatal(err)
+			}
+			if !a.sleep() {
+				t.Fatal("could not enter standby")
+			}
+			profile, _ := catalog.ProfileByID(a.Status().Profile)
+			_, gets := f.requests()
+			started := a.startBuildMode(profile, catalog.AliasOptions{}, automatic, false)
+			waitBuild(t, a)
+			if automatic {
+				if _, got := f.requests(); started || got != gets || !a.Status().Standby {
+					t.Fatal("automatic build started in standby")
+				}
+			} else if !started || a.Status().Standby {
+				t.Fatal("explicit manual refresh did not run from standby")
+			}
+		})
+	}
+}
+
 // aliasInstall builds a French alternative-title catalogue and makes the next
 // automatic update a routine one that would carry the titles over.
 func aliasInstall(t *testing.T) (*App, *fakeIMDb, *clock) {
