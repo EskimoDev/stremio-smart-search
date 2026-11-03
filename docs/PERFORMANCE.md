@@ -4,6 +4,10 @@ Memory, speed and disk use for each catalogue size, measured on real IMDb data.
 Standard is the default for new setups. Existing installations keep their size
 until you rebuild.
 
+**These are historical preview.3/preview.4 measurements, not fresh preview.5 or current-main benchmarks.** Later search changes need a new like-for-like run before replacing these figures. For current accuracy checks, see [Search quality](SEARCH-QUALITY.md#latest-results).
+
+[Windows preview.4](#preview4-on-windows) · [Linux preview.4](#preview4-on-a-linux-cloud-vm) · [Download sizes](#download-and-disk) · [Updates](#automatic-updates) · [Reproduce](#reproduce)
+
 Three sets of real-data measurements are on this page. Each is labelled with the
 machine it ran on, and they should not be mixed:
 
@@ -152,7 +156,7 @@ adds IMDb's `title.akas` file, 520 MB in this snapshot, to manual preparations a
 refreshes. It is streamed and never stored. Preview.4 automatic updates can
 carry the existing aliases forward until the weekly refresh is due.
 
-Measured with French titles in the same run as the tables above:
+Measured with French titles in the **preview.3 Windows run**, not the preview.4 VM run:
 
 | Size | French titles kept | RAM after startup | 95th percentile | Preparation (download excluded) | Peak RAM during refresh |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -166,7 +170,7 @@ Standard: English 54,950, French 55,722, German 55,288, Japanese 55,910, Spanish
 
 ## Automatic updates
 
-**Preview.4 functionality; not present in preview.3.** Recorded on 2026-11-01 with the
+**Functionality available since preview.4; not present in preview.3.** Recorded on 2026-11-01 with the
 opt-in tests in `internal/app`: one against IMDb on Windows and one using cached
 real files over loopback on a Linux VM. Both used temporary data folders, so no
 installed catalogue was involved.

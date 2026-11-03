@@ -2,7 +2,7 @@
 
 [Download Smart Search](https://github.com/EskimoDev/stremio-smart-search/releases) for the computer where you use Stremio. SSS is a separate helper that must be running for its search rows to respond.
 
-This guide covers **0.1.0-preview.5**. Check [Releases](https://github.com/EskimoDev/stremio-smart-search/releases) for available downloads; a draft is not public. Preview.5 adds **Start Smart Search when I sign in**, a Windows notification-area icon, a **Quit Smart Search** shortcut and the addon logo. Preview.4 added **Update automatically**, sound-alike matching and dark mode. For older versions, use the [preview.4](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.4/docs/INSTALLATION.md) or [preview.3](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.3/docs/INSTALLATION.md) guide.
+The latest public release is **[0.1.0-preview.5](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.5)**. This guide labels any later main-only behavior; see the [unreleased changelog](../CHANGELOG.md#unreleased). Preview.5 adds **Start Smart Search when I sign in**, a Windows notification-area icon, a **Quit Smart Search** shortcut and the addon logo. Preview.4 added **Update automatically**, sound-alike matching and dark mode. For older versions, use the [preview.4](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.4/docs/INSTALLATION.md) or [preview.3](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.3/docs/INSTALLATION.md) guide.
 
 **Bandwidth:** a new installation (preview.4 or newer) enables automatic checks every 2 days. A changed-data update downloads about 240 MB, plus about 520 MB weekly with alternative titles (roughly 3.6 or 5.8 GB/month). Existing catalogues stay manual until enabled. Disable **Update automatically** for manual-only updates; see [update behavior](CATALOGUE.md#automatic-updates).
 
@@ -119,7 +119,7 @@ To reopen settings:
 - Open **Smart Search Settings** on Windows/Linux, or **Stremio Smart Search.app** on macOS.
 - Choose the Smart Search icon in the Windows notification area.
 
-Settings open only from Smart Search itself. It opens the page with a one-time code, and that browser then remembers it, so a bookmark to `http://127.0.0.1:11479/` and the **Configure** button keep working there. A browser Smart Search has never opened shows a page explaining this instead. Other programs and user accounts on the computer can no longer read the settings key from the page.
+**On main, not yet released:** settings use a browser session instead of embedding the control key in the page. Open settings through Smart Search itself first; it supplies a one-time code, after which a bookmark and the **Configure** button work in that browser. An unfamiliar browser shows instructions for opening settings. This hardening is not included in the public preview.5 download; see [Unreleased](../CHANGELOG.md#unreleased).
 
 Portable builds use the same settings folder as installed builds unless you pass `--data-dir`. They do not keep data beside the executable automatically. To open both apps, run the executable with `--launch`; to keep the helper running without opening settings, use `--no-browser`. See [command-line options](ARCHITECTURE.md#command-line-options).
 
@@ -153,8 +153,8 @@ The manifest and image have a five-minute HTTP cache lifetime. This is separate 
 ## Uninstalling
 
 1. Before uninstalling, open the **Storage** card in settings and note the catalogue folder if you also want to delete downloaded data.
-2. Choose **Quit helper** and confirm with a second click.
-3. If you turned on **Start Smart Search when I sign in**, turn it off first; on macOS and Linux, uninstalling does not remove that sign-in entry.
+2. If you turned on **Start Smart Search when I sign in**, turn it off while settings are still open; on macOS and Linux, uninstalling does not remove that sign-in entry.
+3. Choose **Quit helper** and confirm with a second click.
 4. Remove the app:
    - **Windows installer:** use Windows' installed-app list.
    - **macOS:** delete both Smart Search apps from Applications.
@@ -163,4 +163,3 @@ The manifest and image have a five-minute HTTP cache lifetime. This is separate 
 5. Remove **Stremio Smart Search** from Stremio's addon list if you no longer want its search rows.
 
 App removal leaves catalogue and settings files behind. Their default paths are in [catalogue storage](CATALOGUE.md#where-the-catalogue-is-stored). If you chose a custom catalogue folder, settings remain in the default folder. Your Stremio settings and other addons are untouched.
-

@@ -10,6 +10,8 @@ offline, needs no IMDb data, and leaves an installed helper alone. Use it to ans
 
 It is a developer tool. Nothing here is part of the installed app.
 
+[Quick start](#quick-start) · [Compare versions](#compare-two-versions) · [Metrics](#what-is-measured) · [Platform coverage](#platform-coverage) · [Limitations](#limitations)
+
 ## Quick start
 
 From the repository root, with Go installed:
@@ -38,7 +40,7 @@ Interleaved comparison is the method to trust. It alternates the two builds in o
 session, as A B B A, so slow drift in the machine affects both sides equally.
 
 ```sh
-git worktree add ../sss-base origin/main
+git worktree add --detach ../sss-base origin/main
 go run ./tools/sss-bench ab --baseline ../sss-base --candidate . --profile standard
 git worktree remove ../sss-base
 ```
@@ -165,7 +167,7 @@ differ. It also replays the curated queries over HTTP and warns about any
 difference, which catches the server changing what a user sees.
 
 Category groups map onto the case file as follows: exact titles (`exact`,
-`original`); typing errors (`fuzzy`, `transposition`); `phonetic`; abbreviations
+`original`); typing errors (`fuzzy`, `transposition`, `dropped-vowel`, `multi-typo`); `phonetic`; abbreviations
 (`acronym`); joined words (`joined`, `punctuation`); other languages (`alias`,
 `alias-fuzzy`, `accent`, `non-latin`); ambiguity (`short`, `similar`, `year`); and
 `negative`.
@@ -273,8 +275,7 @@ really ran.
 
 All six produced the same fixture fingerprint, workload ID and quality scores, so the
 inputs really are reproducible across systems. Hosted runs are real executions on
-shared machines: they verify behaviour, not performance. `standard` and `full` have not
-yet run outside Windows. See [Platform testing](PLATFORM-TESTING.md) for the app itself.
+shared machines: they verify behaviour, not performance. `standard` has also run on a Linux cloud VM against real Standard and Expanded catalogues; see [the preview.4 measurements](PERFORMANCE.md#preview4-on-a-linux-cloud-vm). `full` is recorded only on Windows. See [Platform testing](PLATFORM-TESTING.md) for the app itself.
 
 ### What a prebuilt binary cannot show
 
@@ -307,7 +308,7 @@ Three outside references agree:
 
 - **benchstat** made the same significant-or-not call on all 78 metrics of two
   comparisons, with p-values differing only by its three-decimal rounding.
-- **The recorded quality results** were reproduced exactly on a real Expanded catalogue
+- **The preview.4 quality results, using its 288-case suite,** were reproduced exactly on a real Expanded catalogue
   of 390,470 titles: 222/231 first and 228/231 in five on `cases`, 22/30 and 24/30 on
   the held-out set, and 43/56 with 3 false positives on the validation set.
 - **The recorded load time** of 1.85 s matched 1.87 s to ready on the same PC. Latency
@@ -341,8 +342,7 @@ Three outside references agree:
   languages show as not applicable. Use a real snapshot built with that language.
 - **macOS peak** comes from `ru_maxrss`, which may include memory from before the
   child started.
-- **Linux** has run natively only on hosted runners and briefly under WSL2, so its
-  first-launch behaviour on a real disk is unverified.
+- **Linux** has native hosted-runner and real-data cloud-VM measurements, as well as earlier WSL2 checks. Those do not establish first-launch desktop behavior on physical Linux hardware.
 - **Memory growth** is an estimate from a short window, and the Go heap saws up and
   down within it. It flags a leak; it does not size one.
 - **Secondary hints** are uncorrected, so some will be false. Confirm a surprising one

@@ -48,29 +48,39 @@ Uninstalling leaves the catalogue where it is. Delete the folder yourself if you
 
 ## Updating and changing size
 
-The public preview.3 download updates manually through **Refresh catalogue**. In preview.4, that button is **Refresh now**, and optional automatic updates are described below.
+Choose **Refresh now** to download the latest data with your current choices. Automatic updates have also been available since preview.4. Preview.3 used manual **Refresh catalogue** instead.
 
-To change size, select the option and choose **Apply size & rebuild**. If you also change alternative titles, the button reads **Apply changes & rebuild**. In preview.4, **Refresh now** downloads the latest IMDb data with your current choices. The current index keeps serving during preparation; new choices are saved with the replacement catalogue only after success. A failed refresh keeps the previous working catalogue. Existing catalogues retain their saved size. Legacy catalogues without a size field are treated as Compact.
+To change size, select the option and choose **Apply size & rebuild**. If you also change alternative titles, the button reads **Apply changes & rebuild**. The current index keeps serving during preparation; new choices are saved with the replacement catalogue only after success. A failed refresh keeps the previous working catalogue. Existing catalogues retain their saved size. Legacy catalogues without a size field are treated as Compact.
 
 ### Automatic updates
 
-**Available in preview.4; absent from preview.3.**
+**Available since preview.4; absent from preview.3.**
 
 **Update automatically** keeps the catalogue current without you thinking about it. It is on for new installations; an installation that already had a catalogue before this option existed stays manual until you switch it on, so nobody's data use changes unannounced. Choose how often under **Check for new titles**: every day, every 2 days (default), every 3 days or every week.
 
 How it behaves:
 
-- There is no separate service, scheduled task or start-up entry. Updates happen only while the helper is running, which it normally is in the background.
+- The updater adds no separate service or scheduled task. It runs only while the helper is running. The optional **Start Smart Search when I sign in** setting starts the helper; it is separate from the update schedule.
 - Start-up never waits for an update. A saved catalogue is searchable at once, and the first check comes a few minutes after start-up. While the helper keeps running it re-evaluates every half hour; nothing happens unless an update is due.
 - When the chosen interval has passed since the last successful update, Smart Search sends one `HEAD` request per IMDb file with the validators it saved last time (`If-None-Match`, `If-Modified-Since`). If nothing changed, it downloads nothing and asks again no sooner than six hours later. If IMDb's reply has no validators to compare, it falls back to the schedule alone: one download per interval.
 - IMDb normally publishes new files every day, so at the default 2-day interval most checks do lead to a download: about 240 MB (ratings 9 MB, titles 230 MB in the 1 November 2026 snapshot). IMDb only publishes whole files, so there is no smaller "changes only" download.
 - With alternative titles on, routine updates keep the alternative titles you already have, matched by IMDb ID, and download IMDb's 520 MB alternative-title file only once it is a week old. A title that is new since then is still found by its main and original titles, and gets its regional names at the next weekly download. **Refresh now** and any size or language change always download everything.
-- Roughly per month: every 2 days 3.6 GB, or 5.8 GB with alternative titles; every day 7.1 GB, or 9.4 GB; every week 1 GB, or 3.3 GB. These are rough transfer estimates, not a cap; unchanged files, retries, time offline and manual refreshes change the total.
 - Only one update runs at a time. **Refresh now** with the same size and language joins an automatic update while it can still request fresh alternative titles. If that update has already carried the old alternatives forward and is finishing, settings ask you to choose **Refresh now** again shortly.
 - The new catalogue replaces the old one only after it has been completely downloaded, parsed, validated and saved. An automatic update also refuses a replacement with less than half the current number of titles, which would point to a partial file from IMDb.
 - After a failure (offline, IMDb unavailable, a cut-off or damaged download), retries back off by 1 hour, then 2, 4, 8, 16 and at most 24 hours; the next check also respects the selected update interval. This is saved, so restarting the helper does not repeat a large download straight away. An update cut short by a crash or forced close counts as a failure too.
 - Saved times that lie in the future, for example after the clock was set back, are treated as now, so a clock change cannot pause updates for long or cause more than one extra update.
 - On Windows, a connection marked as metered (Settings → Network → Metered connection) pauses automatic updates. macOS and Linux have no detection here, so updates follow the schedule on any connection; turn them off if you are on a capped connection. **Refresh now** always works.
+
+Approximate monthly downloads, using the source sizes above:
+
+| Interval | Main/original titles | With alternative titles |
+| --- | ---: | ---: |
+| Every day | 7.1 GB | 9.4 GB |
+| Every 2 days (default) | 3.6 GB | 5.8 GB |
+| Every 3 days | 2.4 GB | 4.6 GB |
+| Every week | 1.0 GB | 3.3 GB |
+
+These are transfer estimates, not a cap. They assume changed files at each due check and budget a weekly alternative-title download. That file is actually refreshed on the next due update after it reaches seven days old, so a two- or three-day schedule can stretch the gap to eight or nine days. Unchanged files, retries, time offline and manual refreshes change the total. MB/GB are decimal transfer sizes; memory figures in [Performance](PERFORMANCE.md) use MiB.
 
 The settings are stored in `updates.json` and the record of checks, failures and IMDb validators in `update-state.json`, both in the settings folder.
 

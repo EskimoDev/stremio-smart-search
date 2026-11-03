@@ -1,0 +1,233 @@
+{
+  "description": "Aggregate search-quality results only; no production titles, IMDb IDs, queries, user data or local paths.",
+  "measuredOn": "2026-11-03",
+  "sourceCommit": "0ca27a321bdadb7e919e8b885c8a91db7ed5c849",
+  "goVersion": "go1.27.0",
+  "platform": "windows/amd64",
+  "measurement": "Direct engine, no HTTP deadline",
+  "alternativeTitles": "off",
+  "catalogueSource": "Existing local IMDb snapshots; no new download during this measurement",
+  "suites": {
+    "cases": {
+      "path": "testdata/quality/cases.json",
+      "sha256": "4910a24cb7adf3c0b74656958e88d50b9ad99ebf8b1b9a84c02c7dde771ce4de",
+      "cases": 346,
+      "categories": {
+        "accent": 8,
+        "acronym": 14,
+        "alias": 35,
+        "alias-fuzzy": 11,
+        "dropped-vowel": 25,
+        "exact": 39,
+        "fuzzy": 27,
+        "joined": 12,
+        "multi-typo": 33,
+        "negative": 3,
+        "non-latin": 8,
+        "original": 13,
+        "phonetic": 39,
+        "punctuation": 21,
+        "short": 16,
+        "similar": 18,
+        "transposition": 14,
+        "year": 10
+      }
+    },
+    "phonetic-holdout": {
+      "path": "testdata/quality/phonetic-holdout.json",
+      "sha256": "53df3dea17f662c71065afbc6d715bd04b9e41a2269c6ea5984c2fafb195d8eb",
+      "cases": 31,
+      "categories": {
+        "negative": 1,
+        "phonetic": 30
+      }
+    },
+    "phonetic-validation": {
+      "path": "testdata/quality/phonetic-validation.json",
+      "sha256": "98ddb2569703c6793552f7e3e118d1ca6a36cef2a98ec04402c56bb63a349ed0",
+      "cases": 71,
+      "categories": {
+        "negative": 15,
+        "phonetic": 56
+      }
+    }
+  },
+  "catalogues": [
+    {
+      "profile": "compact",
+      "titles": 50000,
+      "snapshotSha256": "7b3d38a0351de5547f405a799dc33e6048c0d5621a1b1eb303814ad0948f7cfc",
+      "results": {
+        "cases": {
+          "statuses": {
+            "language": 54,
+            "scored": 289,
+            "uncovered": 3
+          },
+          "summary": {
+            "category": "all",
+            "cases": 289,
+            "ranked": 286,
+            "top1": 283,
+            "recallAt5": 285,
+            "mrr": 0.993006993006993,
+            "missing": 1,
+            "falsePositives": 0,
+            "fpCases": 0
+          }
+        },
+        "phonetic-holdout": {
+          "statuses": {
+            "scored": 31
+          },
+          "summary": {
+            "category": "all",
+            "cases": 31,
+            "ranked": 30,
+            "top1": 26,
+            "recallAt5": 27,
+            "mrr": 0.8863636363636364,
+            "missing": 2,
+            "falsePositives": 0,
+            "fpCases": 0
+          }
+        },
+        "phonetic-validation": {
+          "statuses": {
+            "scored": 71
+          },
+          "summary": {
+            "category": "all",
+            "cases": 71,
+            "ranked": 56,
+            "top1": 49,
+            "recallAt5": 49,
+            "mrr": 0.875,
+            "missing": 7,
+            "falsePositives": 5,
+            "fpCases": 1
+          }
+        }
+      }
+    },
+    {
+      "profile": "standard",
+      "titles": 184588,
+      "snapshotSha256": "755e8689772ec591d2930117e38e965664e37d00e522dc4bc0511772bb4920cf",
+      "results": {
+        "cases": {
+          "statuses": {
+            "language": 54,
+            "scored": 290,
+            "uncovered": 2
+          },
+          "summary": {
+            "category": "all",
+            "cases": 290,
+            "ranked": 287,
+            "top1": 281,
+            "recallAt5": 286,
+            "mrr": 0.9872241579558654,
+            "missing": 1,
+            "falsePositives": 0,
+            "fpCases": 0
+          }
+        },
+        "phonetic-holdout": {
+          "statuses": {
+            "scored": 31
+          },
+          "summary": {
+            "category": "all",
+            "cases": 31,
+            "ranked": 30,
+            "top1": 25,
+            "recallAt5": 27,
+            "mrr": 0.8666666666666667,
+            "missing": 3,
+            "falsePositives": 0,
+            "fpCases": 0
+          }
+        },
+        "phonetic-validation": {
+          "statuses": {
+            "scored": 71
+          },
+          "summary": {
+            "category": "all",
+            "cases": 71,
+            "ranked": 56,
+            "top1": 48,
+            "recallAt5": 48,
+            "mrr": 0.8571428571428571,
+            "missing": 8,
+            "falsePositives": 8,
+            "fpCases": 3
+          }
+        }
+      }
+    },
+    {
+      "profile": "expanded",
+      "titles": 390449,
+      "snapshotSha256": "794af0eae845ab54bfcc6687a0421ed106db5ffb7a65b726adbce6244187422d",
+      "results": {
+        "cases": {
+          "statuses": {
+            "language": 54,
+            "scored": 292
+          },
+          "summary": {
+            "category": "all",
+            "cases": 292,
+            "ranked": 289,
+            "top1": 281,
+            "recallAt5": 288,
+            "mrr": 0.9835640138408305,
+            "missing": 1,
+            "falsePositives": 0,
+            "fpCases": 0
+          }
+        },
+        "phonetic-holdout": {
+          "statuses": {
+            "scored": 31
+          },
+          "summary": {
+            "category": "all",
+            "cases": 31,
+            "ranked": 30,
+            "top1": 25,
+            "recallAt5": 27,
+            "mrr": 0.8666666666666667,
+            "missing": 3,
+            "falsePositives": 0,
+            "fpCases": 0
+          }
+        },
+        "phonetic-validation": {
+          "statuses": {
+            "scored": 71
+          },
+          "summary": {
+            "category": "all",
+            "cases": 71,
+            "ranked": 56,
+            "top1": 48,
+            "recallAt5": 48,
+            "mrr": 0.8571428571428571,
+            "missing": 8,
+            "falsePositives": 11,
+            "fpCases": 3
+          }
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Curated regression suites, not population-wide or newly blind accuracy.",
+    "Coverage gaps and other-language cases are excluded from ranking denominators.",
+    "Source revision is after preview.5; this is not a measurement of its released binary.",
+    "No latency or memory measurements are recorded here."
+  ]
+}
