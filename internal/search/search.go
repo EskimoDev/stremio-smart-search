@@ -17,7 +17,8 @@ import (
 
 type Engine struct {
 	titles []entry
-	kinds  []uint8 // kindMovie or kindSeries per title, kept apart for cache-friendly filtering
+	wide   map[int32]wide // the few titles whose number or rating an entry cannot hold
+	kinds  []uint8        // kindMovie or kindSeries per title, kept apart for cache-friendly filtering
 	// names holds every normalized canonical name (primary and original). It
 	// answers exact queries and, through its joined order, queries typed
 	// without spaces.
@@ -40,6 +41,9 @@ type Engine struct {
 	alternateWords postingList
 	grams          []string
 	gramWords      postingList
+	// gramLengths is set when each gramWords entry carries its word's
+	// length in the bits above gramLengthShift (see gramEntry).
+	gramLengths bool
 	// Alternative (regional/translated) titles. Their exact forms and words are
 	// kept apart from canonical ones so they can rank slightly lower, but they
 	// share the vocabulary and trigram index, and therefore all typo handling.
@@ -228,6 +232,7 @@ func New(titles []catalog.Title) *Engine {
 	// deterministic between runs.
 	gramNumbers := map[string]int32{}
 	var gramKeys, gramWords []int32
+	e.gramLengths = len(e.vocabulary) <= gramWordMask+1
 	for position, word := range e.vocabulary {
 		if n := e.runeLengths[position]; n >= 3 && n <= 40 {
 			for _, g := range uniqueGrams(word) {
@@ -238,7 +243,7 @@ func New(titles []catalog.Title) *Engine {
 					e.grams = append(e.grams, g)
 				}
 				gramKeys = append(gramKeys, number)
-				gramWords = append(gramWords, int32(position))
+				gramWords = append(gramWords, e.gramEntry(int32(position), n))
 			}
 		}
 	}
@@ -282,6 +287,17 @@ const prepareBlock = 4096
 // prepareBlock prepares titles[order[i]] into block[i], and sets their
 // entries and kinds from position first on, using every core.
 func (e *Engine) prepareBlock(titles []catalog.Title, order []int32, block []prepared, first int) {
+	wides := make([]*wide, len(order)) // nil for almost every title
+	defer func() {
+		for i, w := range wides {
+			if w != nil {
+				if e.wide == nil {
+					e.wide = map[int32]wide{}
+				}
+				e.wide[int32(first+i)] = *w
+			}
+		}
+	}()
 	workers := min(runtime.GOMAXPROCS(0), 8)
 	var wg sync.WaitGroup
 	for w := 0; w < workers; w++ {
@@ -290,7 +306,11 @@ func (e *Engine) prepareBlock(titles []catalog.Title, order []int32, block []pre
 			defer wg.Done()
 			for i := w; i < len(order); i += workers {
 				t := &titles[order[i]]
-				e.titles[first+i] = newEntry(*t)
+				var w *wide
+				e.titles[first+i], w = newEntry(*t)
+				if w != nil {
+					wides[i] = w
+				}
 				e.kinds[first+i] = kindOf(t.Type)
 				e.titles[first+i].words = block[i].prepare(t)
 			}
@@ -499,6 +519,31 @@ func (e *Engine) gram(text string) []int32 {
 	}
 	return e.gramWords.get(int32(i))
 }
+
+// A trigram list entry is a word number with the word's length (3 to 40
+// letters) in its top bits, so the typo scan can skip words of the wrong
+// length without reading runeLengths at a random place for each of them.
+// A vocabulary too large for the packing keeps plain word numbers.
+const (
+	gramLengthShift = 25
+	gramWordMask    = 1<<gramLengthShift - 1
+)
+
+func (e *Engine) gramEntry(word int32, length uint8) int32 {
+	if e.gramLengths {
+		return word | int32(length)<<gramLengthShift
+	}
+	return word
+}
+
+// gramWord splits a trigram list entry into its word number and length.
+func (e *Engine) gramWord(entry int32) (int32, int) {
+	if e.gramLengths {
+		return entry & gramWordMask, int(entry >> gramLengthShift)
+	}
+	return entry, int(e.runeLengths[entry])
+}
+
 func (e *Engine) AlternateTitles() int { return e.alternateCount }
 
 func isASCII(text string) bool {
@@ -537,30 +582,63 @@ func forEachEdit(word string, visit func([]byte)) {
 	}
 }
 
-// Damerau-Levenshtein with adjacent transpositions; inputs are bounded title
-// words. It runs on bytes when both words are ASCII, the usual case, and keeps
-// its rows on the stack for words of up to maxStackWord letters, so a typo
-// lookup that compares a hundred candidates allocates nothing.
+// distance is the Damerau-Levenshtein distance with adjacent transpositions
+// (optimal string alignment) between two bounded title words, up to limit: the
+// distance when it is at most limit, else limit+1. Two ASCII words, the usual
+// case, are compared bit-parallel without copying; others rune by rune, so a
+// typo lookup that compares a hundred candidates allocates nothing.
 func distance(a, b string, limit int) int {
-	if len(a) <= maxStackWord && len(b) <= maxStackWord {
+	if len(a) <= 64 && len(b) <= 64 {
 		if abs(len(a)-len(b)) > limit && isASCII(a) && isASCII(b) {
 			return limit + 1
 		}
-		var xs, ys [maxStackWord]byte
-		var high byte
-		for i := 0; i < len(a); i++ {
-			xs[i] = a[i]
-			high |= a[i]
-		}
-		for i := 0; i < len(b); i++ {
-			ys[i] = b[i]
-			high |= b[i]
-		}
-		if high < utf8.RuneSelf {
-			return editDistance(xs[:len(a)], ys[:len(b)], limit)
+		if d, ok := asciiDistance(a, b); ok {
+			return min(d, limit+1)
 		}
 	}
 	return editDistance([]rune(a), []rune(b), limit)
+}
+
+// asciiDistance is the optimal string alignment distance between two ASCII
+// words of at most 64 letters, by Hyyrö's bit-vector algorithm ("A bit-vector
+// algorithm for computing Levenshtein and Damerau edit distances", 2003): one
+// column of the edit table per letter of b, in a few word operations. ok is
+// false, and nothing is computed, when either word is not ASCII.
+func asciiDistance(a, b string) (d int, ok bool) {
+	if len(a) == 0 {
+		return len(b), isASCII(b)
+	}
+	var peq [utf8.RuneSelf]uint64 // per letter, its positions in a
+	for i := 0; i < len(a); i++ {
+		if a[i] >= utf8.RuneSelf {
+			return 0, false
+		}
+		peq[a[i]] |= 1 << i
+	}
+	top := uint64(1) << (len(a) - 1)
+	vp, vn := ^uint64(0), uint64(0)
+	var d0prev, pmprev uint64
+	d = len(a)
+	for i := 0; i < len(b); i++ {
+		if b[i] >= utf8.RuneSelf {
+			return 0, false
+		}
+		pm := peq[b[i]]
+		tr := (^d0prev & pm) << 1 & pmprev // a transposition ends here
+		d0 := (pm&vp + vp) ^ vp | pm | vn | tr
+		hp := vn | ^(d0 | vp)
+		hn := d0 & vp
+		if hp&top != 0 {
+			d++
+		} else if hn&top != 0 {
+			d--
+		}
+		x := hp<<1 | 1
+		vn = x & d0
+		vp = hn<<1 | ^(x | d0)
+		d0prev, pmprev = d0, pm
+	}
+	return d, true
 }
 
 const maxStackWord = 48
@@ -569,6 +647,10 @@ func editDistance[T byte | rune](x, y []T, limit int) int {
 	if abs(len(x)-len(y)) > limit {
 		return limit + 1
 	}
+	// Any alignment within limit edits keeps |i-j| <= limit, so only that
+	// band of each row is computed; cells outside it count as over the limit.
+	// Values within the limit are exact, and anything over it is limit+1.
+	over := limit + 1
 	var rows [3][maxStackWord + 1]int
 	var previousPrevious, previous, current []int
 	if len(y) <= maxStackWord {
@@ -577,29 +659,43 @@ func editDistance[T byte | rune](x, y []T, limit int) int {
 		previousPrevious, previous, current = make([]int, len(y)+1), make([]int, len(y)+1), make([]int, len(y)+1)
 	}
 	for j := range previous {
-		previous[j] = j
+		previous[j] = min(j, over)
+		previousPrevious[j] = over
+		current[j] = over
 	}
 	for i := 1; i <= len(x); i++ {
-		current[0] = i
-		rowMin := i
-		for j := 1; j <= len(y); j++ {
+		low, high := max(1, i-limit), min(len(y), i+limit)
+		// The cell left of the band is over the limit, or the first column.
+		if low == 1 {
+			current[0] = min(i, over)
+		} else {
+			current[low-1] = over
+		}
+		rowMin := current[low-1]
+		for j := low; j <= high; j++ {
 			cost := 0
 			if x[i-1] != y[j-1] {
 				cost = 1
 			}
-			current[j] = min(current[j-1]+1, previous[j]+1, previous[j-1]+cost)
+			c := min(current[j-1]+1, previous[j]+1, previous[j-1]+cost)
 			if i > 1 && j > 1 && x[i-1] == y[j-2] && x[i-2] == y[j-1] {
-				current[j] = min(current[j], previousPrevious[j-2]+1)
+				c = min(c, previousPrevious[j-2]+1)
 			}
-			rowMin = min(rowMin, current[j])
+			c = min(c, over)
+			current[j] = c
+			rowMin = min(rowMin, c)
+		}
+		if high < len(y) {
+			current[high+1] = over // the cell right of the band
 		}
 		if rowMin > limit {
-			return limit + 1
+			return over
 		}
 		previousPrevious, previous, current = previous, current, previousPrevious
 	}
 	return previous[len(y)]
 }
+
 func abs(n int) int {
 	if n < 0 {
 		return -n
@@ -680,11 +776,11 @@ func (e *Engine) lookupTerms(ctx context.Context, work *scratch, query string, t
 		touched := work.touched[:0]
 		scanned := 0
 		for _, gram := range uniqueGrams(query) {
-			for _, word := range e.gram(gram) {
+			for _, entry := range e.gram(gram) {
 				if scanned++; scanned > 20000 {
 					break
 				}
-				if abs(int(e.runeLengths[word])-length) <= 2 {
+				if word, n := e.gramWord(entry); abs(n-length) <= 2 {
 					if mark := work.wordMark[word]; mark>>wordCountBits != gen {
 						work.wordMark[word] = gen<<wordCountBits | 1
 						touched = append(touched, word)
@@ -711,7 +807,7 @@ func (e *Engine) lookupTerms(ctx context.Context, work *scratch, query string, t
 			}
 			return cmp.Compare(a.word, b.word)
 		}
-		candidates = smallest(candidates, 96, better)
+		candidates = smallest(bestOverlaps(candidates, 96, &work.ties), 96, better)
 		limit := 1
 		if length >= 7 {
 			limit = 2
@@ -719,6 +815,11 @@ func (e *Engine) lookupTerms(ctx context.Context, work *scratch, query string, t
 		for _, c := range candidates {
 			if ctx.Err() != nil {
 				break
+			}
+			// The scan admits words two letters longer or shorter, but a
+			// short word is compared within one edit: skip reading those.
+			if abs(int(e.runeLengths[c.word])-length) > limit {
+				continue
 			}
 			d := distance(query, e.vocabulary[c.word], limit)
 			weight := .76
@@ -742,7 +843,7 @@ func (e *Engine) lookupTerms(ctx context.Context, work *scratch, query string, t
 	}
 	// Sound-alikes come last and are never cut by the term limit; a word
 	// already matched by spelling keeps its higher weight.
-	sounds := e.soundsLike(query, alone)
+	sounds := e.soundsLike(work, query, alone)
 	for _, w := range sounds {
 		if _, ok := matches[w]; !ok {
 			result = append(result, termMatch{w, soundWeight})
@@ -751,7 +852,7 @@ func (e *Engine) lookupTerms(ctx context.Context, work *scratch, query string, t
 	if ctx.Err() != nil {
 		return result
 	}
-	for _, w := range e.nearSounds(query, sounds, alone) {
+	for _, w := range e.nearSounds(work, query, sounds, alone) {
 		if _, ok := matches[w]; !ok {
 			result = append(result, termMatch{w, nearWeight})
 		}
@@ -877,6 +978,39 @@ func sortTerms(matches map[int32]float64) []termMatch {
 	return result
 }
 
+// bestOverlaps returns the n candidates with the most shared trigrams, ties
+// going to the lower word number, in no particular order; smallest then has
+// at most n to order instead of thousands. Overlaps are below
+// 1<<wordCountBits, so a count per overlap finds the cut, and only the words
+// tied at it need comparing. ties is scratch space.
+func bestOverlaps(candidates []gramCandidate, n int, ties *[]int32) []gramCandidate {
+	if len(candidates) <= n {
+		return candidates
+	}
+	var counts [1 << wordCountBits]int
+	for _, c := range candidates {
+		counts[c.overlap]++
+	}
+	cut, above := len(counts)-1, 0 // above counts overlaps over cut
+	for ; cut > 0 && above+counts[cut] < n; cut-- {
+		above += counts[cut]
+	}
+	tied := (*ties)[:0]
+	kept := candidates[:0]
+	for _, c := range candidates {
+		if c.overlap > int32(cut) {
+			kept = append(kept, c)
+		} else if c.overlap == int32(cut) {
+			tied = append(tied, c.word)
+		}
+	}
+	*ties = tied
+	for _, w := range smallest(tied, n-above, cmp.Compare[int32]) {
+		kept = append(kept, gramCandidate{w, int32(cut)})
+	}
+	return kept
+}
+
 // smallest returns the n smallest items in ascending order under compare, a
 // strict total order. It partially reorders items.
 func smallest[T any](items []T, n int, compare func(a, b T) int) []T {
@@ -923,6 +1057,8 @@ type scratch struct {
 	wordGen    uint16
 	touched    []int32
 	candidates []gramCandidate
+	ties       []int32 // bestOverlaps' words tied at its cut
+	sounds     []soundCandidate
 }
 
 // mark is a title's slot in the current generation. Stamp and slot sit
@@ -1080,12 +1216,12 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 		if a.score != b.score {
 			return cmp.Compare(b.score, a.score)
 		}
-		return compareIDs(&e.titles[a.id], &e.titles[b.id])
+		return e.compareIDs(a.id, b.id)
 	})
 	result := make([]catalog.Title, 0, len(hits))
 	for _, h := range hits {
 		t := &e.titles[h.id]
-		result = append(result, catalog.Title{ID: t.id(), Name: t.name, Type: kind, Year: int(t.year), Votes: int(t.votes), Rating: t.rating})
+		result = append(result, catalog.Title{ID: e.id(h.id), Name: t.name, Type: kind, Year: int(t.year), Votes: int(t.votes), Rating: e.ratingOf(h.id)})
 	}
 	return result
 }

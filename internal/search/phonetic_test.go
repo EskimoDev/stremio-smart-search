@@ -103,10 +103,10 @@ func TestSoundAlikesStayAFallback(t *testing.T) {
 	}
 	// A common indexed word is not respelled: "bear" does not reach "bare".
 	// A rare one still is.
-	if got := e.soundsLike("bear", false); len(got) != 0 {
+	if got := e.soundsLike(nil, "bear", false); len(got) != 0 {
 		t.Fatalf("common word was given sound-alikes: %v", got)
 	}
-	if got := e.soundsLike("bair", false); len(got) == 0 {
+	if got := e.soundsLike(nil, "bair", false); len(got) == 0 {
 		t.Fatal("no sound-alikes for bair")
 	}
 	// Keyboard noise and non-Latin queries get no sound-alikes.
@@ -129,7 +129,7 @@ func TestSoundAlikesStayAFallback(t *testing.T) {
 func TestSoundAlikesAreBounded(t *testing.T) {
 	e := fixture(t)
 	for _, q := range []string{"nite", "kwiet", "fite", "brekin", "toystory"} {
-		sounds := e.soundsLike(q, false)
+		sounds := e.soundsLike(nil, q, false)
 		if len(sounds) > soundWords {
 			t.Fatalf("%q: %d sound-alikes", q, len(sounds))
 		}
@@ -158,13 +158,13 @@ func TestNearSoundAlikes(t *testing.T) {
 	}
 	// A near code is not tried for a two-sound code, and the closer spelling
 	// limit keeps unrelated words out.
-	if got := e.nearSounds("niti", nil, false); len(got) != 0 {
+	if got := e.nearSounds(nil, "niti", nil, false); len(got) != 0 {
 		t.Errorf("niti: %v", got)
 	}
 	// Each kind of near code on its own: an inserted K, an inserted L, and
 	// X heard as T.
 	for query, want := range map[string]string{"brekin": "breaking", "wocking": "walking", "fucher": "future"} {
-		got := e.nearSounds(query, nil, false)
+		got := e.nearSounds(nil, query, nil, false)
 		if len(got) == 0 || !slices.ContainsFunc(got, func(w int32) bool { return e.vocabulary[w] == want }) {
 			t.Errorf("%q: near sounds %v, want %q", query, got, want)
 		}
@@ -180,16 +180,16 @@ func TestLooseSoundAlikesNeedSupport(t *testing.T) {
 	})
 	// "fdeol" is three edits from the obscure "fatal": more than a third of
 	// its letters, so the shared sound alone is not enough.
-	if got := e.soundsLike("fdeol", false); len(got) != 0 {
+	if got := e.soundsLike(nil, "fdeol", false); len(got) != 0 {
 		t.Fatalf("obscure loose sound-alike: %v", got)
 	}
 	// The same distance to a popular title's word is allowed.
-	if got := e.soundsLike("fraysure", false); len(got) != 1 {
+	if got := e.soundsLike(nil, "fraysure", false); len(got) != 1 {
 		t.Fatalf("fraysure: %v", got)
 	}
 	// A whole one-word query gets one edit less than a word with company:
 	// "kraun" is three edits from "crown".
-	if alone, company := e.soundsLike("kraun", true), e.soundsLike("kraun", false); len(alone) != 0 || len(company) != 1 {
+	if alone, company := e.soundsLike(nil, "kraun", true), e.soundsLike(nil, "kraun", false); len(alone) != 0 || len(company) != 1 {
 		t.Fatalf("alone %v, with company %v", alone, company)
 	}
 	// Search applies that to one-word queries only.

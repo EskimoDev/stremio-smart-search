@@ -247,3 +247,26 @@ func TestShortWordCentralTypos(t *testing.T) {
 		}
 	}
 }
+
+// A result carries a title's identifier, rating and the rest exactly as the
+// catalogue gave them, including numbers and ratings too wide for an index
+// entry's compact fields.
+func TestResultsKeepTitleFieldsExactly(t *testing.T) {
+	titles := []catalog.Title{
+		{ID: "tt0816692", Name: "Interstellar", Type: "movie", Year: 2014, Votes: 2300000, Rating: 8.7},
+		{ID: "tt000000000000000042", Name: "Interstellar Wide", Type: "movie", Year: 1999, Votes: 5, Rating: 7.25},
+		{ID: "tt99999999999", Name: "Interstellar Wider", Type: "movie", Year: -3, Votes: 4, Rating: 6.1},
+		{ID: "tt4294967296", Name: "Interstellar Number", Type: "movie", Year: 2001, Votes: 3},
+		{ID: "tt4294967295", Name: "Interstellar Edge", Type: "movie", Year: 2002, Votes: 2, Rating: 10},
+		{ID: "tt7", Name: "Interstellar Short", Type: "movie", Votes: 1, Rating: 0.1},
+	}
+	got := New(titles).Search(context.Background(), "interstellar", "movie", 20)
+	if len(got) != len(titles) {
+		t.Fatalf("got %d results, want %d: %+v", len(got), len(titles), got)
+	}
+	for i, want := range titles {
+		if g := got[i]; g.ID != want.ID || g.Name != want.Name || g.Type != want.Type || g.Year != want.Year || g.Votes != want.Votes || g.Rating != want.Rating {
+			t.Errorf("result %d = %+v, want %+v", i, got[i], want)
+		}
+	}
+}
