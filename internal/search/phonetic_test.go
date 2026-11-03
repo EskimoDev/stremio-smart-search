@@ -121,7 +121,7 @@ func TestSoundAlikesStayAFallback(t *testing.T) {
 		}
 	}
 	// Acronym queries take no typo or sound-alike expansion.
-	if got := e.terms(context.Background(), "incepshun", false, false); len(got) != 0 {
+	if got := e.terms(context.Background(), nil, "incepshun", false, false); len(got) != 0 {
 		t.Fatalf("sound-alikes with typos off: %v", got)
 	}
 }
@@ -133,7 +133,7 @@ func TestSoundAlikesAreBounded(t *testing.T) {
 		if len(sounds) > soundWords {
 			t.Fatalf("%q: %d sound-alikes", q, len(sounds))
 		}
-		if terms := e.terms(context.Background(), q, true, false); len(terms) > 32+2*soundWords {
+		if terms := e.terms(context.Background(), nil, q, true, false); len(terms) > 32+2*soundWords {
 			t.Fatalf("%q: %d terms", q, len(terms))
 		}
 	}

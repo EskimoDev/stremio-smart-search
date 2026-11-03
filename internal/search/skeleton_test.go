@@ -83,14 +83,14 @@ func TestSkeletonOnlyForVowelPoorWords(t *testing.T) {
 	// A word typed with its vowels is not read as a dropped-vowel spelling of
 	// another word with the same consonants.
 	for _, query := range []string{"strange", "fiends"} {
-		for _, m := range e.terms(context.Background(), query, true, true) {
+		for _, m := range e.terms(context.Background(), nil, query, true, true) {
 			if m.weight == skeletonWeight || m.weight == skeletonLongerWeight {
 				t.Errorf("%s: skeleton match %q", query, e.vocabulary[m.word])
 			}
 		}
 	}
 	// A word the query already matches by spelling keeps its weight.
-	terms := e.terms(context.Background(), "thngs", true, true)
+	terms := e.terms(context.Background(), nil, "thngs", true, true)
 	n := 0
 	for _, m := range terms {
 		if e.vocabulary[m.word] == "things" {
