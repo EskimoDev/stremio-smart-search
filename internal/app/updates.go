@@ -430,7 +430,9 @@ func (a *App) UpdateTick(ctx context.Context) {
 	a.mu.Lock()
 	u := &a.updates
 	now := a.now()
-	if !u.settings.Auto || !a.status.Ready || a.status.Building || a.moving || u.checking || now.Before(a.nextUpdateLocked(now)) {
+	// In standby the update waits until Stremio is next open, so a refresh's
+	// temporary memory is never used while the helper is meant to be small.
+	if !u.settings.Auto || !a.status.Ready || a.status.Building || a.moving || u.checking || a.standby.asleep || now.Before(a.nextUpdateLocked(now)) {
 		a.mu.Unlock()
 		return
 	}

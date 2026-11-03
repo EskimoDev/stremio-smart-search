@@ -122,6 +122,10 @@
             <label class="update-toggle" for="autostart"><input id="autostart" type="checkbox" aria-describedby="autostart-info"> Start Smart Search when I sign in</label>
             <p id="autostart-info" class="fine" aria-live="polite">Smart Search rows only appear in Stremio while the helper is running. Turn this on if you open Stremio with its own shortcut.</p>
           </div>
+          <div id="run-mode-settings" class="autostart-settings" hidden>
+            <label class="update-toggle" for="run-with-stremio"><input id="run-with-stremio" type="checkbox" aria-describedby="run-mode-info"> Only load search while Stremio is open</label>
+            <p id="run-mode-info" class="fine" aria-live="polite"></p>
+          </div>
           <details>
             <summary>How search works</summary>
             <p>Titles are matched in memory on this computer, so there is no remote search server to wait for. Posters and playback still use your online providers.</p>

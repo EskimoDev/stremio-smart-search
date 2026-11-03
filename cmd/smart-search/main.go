@@ -144,6 +144,8 @@ func run() error {
 		// Automatic updates replace the managed catalogue, never a --catalog file.
 		a.DisableUpdates()
 	}
+	// Only does work when "only while Stremio is open" is chosen.
+	a.StartStandby(ctx)
 	go func() {
 		<-ctx.Done()
 		shutdownCtx, done := context.WithTimeout(context.Background(), 3*time.Second)

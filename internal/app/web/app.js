@@ -102,7 +102,7 @@
     $('catalog-profile').disabled = status.building;
     const profile = status.profiles.find(profile => profile.id === selectedProfile);
     $('profile-info').textContent = profile ? `Up to ${profile.movies.toLocaleString()} movies + ${profile.series.toLocaleString()} series. Minimum ${profile.minVotes} IMDb votes. Actual totals depend on the source.` : 'Choose a catalogue size.';
-    $('connection').textContent = status.building ? 'Preparing catalogue' : status.ready ? 'Running locally' : 'Catalogue needed';
+    $('connection').textContent = status.building ? 'Preparing catalogue' : status.standby ? 'Standby' : status.ready ? 'Running locally' : 'Catalogue needed';
     $('connection').classList.toggle('ready', status.ready);
     $('connection').classList.toggle('building', status.building);
     $('build').disabled = status.building;
@@ -128,6 +128,7 @@
     const updated = status.updates?.lastSuccess || status.builtAt;
     $('catalog-info').textContent = status.ready ? `${activeProfile?.name || 'Local'}${activeLanguage ? ` · ${activeLanguage.name} titles` : ''} · updated ${when(updated)}` : 'Download IMDb title data to enable setup. A few hundred MB; allow several minutes.';
     renderUpdates(status);
+    renderRunMode(status);
     for (const button of installButtons) {
       const client = clients.find(client => client.id === button.dataset.client);
       // aria-disabled keeps the buttons focusable, so keyboard and screen-reader
@@ -297,10 +298,31 @@
     if (!quitArmed || stopped) return;
     quitArmed = false; $('quit').textContent = 'Quit helper'; tell('');
   });
+  // Run mode: always loaded, or a light standby while no Stremio app is open.
+  let runModeSaving = false, signInStart = true;
+  function renderRunMode(status) {
+    $('run-mode-settings').hidden = !status.ready || !status.runMode;
+    if (runModeSaving) return;
+    const withStremio = status.runMode === 'stremio';
+    $('run-with-stremio').checked = withStremio;
+    $('run-with-stremio').disabled = false;
+    let info = !withStremio ? 'Off: search stays loaded and answers instantly. On: Smart Search waits in a light standby of about 20 MB and loads search when Stremio, dx.bi or Stremio Enhanced opens.'
+      : status.standby ? 'In standby. Search loads when Stremio, dx.bi or Stremio Enhanced opens. A search from a browser loads it straight away and takes a moment longer.'
+      : 'Search is loaded. It goes back into standby a few minutes after Stremio closes.';
+    if (withStremio && !signInStart) info += ' Also turn on starting at sign-in, so Smart Search is waiting when you open Stremio.';
+    $('run-mode-info').textContent = info;
+  }
+  $('run-with-stremio').addEventListener('change', async () => {
+    runModeSaving = true; $('run-with-stremio').disabled = true;
+    try { const status = await api('run-mode', 'POST', { mode: $('run-with-stremio').checked ? 'stremio' : 'always' }); runModeSaving = false; render(status); }
+    catch (error) { runModeSaving = false; $('run-with-stremio').checked = !$('run-with-stremio').checked; $('run-with-stremio').disabled = false; $('run-mode-info').textContent = error.message; }
+  });
   const autostartInfo = 'Smart Search rows only appear in Stremio while the helper is running. Turn this on if you open Stremio with its own shortcut.';
   function renderAutostart(result) {
     $('autostart-settings').hidden = !result.supported;
     $('autostart').checked = result.enabled;
+    signInStart = !result.supported || result.enabled;
+    if (lastStatus) renderRunMode(lastStatus);
     $('autostart').disabled = false;
     $('autostart-info').textContent = result.enabled ? `Starts quietly when you sign in, using ${result.path}. Settings stay closed.` : autostartInfo;
   }

@@ -113,6 +113,8 @@ The helper stays running after you close the settings page or Stremio. It does n
 
 Smart Search rows only appear while the helper is running. If you usually open Stremio with its own shortcut, turn on **Start Smart Search when I sign in** under **You can close this page** in settings. It is off by default. It starts this copy of the helper without opening settings or Stremio, keeps any custom `--data-dir` or `--listen` you started it with, and only changes your own user's sign-in items: the Windows Run entry also used by the installer option, `~/Library/LaunchAgents/community.eskimodev.smartsearch.plist` on macOS, or `~/.config/autostart/stremio-smart-search.desktop` on Linux. For a portable copy, turn it off before moving or deleting the folder.
 
+*Main only, not yet in a release:* to keep the helper small while you aren't using Stremio, also turn on **Only load search while Stremio is open**. The helper then waits in a standby of about 20 MiB and loads its search index (a fraction of a second to about 1.5 seconds) when Stremio, dx.bi or Stremio Enhanced opens. It finds them by process name every 5 seconds (every 30 seconds while one is open) and does not touch their files or shortcuts. A search from a browser, such as web.stremio.com, loads the index straight away, so only that first search takes a moment longer. The index is dropped again 2 minutes after the last Stremio window closes, or 15 minutes after the last browser search. Automatic updates run while the index is loaded.
+
 To reopen settings:
 
 - Choose **Configure** next to Smart Search in Stremio's addon list. If it was installed before that button was added, remove and reinstall **only Smart Search** to refresh its manifest.
