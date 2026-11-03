@@ -22,6 +22,7 @@ type searchExample struct {
 
 var exampleRow = regexp.MustCompile(`<dt>([^<]+)</dt><dd><code>([^<]+)</code> <span>([^<]+)</span></dd>`)
 var exampleYear = regexp.MustCompile(`^(.*) \((\d{4})\)$`)
+var readmeExampleRow = regexp.MustCompile("^\\| ([^|]+) \\| `([^`]+)` \\| ([^|]+) \\|$")
 
 // settingsSearchExamples reads the "Ready to try it?" examples from the
 // embedded settings page, so the page and this check cannot drift apart.
@@ -57,16 +58,70 @@ func TestSettingsSearchExamplesAreListed(t *testing.T) {
 	}
 }
 
+// readmeSearchExamples reads the main showcase table, leaving the separately
+// described optional French example to alternative-title checks.
+func readmeSearchExamples(t *testing.T) []searchExample {
+	t.Helper()
+	data, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, section, ok := strings.Cut(strings.ReplaceAll(string(data), "\r\n", "\n"), "## Try a search\n")
+	if !ok {
+		t.Fatal("README has no Try a search section")
+	}
+	section, _, _ = strings.Cut(section, "\n## ")
+	var examples []searchExample
+	for _, line := range strings.Split(section, "\n") {
+		if !strings.HasPrefix(line, "|") || !strings.Contains(line, "`") {
+			continue
+		}
+		row := readmeExampleRow.FindStringSubmatch(line)
+		if row == nil {
+			t.Fatalf("cannot read README example row: %s", line)
+		}
+		example := searchExample{label: row[1], query: row[2], name: strings.ReplaceAll(row[3], "*", "")}
+		if match := exampleYear.FindStringSubmatch(example.name); match != nil {
+			example.name = match[1]
+			example.year, _ = strconv.Atoi(match[2])
+		}
+		examples = append(examples, example)
+	}
+	return examples
+}
+
+func TestReadmeSearchExamplesAreListed(t *testing.T) {
+	examples := readmeSearchExamples(t)
+	if len(examples) < 5 {
+		t.Fatalf("found %d README examples; the table or this test's pattern changed", len(examples))
+	}
+	seen := map[string]bool{}
+	for _, example := range examples {
+		if seen[example.query] {
+			t.Errorf("query %q is shown twice", example.query)
+		}
+		seen[example.query] = true
+	}
+}
+
 // TestSettingsSearchExamplesOnRealData checks that every example on the
 // settings page returns its title first in the movie or series row. Point
 // SMART_SEARCH_EXAMPLE_CATALOGS at one or more locally built snapshots
 // (separated like PATH); they are never committed.
 func TestSettingsSearchExamplesOnRealData(t *testing.T) {
+	checkSearchExamplesOnRealData(t, settingsSearchExamples(t))
+}
+
+func TestReadmeSearchExamplesOnRealData(t *testing.T) {
+	checkSearchExamplesOnRealData(t, readmeSearchExamples(t))
+}
+
+func checkSearchExamplesOnRealData(t *testing.T, examples []searchExample) {
+	t.Helper()
 	paths := filepath.SplitList(os.Getenv("SMART_SEARCH_EXAMPLE_CATALOGS"))
 	if len(paths) == 0 {
 		t.Skip("set SMART_SEARCH_EXAMPLE_CATALOGS to locally built catalogue snapshots")
 	}
-	examples := settingsSearchExamples(t)
 	for _, path := range paths {
 		c, err := catalog.Load(path)
 		if err != nil {

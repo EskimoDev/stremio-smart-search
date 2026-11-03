@@ -78,19 +78,20 @@ Choose your app, catalogue size and update schedule in one place, with light and
 
 ## Try a search
 
-| You type | Title to look for |
-|---|---|
-| `hotd` | *House of the Dragon* |
-| `strangerthings` | *Stranger Things* |
-| `game of thornes` | *Game of Thrones* |
-| `pulp fikshun` | *Pulp Fiction* |
-| `star war` | Star Wars films |
-| `strngr thngs` | *Stranger Things* |
-| `dune 1984` | *Dune* (1984) |
-| `les miserables` | *Les Misérables* |
-| `la rene des neige` | *Frozen*, with French alternative titles enabled |
+Search the way you remember a title. Smart Search can recover from several mistakes together, with no special syntax to learn.
 
-For translated or regional names, choose a language under **Alternative titles** in settings, then rebuild. This adds another data download. [Alternative-title setup →](docs/CATALOGUE.md#alternative-titles-optional)
+| What it handles | You type | Title to look for |
+| --- | --- | --- |
+| Abbreviations | `hotd` | *House of the Dragon* |
+| Several misspelled words | `teh dakr knight` | *The Dark Knight* |
+| A space in the wrong place | `shaw shank redemption` | *The Shawshank Redemption* |
+| Misspelled, unfinished words | `spidr man no wy hom` | *Spider-Man: No Way Home* |
+| Missing vowels across a long title | `lrd of th rngs retrn kng` | *The Lord of the Rings: The Return of the King* |
+| Spelling a title by sound | `my nayber totoro` | *My Neighbor Totoro* |
+| A few words, with typos | `hary poter azkban` | *Harry Potter and the Prisoner of Azkaban* |
+| Missing vowels and a release year | `gdfthr 1972` | *The Godfather* (1972) |
+
+For translated or regional names, choose a language under **Alternative titles** in settings, then rebuild. For example, `la rene des neige` can find *Frozen* with French alternative titles enabled. This adds another data download. [Alternative-title setup →](docs/CATALOGUE.md#alternative-titles-optional)
 
 A [38-query demonstration against Stremio’s default search](docs/SEARCH-QUALITY.md#compared-with-stremios-default-search-2026-11-02) found the expected title first on 36 queries with SSS and 25 with Cinemeta. It was run on the search code released in preview.6, includes queries used during development, and is not a blind accuracy test or a timing comparison.
 
@@ -100,15 +101,15 @@ Matching has limits: an exact title can rank above the similar title you meant. 
 
 Standard is the default. Choose Compact to use less memory, or Expanded to include more titles with fewer IMDb votes. You can change size in settings; the current catalogue keeps working during a rebuild.
 
-| Size | Titles in the measured snapshot | Memory after startup, Windows PC (preview.3) | Memory after startup, Linux cloud VM (preview.4) |
-|---|---:|---:|---:|
-| Compact | 50,000 | 23 MiB | 22 MiB |
-| **Standard** | 184,606 | 53 MiB | 53 MiB |
-| Expanded | 390,470 | 97 MiB | 97 MiB |
+| Size | Up to, each of movies and series | Choose it for |
+| --- | ---: | --- |
+| Compact | 25,000 | Popular titles and the lowest memory use |
+| **Standard** | 100,000 | A balance of coverage and memory use |
+| Expanded | 250,000 | More titles, including those with fewer IMDb votes |
 
-Both columns use IMDb data from 2026-11-01 with alternative titles off. The Windows PC is a Ryzen 5 5600X with 32 GiB RAM; the Linux VM has 4 vCPUs (Intel Xeon, 2.80 GHz) and 16 GiB. Windows reports working set and Linux reports RSS, which are different counters. On preview.4 the Windows PC measured 103 MiB for Expanded with `sss-bench`. Counts and memory vary. Each size keeps up to 25,000, 100,000 or 250,000 **each** of movies and series, subject to its vote threshold.
+These are limits, not guaranteed totals: each size also has a minimum vote threshold. Actual counts and memory use depend on the source data and alternative-title settings. [Measured memory use by size →](docs/PERFORMANCE.md)
 
-Matching runs locally. On preview.6 with the Windows PC, 95% of Expanded search requests, with French alternative titles on, finished within **0.57 ms** across 347 benchmark queries, including the local HTTP request and response, and the helper was ready 1.4 s after starting. This measures SSS, not the time for Stremio to load artwork or other addons' results. [Measurements and method →](docs/PERFORMANCE.md)
+Matching runs locally. On preview.6 with a Windows PC (Ryzen 5 5600X, 32 GiB RAM), 95% of Expanded search requests, with French alternative titles on, finished within **0.57 ms** across 347 benchmark queries, including the local HTTP request and response, and the helper was ready 1.4 s after starting. This measures SSS, not the time for Stremio to load artwork or other addons' results. [Measurements and method →](docs/PERFORMANCE.md#preview6-on-windows)
 
 [Title selection, updates and storage →](docs/CATALOGUE.md)
 

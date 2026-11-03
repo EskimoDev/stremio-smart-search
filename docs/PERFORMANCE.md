@@ -32,11 +32,15 @@ ARM and TV performance still need measurements.
 ## Preview.6 on Windows
 
 Preview.6 makes typo lookups allocation-free ([#46](https://github.com/EskimoDev/stremio-smart-search/pull/46))
-and reads the catalogue and builds the index on every core
+and uses a faster catalogue reader and parallel index preparation
 ([#49](https://github.com/EskimoDev/stremio-smart-search/pull/49)). Search results
 and the built index are unchanged: the top 20 results were byte-identical on about
 3,700 queries across 11 snapshots, and the index hash was identical on the same
 snapshots.
+
+Title preparation uses at most two workers in the installed helper, matching its
+Go execution limit. The parallel preparation does not use every CPU core on a
+many-core computer.
 
 Measured 2026-11-03 with two `sss-bench ab --profile standard --catalog` runs on
 the Windows PC above, using the real Expanded catalogue **with French alternative

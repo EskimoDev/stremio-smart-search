@@ -56,15 +56,24 @@ downloads. The following integration tests skip unless explicitly enabled:
 | `SMART_SEARCH_REAL_IMDB=1` | `TestRealIMDbFreshnessCheck` | Metadata-only requests to IMDb; no dataset bodies |
 | `SMART_SEARCH_REAL_IMDB_UPDATE=1` | `TestRealIMDbAutomaticUpdate` | About 238 MB from IMDb; no alternative-title file |
 | `SMART_SEARCH_REAL_DATA=PATH` | `TestRealDataAutomaticUpdate` | Uses all three cached IMDb files over loopback; no internet downloads |
-| `SMART_SEARCH_EXAMPLE_CATALOGS=PATHS` | `TestSettingsSearchExamplesOnRealData` | Loads locally built snapshots (separated like `PATH`) and checks the settings page's search examples; no network |
+| `SMART_SEARCH_EXAMPLE_CATALOGS=PATHS` | `TestSettingsSearchExamplesOnRealData`, `TestReadmeSearchExamplesOnRealData` | Loads locally built snapshots (separated like `PATH`) and checks the settings page and README table examples; no network |
+| `SMART_SEARCH_DECODE_SNAPSHOTS=PATHS` | `TestDecodeCatalogSnapshots` | Compares the direct catalogue reader with `encoding/json` on local gzip snapshots (separated like `PATH`); no network |
 | `SSS_BENCH_E2E=1` | `TestRunEndToEnd`, `TestPrebuiltBinaryHasHonestGaps` | Builds and runs the real application in temporary folders; no network |
 
 Select the intended test explicitly, give it `-timeout 60m` for full-data runs,
-and unset its variable afterwards. All use temporary application folders.
+and unset its variable afterwards. Use absolute data paths: Go runs each
+package's tests in its own directory. Tests that run the app use temporary folders.
 The cached-file test covers alias carry-over and weekly refresh; the live test
 covers real CDN validators and a download, so they serve different purposes.
 See [recorded results and commands](docs/PERFORMANCE.md#automatic-updates).
 A live-server check is not a substitute for deterministic regression tests.
+
+The example tests read the settings page and the README's **Try a search** table
+directly. After changing either, run the checks on each available catalogue size.
+They check the first result in the relevant movie or series row using the search
+engine directly; they do not measure the HTTP time budget or client rendering.
+The README's separate French example needs a French alternative-title snapshot
+and is outside the table check.
 
 ## Releasing
 
