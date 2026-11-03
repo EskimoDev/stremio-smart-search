@@ -43,17 +43,19 @@ type entry struct {
 	year   int32
 	digits uint8
 	// words is how many distinct significant words the primary name has
-	// (articles excluded, at most 255). It fits in the struct's padding.
+	// (articles excluded, at most 255; see significantWords). It fits in the
+	// struct's padding.
 	words uint8
 }
 
 func newEntry(t catalog.Title) entry {
 	number, _ := strconv.ParseUint(t.ID[2:], 10, 64) // Validate guarantees 1–18 digits
-	return entry{name: t.Name, number: number, rating: t.Rating, votes: clamp32(t.Votes), year: clamp32(t.Year), digits: uint8(len(t.ID) - 2), words: significantWords(t.Name)}
+	return entry{name: t.Name, number: number, rating: t.Rating, votes: clamp32(t.Votes), year: clamp32(t.Year), digits: uint8(len(t.ID) - 2)}
 }
 
-func significantWords(name string) uint8 {
-	parts := strings.Fields(Normalize(name))
+// significantWords counts the distinct words of a normalized name that are
+// not articles, at most 255.
+func significantWords(parts []string) uint8 {
 	n := 0
 	for i, part := range parts {
 		if !stop[part] && !slices.Contains(parts[:i], part) {
