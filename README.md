@@ -11,7 +11,7 @@
 
 [Download](https://github.com/EskimoDev/stremio-smart-search/releases) · [Install guide](docs/INSTALLATION.md) · [Changelog](CHANGELOG.md)
 
-[![Version](https://img.shields.io/badge/version-0.1.0--preview.5-orange)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.1.0--preview.6-orange)](CHANGELOG.md)
 [![Check addon](https://github.com/EskimoDev/stremio-smart-search/actions/workflows/ci.yml/badge.svg)](https://github.com/EskimoDev/stremio-smart-search/actions/workflows/ci.yml)
 ![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-informational)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -33,7 +33,7 @@
 
 ## Installation
 
-**Latest public preview: [0.1.0-preview.5](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.5).** It adds short-word and missing-vowel searches, a Windows notification-area icon, optional start at sign-in and clearer first-run setup. Later search and security fixes are [on main, not yet released](CHANGELOG.md#unreleased). For instructions matching an older download, use its tag-pinned guide: [preview.4](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.4/README.md#installation).
+**Latest public preview: [0.1.0-preview.6](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.6).** It finds titles typed with several misspelled words or misplaced spaces, such as `gma e of thr`, answers searches 40 to 50% faster, starts about 40% faster, and keeps the private control key out of the settings page. For instructions matching an older download, use its tag-pinned guide: [preview.5](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.5/README.md#installation) or [preview.4](https://github.com/EskimoDev/stremio-smart-search/blob/v0.1.0-preview.4/README.md#installation).
 
 Choose the package for your computer:
 
@@ -92,7 +92,7 @@ Choose your app, catalogue size and update schedule in one place, with light and
 
 For translated or regional names, choose a language under **Alternative titles** in settings, then rebuild. This adds another data download. [Alternative-title setup →](docs/CATALOGUE.md#alternative-titles-optional)
 
-A [38-query demonstration against Stremio’s default search](docs/SEARCH-QUALITY.md#compared-with-stremios-default-search-2026-11-02) found the expected title first on 36 queries with development SSS and 25 with Cinemeta. It used main after preview.5, includes queries used during development, and is not a blind accuracy test or a timing comparison.
+A [38-query demonstration against Stremio’s default search](docs/SEARCH-QUALITY.md#compared-with-stremios-default-search-2026-11-02) found the expected title first on 36 queries with SSS and 25 with Cinemeta. It was run on the search code released in preview.6, includes queries used during development, and is not a blind accuracy test or a timing comparison.
 
 Matching has limits: an exact title can rank above the similar title you meant. The sound-alike matcher finds `incepshun` and `back to the fucher`, but still misses `rattatooey`. See [tested search quality and known gaps](docs/SEARCH-QUALITY.md).
 
@@ -108,7 +108,7 @@ Standard is the default. Choose Compact to use less memory, or Expanded to inclu
 
 Both columns use IMDb data from 2026-11-01 with alternative titles off. The Windows PC is a Ryzen 5 5600X with 32 GiB RAM; the Linux VM has 4 vCPUs (Intel Xeon, 2.80 GHz) and 16 GiB. Windows reports working set and Linux reports RSS, which are different counters. On preview.4 the Windows PC measured 103 MiB for Expanded with `sss-bench`. Counts and memory vary. Each size keeps up to 25,000, 100,000 or 250,000 **each** of movies and series, subject to its vote threshold.
 
-Matching runs locally. On preview.4 with the Windows PC, 95% of Expanded search requests finished within **0.91 ms** across 289 benchmark queries, including the local HTTP request and response. On the same workload the slower Linux VM took 2.60 ms. This measures SSS, not the time for Stremio to load artwork or other addons' results. [Measurements and method →](docs/PERFORMANCE.md)
+Matching runs locally. On preview.6 with the Windows PC, 95% of Expanded search requests, with French alternative titles on, finished within **0.57 ms** across 347 benchmark queries, including the local HTTP request and response, and the helper was ready 1.4 s after starting. This measures SSS, not the time for Stremio to load artwork or other addons' results. [Measurements and method →](docs/PERFORMANCE.md)
 
 [Title selection, updates and storage →](docs/CATALOGUE.md)
 

@@ -1,6 +1,6 @@
 # Platform testing
 
-Historical device/package testing recorded on 2026-11-01, with later automated benchmark coverage linked below. The latest public download is preview.5; these records do not establish a new interactive device test for its packages or every current-main change.
+Historical device/package testing recorded on 2026-11-01, with later automated benchmark coverage linked below. The latest public download is preview.6; these records do not establish a new interactive device test for its packages or every current-main change.
 
 Windows includes a test of the published `0.1.0-preview.3` packages. The sections below distinguish source/package checks, release-download tests and remaining manual checks.
 

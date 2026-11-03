@@ -8,13 +8,13 @@ How often Smart Search finds the intended title, where it still struggles, and h
 
 | Version | What these records cover |
 | --- | --- |
-| [Public preview.5](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.5) | Short-word completions, silent-letter spellings and dropped vowels, in addition to preview.4's phonetic matching |
-| Main, not yet released | Several misspelled words and misplaced spaces; measured below at [0ca27a3](https://github.com/EskimoDev/stremio-smart-search/commit/0ca27a321bdadb7e919e8b885c8a91db7ed5c849) |
+| [Public preview.6](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.6) | Several misspelled words and misplaced spaces; measured below at [0ca27a3](https://github.com/EskimoDev/stremio-smart-search/commit/0ca27a321bdadb7e919e8b885c8a91db7ed5c849), whose search results preview.6 keeps unchanged |
+| [Preview.5](https://github.com/EskimoDev/stremio-smart-search/releases/tag/v0.1.0-preview.5) | Short-word completions, silent-letter spellings and dropped vowels, in addition to preview.4's phonetic matching |
 | Preview.4 and preview.3 | Earlier, smaller suites; preserved under historical measurements |
 
 ## Latest results
 
-Measured **2026-11-03**, using the **346-case, 18-category** suite and existing local IMDb snapshots, with alternative titles off. No new dataset was downloaded. This is an engine-only check of the main revision linked above, with no HTTP time budget, not a measurement of the published preview.5 binary or Stremio's complete results page.
+Measured **2026-11-03**, using the **346-case, 18-category** suite and existing local IMDb snapshots, with alternative titles off. No new dataset was downloaded. This is an engine-only check of the revision linked above, with no HTTP time budget, not a measurement of Stremio's complete results page. Later preview.6 changes made matching faster without changing any result: the top 20 results were byte-identical on about 3,700 queries across 11 snapshots.
 
 The [aggregate measurement record](benchmarks/quality-2026-11-03.json) preserves the source revision, suite and snapshot hashes, coverage counts and scores. Per-title reports and production catalogues stay outside the repository.
 
@@ -163,14 +163,14 @@ For a before/after comparison, save a run from each build using the **same case 
 
 ## Compared with Stremio's default search, 2026-11-02
 
-**Development result, not the released preview.5 binary.** A spot check of main after the
-[several-misspelled-words change](#several-misspelled-words-2026-11-02)
-against Stremio's built-in search (Cinemeta), on hard queries: dropped vowels,
+**Preview.6 search code.** A spot check of main at 5b9ea32, which has the
+[several-misspelled-words change](#several-misspelled-words-2026-11-02) and the
+same search results as preview.6, against Stremio's built-in search (Cinemeta), on hard queries: dropped vowels,
 several typos, acronyms, sound-alikes and number words. Smart Search used the
 real 2026-11-01 Standard catalogue; Cinemeta's answers came from its public
 search API on 2026-11-02 and may differ between requests or apps.
 
-| Result on 38 queries | Before the 2026-11-02 search fixes | Development version |
+| Result on 38 queries | Before the 2026-11-02 search fixes | Preview.6 |
 | --- | ---: | ---: |
 | Only Smart Search lists it first | 2 | 12 |
 | Both list it first | 15 | 24 |
@@ -220,11 +220,11 @@ Still weak in Smart Search, from the same run:
   ("gost busters", "wun peace") still find nothing.
 
 <details>
-<summary>Main: several misspelled words — implementation, results and cost</summary>
+<summary>Preview.6: several misspelled words — implementation, results and cost</summary>
 
 ## Several misspelled words, 2026-11-02
 
-**On main, not yet released:** [PR #40](https://github.com/EskimoDev/stremio-smart-search/pull/40), with the cost follow-up in [#42](https://github.com/EskimoDev/stremio-smart-search/pull/42).
+**Released in preview.6.** [PR #40](https://github.com/EskimoDev/stremio-smart-search/pull/40), with the cost follow-up in [#42](https://github.com/EskimoDev/stremio-smart-search/pull/42).
 
 A title has to match every looked-up query word, so one word that matches
 nothing empties the result. With several typos that is common: a three-letter
