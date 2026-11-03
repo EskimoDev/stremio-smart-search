@@ -29,6 +29,26 @@ on process memory. Linux RSS and Windows working set are different counters, so
 do not compare memory across the two machines as though they were the same. Mac,
 ARM and TV performance still need measurements.
 
+## Standby (main only)
+
+Measured 2026-11-03 for **Only load search while Stremio is open**, with no
+Stremio app running. Windows is the Ryzen 5 5600X PC below with its real
+Expanded catalogue (390,470 titles), 340 running processes and one run; Linux is
+the cloud VM with synthetic catalogues of the real sizes.
+
+| Measure | Windows, Expanded | Linux VM, Compact / Standard / Expanded |
+| --- | ---: | ---: |
+| Memory with the index loaded | 100.7 MiB working set | 22.5 / 50.9 / 91.7 MiB RSS |
+| Memory in standby | 19.5 MiB working set | 10.9 / 11.7 / 12.7 MiB RSS |
+| CPU in standby (one process scan every 5 s) | 188 ms per minute, about 0.3% of one core | 10 to 50 ms per minute |
+| One process scan | 6.1 ms | about 0.3 ms for 80 processes |
+| First search in standby (loads the index) | 1.36 s | 0.41 / 1.46 / 2.76 s |
+| Next search | 9 ms | 2 to 3 ms |
+
+Timings are end to end through PowerShell or curl, not the warm-request figures
+below. While a Stremio app is open and the index is loaded, the scan runs every
+30 seconds instead. In the default **Always** mode there is no scan at all.
+
 ## Preview.6 on Windows
 
 Preview.6 makes typo lookups allocation-free ([#46](https://github.com/EskimoDev/stremio-smart-search/pull/46))

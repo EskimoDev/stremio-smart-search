@@ -29,6 +29,10 @@ const (
 	// How often the watcher looks for a running Stremio app. The scan is a
 	// single process listing (Windows, Linux) or `ps` (macOS).
 	standbyScan = 5 * time.Second
+	// While a Stremio app is open and the index is loaded, the watcher only
+	// has to notice it closing, which the 2-minute grace makes unhurried.
+	// A scan of 340 processes measured 6 ms of CPU on Windows.
+	standbyScanOpen = 30 * time.Second
 	// How long the index stays loaded after the last Stremio window closed.
 	standbyAfterClose = 2 * time.Minute
 	// How long it stays loaded after a search that came while no Stremio app
@@ -191,22 +195,33 @@ func (a *App) StandbyTick(open bool) {
 	}
 }
 
+// nextScan is how long the watcher waits before looking again.
+func (a *App) nextScan() time.Duration {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.standby.clientOpen && !a.standby.asleep {
+		return standbyScanOpen
+	}
+	return standbyScan
+}
+
 // StartStandby runs the Stremio watcher. In "always" mode it waits for a
 // mode change and does no work at all.
 func (a *App) StartStandby(ctx context.Context) {
 	go func() {
-		ticker := time.NewTicker(standbyScan)
-		defer ticker.Stop()
+		timer := time.NewTimer(standbyScan)
+		defer timer.Stop()
 		for {
 			a.mu.Lock()
 			mode := a.standby.mode
 			a.mu.Unlock()
 			if mode == RunStremio {
 				a.StandbyTick(a.ClientRunning())
+				timer.Reset(a.nextScan())
 				select {
 				case <-ctx.Done():
 					return
-				case <-ticker.C:
+				case <-timer.C:
 				case <-a.standby.changed:
 				}
 				continue

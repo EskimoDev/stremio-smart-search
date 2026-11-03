@@ -65,6 +65,13 @@ func TestStandbyDropsIndexAfterStremioClosesAndWakesWhenItOpens(t *testing.T) {
 		t.Fatal("index not loaded when Stremio opened")
 	}
 	assertServing(t, a)
+	if a.nextScan() != standbyScanOpen {
+		t.Fatal("scans at full rate while Stremio is open and search is loaded")
+	}
+	a.StandbyTick(false)
+	if a.nextScan() != standbyScan {
+		t.Fatal("slow scans while no Stremio app is open")
+	}
 }
 
 func TestSearchInStandbyLoadsIndexAndAnswers(t *testing.T) {

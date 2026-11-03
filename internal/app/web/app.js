@@ -306,7 +306,7 @@
     const withStremio = status.runMode === 'stremio';
     $('run-with-stremio').checked = withStremio;
     $('run-with-stremio').disabled = false;
-    let info = !withStremio ? 'Off: search stays loaded and answers instantly. On: Smart Search waits in a light standby of about 10 MB and loads search when Stremio, dx.bi or Stremio Enhanced opens.'
+    let info = !withStremio ? 'Off: search stays loaded and answers instantly. On: Smart Search waits in a light standby of about 20 MB and loads search when Stremio, dx.bi or Stremio Enhanced opens.'
       : status.standby ? 'In standby. Search loads when Stremio, dx.bi or Stremio Enhanced opens. A search from a browser loads it straight away and takes a moment longer.'
       : 'Search is loaded. It goes back into standby a few minutes after Stremio closes.';
     if (withStremio && !signInStart) info += ' Also turn on starting at sign-in, so Smart Search is waiting when you open Stremio.';
