@@ -2,7 +2,9 @@ package catalog
 
 import (
 	"bufio"
+	"bytes"
 	"compress/gzip"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -118,8 +120,13 @@ func Load(path string) (*Catalog, error) {
 	defer f.Close()
 	buffer := bufio.NewReader(f)
 	var reader io.Reader = buffer
+	size := int64(0) // expected decompressed size, a capacity hint only
+	if info, err := f.Stat(); err == nil {
+		size = info.Size()
+	}
 	magic, _ := buffer.Peek(2)
 	if len(magic) == 2 && magic[0] == 0x1f && magic[1] == 0x8b {
+		size = gzipSize(f, size)
 		z, err := gzip.NewReader(buffer)
 		if err != nil {
 			return nil, err
@@ -127,11 +134,31 @@ func Load(path string) (*Catalog, error) {
 		defer z.Close()
 		reader = z
 	}
+	// The whole document is read into one buffer of about the right size
+	// (json.Decoder buffered it too, growing by doubling) and then decoded.
+	const limit = 128 << 20
+	data := bytes.NewBuffer(make([]byte, 0, min(max(size, 0), limit)+bytes.MinRead))
+	if _, err := data.ReadFrom(io.LimitReader(reader, limit)); err != nil {
+		return nil, fmt.Errorf("could not read catalogue: %w", err)
+	}
 	var c Catalog
-	if err := json.NewDecoder(io.LimitReader(reader, 128<<20)).Decode(&c); err != nil {
+	if err := decodeCatalog(data.Bytes(), &c); err != nil {
 		return nil, fmt.Errorf("could not read catalogue: %w", err)
 	}
 	return &c, c.Validate()
+}
+
+// gzipSize reads a gzip file's recorded uncompressed size (modulo 4 GiB) from
+// its last four bytes, or 0 when it cannot be read.
+func gzipSize(f *os.File, length int64) int64 {
+	var tail [4]byte
+	if length < 18 {
+		return 0
+	}
+	if _, err := f.ReadAt(tail[:], length-4); err != nil {
+		return 0
+	}
+	return int64(binary.LittleEndian.Uint32(tail[:]))
 }
 
 func Save(path string, c *Catalog) error {

@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"math"
+	"runtime"
 	"slices"
 	"sort"
 	"strings"
@@ -73,17 +74,28 @@ var stop = map[string]bool{"a": true, "an": true, "the": true, "of": true, "and"
 func Normalize(text string) string { return textnorm.Normalize(text) }
 
 func uniqueGrams(word string) []string {
+	if isASCII(word) {
+		// Grams are substrings of the word, so nothing is copied.
+		n := 3
+		if len(word) < 4 {
+			n = 2
+		}
+		result := make([]string, 0, max(0, len(word)-n+1))
+		for i := 0; i+n <= len(word); i++ {
+			if g := word[i : i+n]; !slices.Contains(result, g) {
+				result = append(result, g)
+			}
+		}
+		return result
+	}
 	runes := []rune(word)
 	n := 3
 	if len(runes) < 4 {
 		n = 2
 	}
-	seen := map[string]bool{}
 	result := []string{}
 	for i := 0; i+n <= len(runes); i++ {
-		g := string(runes[i : i+n])
-		if !seen[g] {
-			seen[g] = true
+		if g := string(runes[i : i+n]); !slices.Contains(result, g) {
 			result = append(result, g)
 		}
 	}
@@ -126,117 +138,53 @@ func New(titles []catalog.Title) *Engine {
 	e := &Engine{titles: make([]entry, len(titles)), kinds: make([]uint8, len(titles))}
 	var namePairs, alternatePairs []posting
 	var shortPairs []shortPosting
-	table := wordTable{numbers: map[string]int32{}}
+	table := wordTable{numbers: make(map[string]int32, len(titles)/2)}
 	// Word postings as parallel (word, title) arrays, appended in title order.
 	var wordKeys, wordIDs, altKeys, altIDs []int32
-	var seenNames, seenWords, seenAliases []string
-	seen := func(list []string, key string) bool { return slices.Contains(list, key) }
-	addShort := func(key string, id int32) {
-		if !seen(seenAliases, key) {
-			if packed, ok := packShort(key); ok {
-				shortPairs = append(shortPairs, shortPosting{packed, id})
+	// Everything about one title except numbering its words needs nothing
+	// shared, so it is prepared on every core a block of titles at a time.
+	// The block is then added in title order, which keeps the index the same
+	// on any machine.
+	block := make([]prepared, min(len(order), prepareBlock))
+	for first := 0; first < len(order); first += prepareBlock {
+		part := order[first:min(len(order), first+prepareBlock)]
+		e.prepareBlock(titles, part, block, first)
+		for i := range part {
+			p := &block[i]
+			id := int32(first + i)
+			for _, name := range p.names {
+				namePairs = append(namePairs, posting{name, id})
 			}
-			seenAliases = append(seenAliases, key)
+			for _, word := range p.words {
+				wordKeys = append(wordKeys, table.number(word))
+				wordIDs = append(wordIDs, id)
+			}
+			for _, key := range p.shorts {
+				shortPairs = append(shortPairs, shortPosting{key, id})
+			}
+			for _, name := range p.alternates {
+				alternatePairs = append(alternatePairs, posting{name, id})
+			}
+			for _, word := range p.alternateWords {
+				altKeys = append(altKeys, table.number(word))
+				altIDs = append(altIDs, id)
+			}
+			e.alternateCount += p.alternateCount
 		}
 	}
-	for index, original := range order {
-		t := &titles[original]
-		id := int32(index)
-		e.titles[index] = newEntry(*t)
-		e.kinds[index] = kindOf(t.Type)
-		seenNames, seenWords, seenAliases = seenNames[:0], seenWords[:0], seenAliases[:0]
-		for n, name := range [2]string{t.Name, t.Original} {
-			if n == 1 && (name == "" || name == t.Name) {
-				continue
-			}
-			normal := Normalize(name)
-			if normal == "" || seen(seenNames, normal) {
-				continue
-			}
-			seenNames = append(seenNames, normal)
-			namePairs = append(namePairs, posting{normal, id})
-			parts := strings.Fields(normal)
-			for _, word := range parts {
-				if !seen(seenWords, word) {
-					wordKeys = append(wordKeys, table.number(word))
-					wordIDs = append(wordIDs, id)
-					seenWords = append(seenWords, word)
-				}
-			}
-			// Acronyms of the full name and of the part before any colon.
-			for v, variant := range [2][]string{parts, nil} {
-				if v == 1 {
-					head, _, found := strings.Cut(name, ":")
-					if !found {
-						variant = parts
-					} else {
-						variant = strings.Fields(Normalize(head))
-					}
-				}
-				if len(variant) < 2 {
-					continue
-				}
-				var all, withoutArticle, significant [64]byte
-				na, nw, ns := 0, 0, 0
-				latin := true
-				for p, part := range variant {
-					first := part[0] // normalized words start with a letter, digit or non-Latin rune
-					if first < 'a' || first > 'z' {
-						latin = false
-						break
-					}
-					if na < len(all) {
-						all[na] = first
-						na++
-					}
-					if (p > 0 || !stop[part]) && nw < len(withoutArticle) {
-						withoutArticle[nw] = first
-						nw++
-					}
-					if !stop[part] && ns < len(significant) {
-						significant[ns] = first
-						ns++
-					}
-				}
-				if !latin {
-					continue
-				}
-				for _, alias := range [3][]byte{all[:na], withoutArticle[:nw], significant[:ns]} {
-					if len(alias) >= 3 && len(alias) <= 8 && !stop[string(alias)] {
-						addShort(string(alias), id)
-					}
-				}
-			}
-		}
-		// Alternative titles: exact, joined and word forms only. No acronyms,
-		// which would multiply ambiguous short keys across languages.
-		for _, name := range t.Aliases {
-			normal := Normalize(name)
-			if seen(seenNames, normal) || !textnorm.Meaningful(normal) {
-				continue
-			}
-			seenNames = append(seenNames, normal)
-			e.alternateCount++
-			// Short Latin aliases such as "H.O.T.D." or "Oben" behave like
-			// acronyms: several titles legitimately share them, so they rank in
-			// the acronym band where popularity decides, not above it.
-			if compact := strings.ReplaceAll(normal, " ", ""); len(compact) <= 5 && isASCII(compact) {
-				addShort(compact, id)
-			} else {
-				alternatePairs = append(alternatePairs, posting{normal, id})
-			}
-			for _, word := range strings.Fields(normal) {
-				if !seen(seenWords, word) {
-					altKeys = append(altKeys, table.number(word))
-					altIDs = append(altIDs, id)
-					seenWords = append(seenWords, word)
-				}
-			}
-		}
+	// The exact-name indexes and the word indexes share nothing from here
+	// on, so they are built side by side.
+	var wg sync.WaitGroup
+	parallel := func(build func()) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			build()
+		}()
 	}
-	e.names = newKeyIndex(namePairs)
-	e.alternate = newKeyIndex(alternatePairs)
-	e.acronyms = newShortIndex(shortPairs)
+	parallel(func() { e.names = newKeyIndex(namePairs) })
+	parallel(func() { e.alternate = newKeyIndex(alternatePairs) })
+	parallel(func() { e.acronyms = newShortIndex(shortPairs) })
 
 	// Number words in sorted order so prefix scans and candidate ties are
 	// deterministic and match plain string order.
@@ -263,6 +211,8 @@ func New(titles []catalog.Title) *Engine {
 	}
 	e.words = buildPostings(wordKeys, wordIDs, len(e.vocabulary))
 	e.alternateWords = buildPostings(altKeys, altIDs, len(e.vocabulary))
+	parallel(func() { e.sounds = newSoundIndex(e.vocabulary) })
+	parallel(func() { e.skeletons = newSkeletons(e.vocabulary) })
 
 	// Trigram lists, in vocabulary order so bounded candidate scans are
 	// deterministic between runs.
@@ -299,9 +249,150 @@ func New(titles []catalog.Title) *Engine {
 	}
 	e.grams = sortedGrams
 	e.gramWords = buildPostings(gramKeys, gramWords, len(e.grams))
-	e.sounds = newSoundIndex(e.vocabulary)
-	e.skeletons = newSkeletons(e.vocabulary)
+	wg.Wait()
 	return e
+}
+
+// prepared is what one title adds to the index, apart from word numbers.
+type prepared struct {
+	names          []string // normalized canonical names, distinct
+	words          []string // their distinct words, in order
+	shorts         []uint64 // packed acronyms and short alternative titles
+	alternates     []string // other normalized alternative titles
+	alternateWords []string // alternative-title words not already in words
+	alternateCount int
+	// seenNames (canonical and alternative) and seenShorts deduplicate.
+	seenNames, seenShorts []string
+}
+
+// prepareBlock is how many titles are prepared at a time: enough to keep
+// every core busy, few enough that the strings held at once stay small.
+const prepareBlock = 4096
+
+// prepareBlock prepares titles[order[i]] into block[i], and sets their
+// entries and kinds from position first on, using every core.
+func (e *Engine) prepareBlock(titles []catalog.Title, order []int32, block []prepared, first int) {
+	workers := min(runtime.GOMAXPROCS(0), 8)
+	var wg sync.WaitGroup
+	for w := 0; w < workers; w++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for i := w; i < len(order); i += workers {
+				t := &titles[order[i]]
+				e.titles[first+i] = newEntry(*t)
+				e.kinds[first+i] = kindOf(t.Type)
+				e.titles[first+i].words = block[i].prepare(t)
+			}
+		}()
+	}
+	wg.Wait()
+}
+
+// prepare fills p from t and returns how many significant words its primary
+// name has.
+func (p *prepared) prepare(t *catalog.Title) uint8 {
+	p.names, p.words, p.shorts = p.names[:0], p.words[:0], p.shorts[:0]
+	p.alternates, p.alternateWords = p.alternates[:0], p.alternateWords[:0]
+	p.seenNames, p.seenShorts = p.seenNames[:0], p.seenShorts[:0]
+	p.alternateCount = 0
+	words := uint8(0)
+	addShort := func(key string) {
+		if !slices.Contains(p.seenShorts, key) {
+			if packed, ok := packShort(key); ok {
+				p.shorts = append(p.shorts, packed)
+			}
+			p.seenShorts = append(p.seenShorts, key)
+		}
+	}
+	for n, name := range [2]string{t.Name, t.Original} {
+		if n == 1 && (name == "" || name == t.Name) {
+			continue
+		}
+		normal := Normalize(name)
+		if normal == "" || slices.Contains(p.seenNames, normal) {
+			continue
+		}
+		p.seenNames = append(p.seenNames, normal)
+		p.names = append(p.names, normal)
+		parts := strings.Fields(normal)
+		if n == 0 {
+			words = significantWords(parts)
+		}
+		for _, word := range parts {
+			if !slices.Contains(p.words, word) {
+				p.words = append(p.words, word)
+			}
+		}
+		// Acronyms of the full name and of the part before any colon.
+		for v, variant := range [2][]string{parts, nil} {
+			if v == 1 {
+				head, _, found := strings.Cut(name, ":")
+				if !found {
+					variant = parts
+				} else {
+					variant = strings.Fields(Normalize(head))
+				}
+			}
+			if len(variant) < 2 {
+				continue
+			}
+			var all, withoutArticle, significant [64]byte
+			na, nw, ns := 0, 0, 0
+			latin := true
+			for i, part := range variant {
+				first := part[0] // normalized words start with a letter, digit or non-Latin rune
+				if first < 'a' || first > 'z' {
+					latin = false
+					break
+				}
+				if na < len(all) {
+					all[na] = first
+					na++
+				}
+				if (i > 0 || !stop[part]) && nw < len(withoutArticle) {
+					withoutArticle[nw] = first
+					nw++
+				}
+				if !stop[part] && ns < len(significant) {
+					significant[ns] = first
+					ns++
+				}
+			}
+			if !latin {
+				continue
+			}
+			for _, alias := range [3][]byte{all[:na], withoutArticle[:nw], significant[:ns]} {
+				if len(alias) >= 3 && len(alias) <= 8 && !stop[string(alias)] {
+					addShort(string(alias))
+				}
+			}
+		}
+	}
+	// Alternative titles: exact, joined and word forms only. No acronyms,
+	// which would multiply ambiguous short keys across languages.
+	for _, name := range t.Aliases {
+		normal := Normalize(name)
+		if slices.Contains(p.seenNames, normal) || !textnorm.Meaningful(normal) {
+			continue
+		}
+		p.seenNames = append(p.seenNames, normal)
+		p.alternateCount++
+		// Short Latin aliases such as "H.O.T.D." or "Oben" behave like
+		// acronyms: several titles legitimately share them, so they rank in
+		// the acronym band where popularity decides, not above it.
+		if compact := strings.ReplaceAll(normal, " ", ""); len(compact) <= 5 && isASCII(compact) {
+			addShort(compact)
+		} else {
+			p.alternates = append(p.alternates, normal)
+		}
+		for _, word := range strings.Fields(normal) {
+			if !slices.Contains(p.words, word) && !slices.Contains(p.alternateWords, word) {
+				p.alternateWords = append(p.alternateWords, word)
+			}
+		}
+	}
+	return words
 }
 
 // word returns a word's position in the vocabulary, or -1.
