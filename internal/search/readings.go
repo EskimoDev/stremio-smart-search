@@ -169,13 +169,6 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 
 	var base []int // one group per distinct looked-up word, in typed order
 	var baseWords []string
-	// A number's group ("2" is also "two" and "ii") holds thousands of
-	// titles and is rarely the smallest, so beside other words it is first
-	// built only from the smallest other group: a binary search per title
-	// in the number's postings instead of adding them all. numbers lists its
-	// places in base; fullNumbers builds the whole groups once another
-	// reading needs them.
-	var numbers []int
 	for _, w := range typed {
 		if w.year {
 			years = append(years, yearOf(w.text))
@@ -187,60 +180,9 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 		if _, ok := unique[w.text]; ok {
 			continue
 		}
-		if equivalentWords[w.text] != nil && words > 1 {
-			unique[w.text] = -1
-			numbers = append(numbers, len(base))
-		} else {
-			unique[w.text] = newGroup(e.wordTerms(ctx, scratchArea(), w.text, typos, words == 1), 1)
-		}
+		unique[w.text] = newGroup(e.wordTerms(ctx, scratchArea(), w.text, typos, words == 1), 1)
 		base = append(base, unique[w.text])
 		baseWords = append(baseWords, w.text)
-	}
-	numberTerms := map[int][]termMatch{}
-	numberGroup := func(i int, within []member) bool {
-		terms, ok := numberTerms[i]
-		if !ok {
-			terms = e.wordTerms(ctx, scratchArea(), baseWords[i], typos, false)
-			numberTerms[i] = terms
-		}
-		if within != nil && !e.searchWithin(terms, within) {
-			within = nil
-		}
-		restricted := within != nil
-		if restricted {
-			groups = append(groups, e.groupWithin(terms, within))
-			base[i] = len(groups) - 1
-		} else {
-			base[i] = newGroup(terms, 1)
-		}
-		unique[baseWords[i]] = base[i]
-		return restricted
-	}
-	var others []int
-	for _, g := range base {
-		if g >= 0 {
-			others = append(others, g)
-		}
-	}
-	var within []member
-	if len(numbers) > 0 && len(others) > 0 {
-		within = e.intersect(scratchArea(), groups, others, nil)
-	}
-	partial := false
-	for _, i := range numbers {
-		if within == nil {
-			numberGroup(i, nil)
-		} else {
-			partial = numberGroup(i, within) || partial
-		}
-	}
-	fullNumbers := func() {
-		if partial {
-			partial = false
-			for _, i := range numbers {
-				numberGroup(i, nil)
-			}
-		}
 	}
 	var out []hit
 	if ctx.Err() != nil {
@@ -287,20 +229,13 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 	denominator := float64(len(base) + len(years))
 	// strict scores the query as typed and reports whether some title
 	// matches every word about as well as a one-letter typo.
-	// perfect is whether some title matches every query word as typed. It
-	// only matters for two or more words (see wholeJoin below), so a
-	// one-word query stops at its first strong match as before.
-	perfect := false
+	perfect := false // some title matches every query word as typed
 	strict := func(first bool) bool {
 		list := e.intersect(work, groups, base, nil)
 		strong := false
-		wantPerfect := typos && len(base) >= 2
 		for _, c := range list {
 			if c.weight >= strongWeight*float64(len(base)) {
 				strong = true
-				if !wantPerfect {
-					break
-				}
 			}
 			if c.weight >= float64(len(base)) {
 				perfect = true
@@ -368,7 +303,6 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 			var joins []reading
 			for i := 0; i+1 < len(typed); i++ {
 				if group := wholeJoin(typed[i], typed[i+1]); group >= 0 {
-					fullNumbers()
 					g, m := without(typed[i].text, typed[i+1].text)
 					joins = append(joins, reading{append(g, group), append(m, 2), denominator})
 				}
@@ -377,7 +311,6 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 		}
 		return out
 	}
-	fullNumbers()
 	// Three-letter words get their typo variants only now: most are typed
 	// as meant, and their variants are mostly unrelated words.
 	retry := false
@@ -601,10 +534,8 @@ func containsInt(list []int, n int) bool {
 }
 
 // wordTerms is terms for a query word in matchWords, with its other spellings
-// (see equivalents.go). A number word is looked up as typed and as a prefix
-// ("seven" for "seventh"), but gets typo and sound-alike matching only when
-// it is the whole query: beside other words, "two" is "2" or "ii", not "tow".
-// A word of one or two letters is only ever looked up as typed.
+// (see equivalents.go). A word of one or two letters is only ever looked up as
+// typed: it is too short for typo matching.
 func (e *Engine) wordTerms(ctx context.Context, work *scratch, word string, typos, alone bool) []termMatch {
 	if equivalentWords[word] == nil {
 		return e.terms(ctx, work, word, typos, alone)
@@ -615,43 +546,7 @@ func (e *Engine) wordTerms(ctx context.Context, work *scratch, word string, typo
 			terms = []termMatch{{w, 1}}
 		}
 	} else {
-		terms = e.terms(ctx, work, word, typos && alone, alone)
+		terms = e.terms(ctx, work, word, typos, alone)
 	}
 	return e.withEquivalents(terms, word)
-}
-
-// searchWithin reports whether a binary search per title of within is
-// cheaper than adding every posting of terms.
-func (e *Engine) searchWithin(terms []termMatch, within []member) bool {
-	postings := 0
-	for _, t := range terms {
-		postings += min(len(e.words.get(t.word)), 3000) + min(len(e.alternateWords.get(t.word)), 3000)
-	}
-	return len(within)*len(terms)*16 < postings
-}
-
-// groupWithin builds the group of terms restricted to the titles in within:
-// those whose postings, up to the same 3,000 per term as a full group, hold
-// the title. Postings are in title order, so each is a binary search.
-func (e *Engine) groupWithin(terms []termMatch, within []member) []member {
-	var group []member
-	for _, m := range within {
-		best := 0.0
-		for _, t := range terms {
-			if ids := e.words.get(t.word); len(ids) > 0 {
-				if _, found := slices.BinarySearch(ids[:min(len(ids), 3000)], m.id); found {
-					best = max(best, t.weight)
-				}
-			}
-			if ids := e.alternateWords.get(t.word); len(ids) > 0 {
-				if _, found := slices.BinarySearch(ids[:min(len(ids), 3000)], m.id); found {
-					best = max(best, t.weight*alternateWordWeight)
-				}
-			}
-		}
-		if best > 0 {
-			group = append(group, member{m.id, best})
-		}
-	}
-	return group
 }
