@@ -899,6 +899,7 @@ func TestStandbyDuringCheckStartsNoDownload(t *testing.T) {
 		t.Fatal(err)
 	}
 	c.Advance(49 * time.Hour)
+	checkSource := a.CheckSource
 	started, release := blockingCheck(a, catalog.Changed)
 	done := make(chan struct{})
 	go func() { a.UpdateTick(context.Background()); close(done) }()
@@ -916,6 +917,15 @@ func TestStandbyDuringCheckStartsNoDownload(t *testing.T) {
 	}
 	if !a.Status().Standby || a.engine.Load() != nil {
 		t.Fatal("a metadata check woke the search index")
+	}
+	// The deferred update must remain eligible on the next tick after waking.
+	a.CheckSource = checkSource
+	f.set(func(f *fakeIMDb) { f.etag = `"v2"` })
+	a.Wake()
+	a.UpdateTick(context.Background())
+	waitBuild(t, a)
+	if _, got := f.requests(); got-gets != 2 || !a.Status().Updates.LastSuccess.Equal(c.Now()) {
+		t.Fatal("the deferred automatic update did not run after waking")
 	}
 }
 
