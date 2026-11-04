@@ -1152,7 +1152,9 @@ func (e *Engine) release(w *scratch) {
 
 func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []catalog.Title {
 	want := kindOf(kind)
-	if utf8.RuneCountInString(query) > 120 || want == 0 {
+	// Match the HTTP route's byte ceiling even for an exact name. Longer
+	// names can bypass fuzzy-work limits, not the input-size limit.
+	if len(query) > 512 || want == 0 {
 		return nil
 	}
 	q := Normalize(query)
@@ -1160,12 +1162,9 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 		return nil
 	}
 	parts := strings.Fields(q)
-	// Bound the work by the words that are actually looked up: short words
-	// and articles are skipped below, so a long translated title such as "el
-	// señor de los anillos la comunidad del anillo" still gets its exact match.
-	if len(parts) > 16 || indexedWords(parts) > 8 {
-		return nil
-	}
+	// Keep long canonical, original and alternative names searchable exactly,
+	// while bounding the expensive word lookups and alternative readings.
+	exactOnly := utf8.RuneCountInString(query) > 120 || len(parts) > 16 || indexedWords(parts) > 8
 	scores := map[int32]float64{}
 	seedOne := func(id int32, score float64) {
 		if e.kinds[id] == want {
@@ -1188,7 +1187,6 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 	seed(e.alternate.lookup(q), scoreAlternate)
 	e.alternate.eachJoined(joined, func(id int32) { seedOne(id, scoreAlternateCompact) })
 	seed(e.acronyms.lookup(q), scoreAcronym)
-	guesses := e.respelled(q, parts)
 	// "it 2017": the name without its year, released that year, is exact.
 	if rest, year := splitYear(parts); year != 0 && rest != "" {
 		for _, id := range e.names.lookup(rest) {
@@ -1196,22 +1194,33 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 				seedOne(id, scoreExact)
 			}
 		}
-	}
-	// A single short word that is some title's acronym ("hotd") is taken as
-	// that acronym: one-letter variants of it ("hot", "hood", "hota") are
-	// unrelated titles, not typos, and would otherwise fill the results.
-	typos := true
-	if len(parts) == 1 && utf8.RuneCountInString(q) <= 5 {
-		for _, id := range e.acronyms.lookup(q) {
-			if e.kinds[id] == want {
-				typos = false
-				break
+		// Acronyms and short alternative titles use the same year constraint:
+		// "got 2011" still means Game of Thrones, rather than the word "got".
+		for _, id := range e.acronyms.lookup(rest) {
+			if e.titles[id].year == year {
+				seedOne(id, scoreAcronym)
 			}
 		}
 	}
-	hits := e.matchWords(ctx, parts, typos, want, len(scores)+len(guesses))
-	if len(guesses) > 0 {
-		e.scoreGuesses(hits, guesses, seedOne)
+	var hits []hit
+	if !exactOnly {
+		guesses := e.respelled(q, parts)
+		// A single short word that is some title's acronym ("hotd") is taken as
+		// that acronym: one-letter variants of it ("hot", "hood", "hota") are
+		// unrelated titles, not typos, and would otherwise fill the results.
+		typos := true
+		if len(parts) == 1 && utf8.RuneCountInString(q) <= 5 {
+			for _, id := range e.acronyms.lookup(q) {
+				if e.kinds[id] == want {
+					typos = false
+					break
+				}
+			}
+		}
+		hits = e.matchWords(ctx, parts, typos, want, len(scores)+len(guesses))
+		if len(guesses) > 0 {
+			e.scoreGuesses(hits, guesses, seedOne)
+		}
 	}
 	if len(scores) > 0 {
 		for i := range hits {

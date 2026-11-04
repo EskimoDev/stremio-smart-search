@@ -16,6 +16,9 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 
 ### Fixed
 
+- Long canonical, original and alternative titles can be found by their full names even when they exceed the fuzzy search's word or character limits. The existing input-size ceiling still applies, and long inputs only use exact-name matching.
+- Full-width letters and punctuation, Unicode decimal digits and Roman numeral characters now match their ordinary spellings: `Ｉｎｔｅｒｓｔｅｌｌａｒ`, `dune ٢` and `dune Ⅱ` find the same titles as `Interstellar`, `dune 2` and `dune ii`. Non-Latin letters and superscript sequel digits retain their existing handling.
+- Acronyms and short alternative titles work with a matching release year, including `got 2011` and `lotr 2001`, while respecting movie/series type and year.
 - A scheduled update no longer downloads files or wakes the index when its metadata check finishes after standby begins. The deferred update stays eligible after waking, and **Refresh now** still works from standby. Normal update sizes and the chosen schedule are unchanged.
 
 ## [0.1.0-preview.6] - 2026-11-03
