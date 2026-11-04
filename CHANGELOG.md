@@ -16,6 +16,7 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 
 ### Fixed
 
+- **Sound-alike spellings of famous titles, fan nicknames and split sound-alikes.** "euforia" now lists *Euphoria* (2019) and "kasablanka" *Casablanca* first, ahead of the obscure titles spelled exactly that way, which come second. This applies only when the query is the whole title respelled the way it is said (ph as f, a hard c as k, a soft c as s, silent letters left out) and the famous title has at least 20 times the votes. "b99", "jjk", "fma", "fmab", "jjba" and "svu" find *Brooklyn Nine-Nine*, *Jujutsu Kaisen*, *Fullmetal Alchemist*, *JoJo's Bizarre Adventure* and *Law & Order: Special Victims Unit* through a short built-in list of fan nicknames that no acronym rule produces. "gost busters" and "goast busters" find *Ghostbusters*: two words that, joined, sound like one indexed word are read as that word. See [search quality](docs/SEARCH-QUALITY.md#sound-alikes-nicknames-and-split-words-2026-11-04).
 - A scheduled update no longer downloads files or wakes the index when its metadata check finishes after standby begins. The deferred update stays eligible after waking, and **Refresh now** still works from standby. Normal update sizes and the chosen schedule are unchanged.
 
 ## [0.1.0-preview.6] - 2026-11-03

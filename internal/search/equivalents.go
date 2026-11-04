@@ -240,16 +240,134 @@ func (e *Engine) promoteFamous(hits []hit, parts []string) {
 			best = max(best, e.titles[h.id].votes)
 		}
 	}
-	if best < 0 {
-		return
-	}
+	// Without an exact, joined or acronym match only a respelled name is
+	// promoted: "fone booth" is Phone Booth before films matching one word.
+	special := best >= 0
 	need := max(int64(famousVotes), famousRatio*int64(best))
+	words := significantWords(parts)
 	for i := range hits {
 		t := &e.titles[hits[i].id]
-		if s := hits[i].score; s >= famousScore && s < scoreAcronym && int64(t.votes) >= need && namesTitle(parts, e.nameOf(hits[i].id)) {
+		s := hits[i].score
+		if s >= scoreAcronym || int64(t.votes) < need {
+			continue
+		}
+		switch name := e.nameOf(hits[i].id); {
+		case special && s >= famousScore && namesTitle(parts, name):
 			hits[i].score += famousOffset
+		case t.words == words && soundsLikeTitle(parts, name):
+			// "euforia" for Euphoria, "kasablanka" for Casablanca: the
+			// name respelled the way it sounds. The match itself scored
+			// as a weak sound-alike, so it is placed as a nearly exact one.
+			hits[i].score = max(s, famousScore+coverageBonus) + famousOffset
 		}
 	}
+}
+
+// soundsLikeTitle reports whether the query is the title's whole name, word
+// for word, with at least one word respelled the way it is said (see
+// spoken). Unlike namesTitle the subtitle alone does not count. It runs for
+// every famous hit with as many words as the query, so it works in stack
+// buffers, and an ASCII name is read in place rather than normalized.
+func soundsLikeTitle(parts []string, name string) bool {
+	if !isASCII(name) {
+		name = Normalize(name)
+	}
+	var word, sound, said [64]byte
+	i, at := 0, 0 // next query word, read position in name
+	respelled := false
+	for {
+		y, next, ok := nextNameWord(name, at, word[:0])
+		if !ok {
+			return false // a word too long to be a respelling
+		}
+		at = next
+		if len(y) > 0 && stop[string(y)] {
+			continue
+		}
+		for i < len(parts) && stop[parts[i]] {
+			i++
+		}
+		if len(y) == 0 {
+			return respelled && i == len(parts)
+		}
+		if i == len(parts) {
+			return false
+		}
+		x := parts[i]
+		i++
+		if sameWord(x, string(y)) {
+			continue
+		}
+		if len(x) < minSoundWord || !isASCII(x) {
+			return false
+		}
+		if len(x) > len(said) || string(spokenInto(sound[:0], y)) != string(spokenInto(said[:0], []byte(x))) {
+			return false
+		}
+		respelled = true
+	}
+}
+
+// nextNameWord reads the next word of an ASCII name from position at,
+// normalized as Normalize would (lower case, apostrophes dropped, anything
+// else a space), into buf. It returns an empty word at the end, and false
+// for a word longer than buf.
+func nextNameWord(name string, at int, buf []byte) ([]byte, int, bool) {
+	for ; at < len(name); at++ {
+		c := name[at]
+		switch {
+		case c >= 'a' && c <= 'z', c >= '0' && c <= '9':
+		case c >= 'A' && c <= 'Z':
+			c += 'a' - 'A'
+		case c == '\'':
+			continue
+		default:
+			if len(buf) > 0 {
+				return buf, at + 1, true
+			}
+			continue
+		}
+		if len(buf) == cap(buf) {
+			return nil, at, false
+		}
+		buf = append(buf, c)
+	}
+	return buf, at, true
+}
+
+// spokenInto appends word as it is said to b, for telling respellings
+// ("euforia", "kasablanka", "fone") from other words: silent letters dropped
+// (as in unspoken), "ph" as F, a hard C, CK or Q as K and a soft C as S. It
+// is deliberately narrow: vowels, doubled letters and S/Z are kept, so
+// "holly" and "holy" or "bare" and "beer" stay different words.
+func spokenInto(b, word []byte) []byte {
+	if len(word) > 2 && (word[0] == 'k' && word[1] == 'n' || word[0] == 'g' && word[1] == 'n' || word[0] == 'w' && word[1] == 'r') {
+		word = word[1:]
+	}
+	for i := 0; i < len(word); i++ {
+		c := word[i]
+		next := byte(0)
+		if i+1 < len(word) {
+			next = word[i+1]
+		}
+		switch {
+		case c == 'g' && next == 'h' && i > 0 && (i+2 == len(word) || strings.IndexByte("aeiouy", word[i+2]) < 0):
+			i++ // silent "gh": "night", "though"
+		case c == 'p' && next == 'h':
+			b = append(b, 'f')
+			i++
+		case c == 'c' && next == 'k':
+			b = append(b, 'k')
+			i++
+		case c == 'c' && (next == 'e' || next == 'i' || next == 'y'):
+			b = append(b, 's')
+		case c == 'c' || c == 'q':
+			b = append(b, 'k')
+		default:
+			b = append(b, c)
+		}
+	}
+	return b
 }
 
 // namesTitle reports whether the query words name the title, or its subtitle

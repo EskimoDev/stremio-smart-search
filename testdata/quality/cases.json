@@ -1535,6 +1535,95 @@
    "source": "coordinator: real dx.bi screenshot"
   },
   {
+   "name": "acronym/b99",
+   "query": "b99",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt2467372",
+     "title": "Brooklyn Nine-Nine",
+     "year": 2013
+    }
+   ],
+   "source": "curated (fan nickname)"
+  },
+  {
+   "name": "acronym/jjk",
+   "query": "jjk",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt12343534",
+     "title": "Jujutsu Kaisen",
+     "year": 2020
+    }
+   ],
+   "source": "curated (fan nickname)"
+  },
+  {
+   "name": "acronym/fmab",
+   "query": "fmab",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt1355642",
+     "title": "Fullmetal Alchemist: Brotherhood",
+     "year": 2009
+    }
+   ],
+   "source": "curated (fan nickname)"
+  },
+  {
+   "name": "acronym/fma",
+   "query": "fma",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt1355642",
+     "title": "Fullmetal Alchemist: Brotherhood",
+     "year": 2009
+    },
+    {
+     "id": "tt0421357",
+     "title": "Fullmetal Alchemist",
+     "year": 2003
+    }
+   ],
+   "source": "curated (fan nickname)"
+  },
+  {
+   "name": "acronym/jjba",
+   "query": "jjba",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt2359704",
+     "title": "JoJo's Bizarre Adventure",
+     "year": 2012
+    }
+   ],
+   "source": "curated (fan nickname)"
+  },
+  {
+   "name": "acronym/svu",
+   "query": "svu",
+   "kind": "series",
+   "category": "acronym",
+   "expect": [
+    {
+     "id": "tt0203259",
+     "title": "Law & Order: Special Victims Unit",
+     "year": 1999
+    }
+   ],
+   "source": "curated (fan nickname)"
+  },
+  {
    "name": "joined/spiderman/spiderman",
    "query": "spiderman",
    "kind": "movie",
@@ -1701,6 +1790,34 @@
     }
    ],
    "source": "curated"
+  },
+  {
+   "name": "joined/gost-busters",
+   "query": "gost busters",
+   "kind": "movie",
+   "category": "joined",
+   "expect": [
+    {
+     "id": "tt0087332",
+     "title": "Ghostbusters",
+     "year": 1984
+    }
+   ],
+   "source": "curated (split and respelled)"
+  },
+  {
+   "name": "joined/goast-busters",
+   "query": "goast busters",
+   "kind": "movie",
+   "category": "joined",
+   "expect": [
+    {
+     "id": "tt0087332",
+     "title": "Ghostbusters",
+     "year": 1984
+    }
+   ],
+   "source": "curated (split and respelled)"
   },
   {
    "name": "punctuation/spiderman/spider-man",
@@ -4382,18 +4499,18 @@
    "source": "curated"
   },
   {
-   "name": "phonetic/exact-sherlok",
+   "name": "phonetic/sherlok",
    "query": "sherlok",
    "kind": "series",
    "category": "phonetic",
    "expect": [
     {
-     "id": "tt5338678",
-     "title": "Sherlok",
-     "year": 2015
+     "id": "tt1475582",
+     "title": "Sherlock",
+     "year": 2010
     }
    ],
-   "source": "curated (exact title wins)"
+   "source": "curated (a famous title respelled the way it sounds beats an obscure exact name; Sherlok 2015 stays second)"
   },
   {
    "name": "phonetic/exact-momento",
@@ -4410,18 +4527,18 @@
    "source": "curated (exact title wins)"
   },
   {
-   "name": "phonetic/exact-kasablanka",
+   "name": "phonetic/kasablanka",
    "query": "kasablanka",
    "kind": "movie",
    "category": "phonetic",
    "expect": [
     {
-     "id": "tt10497826",
-     "title": "Kasablanka",
-     "year": 2019
+     "id": "tt0034583",
+     "title": "Casablanca",
+     "year": 1942
     }
    ],
-   "source": "curated (exact title wins)"
+   "source": "curated (a famous title respelled the way it sounds beats an obscure exact name; Kasablanka 2019 stays second)"
   },
   {
    "name": "phonetic/real-bear",
@@ -4498,6 +4615,20 @@
     }
    ],
    "source": "curated"
+  },
+  {
+   "name": "phonetic/euforia",
+   "query": "euforia",
+   "kind": "series",
+   "category": "phonetic",
+   "expect": [
+    {
+     "id": "tt8772296",
+     "title": "Euphoria",
+     "year": 2019
+    }
+   ],
+   "source": "curated (famous title respelled beats obscure exact Eufòria)"
   },
   {
    "name": "negative/gibberish",

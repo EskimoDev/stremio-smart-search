@@ -371,6 +371,9 @@ func (p *prepared) prepare(t *catalog.Title) uint8 {
 				p.words = append(p.words, word)
 			}
 		}
+		for _, nickname := range nicknames[normal] {
+			addShort(nickname)
+		}
 		// Acronyms of the full name and of the part before any colon.
 		for v, variant := range [2][]string{parts, nil} {
 			if v == 1 {
@@ -378,7 +381,11 @@ func (p *prepared) prepare(t *catalog.Title) uint8 {
 				if !found {
 					variant = parts
 				} else {
-					variant = strings.Fields(Normalize(head))
+					headNormal := Normalize(head)
+					variant = strings.Fields(headNormal)
+					for _, nickname := range nicknames[headNormal] {
+						addShort(nickname)
+					}
 				}
 			}
 			if len(variant) < 2 {
