@@ -58,16 +58,15 @@ Confirmed in the 2026-11-03 rerun on main, with alternative titles off:
 | `the dark night` | *The Dark Knight* | Second on Expanded, behind the exact title *The Dark Night* |
 | `avatar` (series) | *Avatar: The Last Airbender* | Second on Expanded, behind a series titled *Avatar* |
 | `rattatooey` | *Ratatouille* | Not found on any of the three catalogues |
-| `fone booth` | *Phone Booth* | Second on all three; retrieved, but not ranked first |
 | `the sicksth sense` | *The Sixth Sense* | Not found in the holdout check on any of the three |
 
-The validation suite still has false positives: one negative query on Compact and three on Standard/Expanded return results. Remaining gaps from the [Stremio spot check](#compared-with-stremios-default-search-2026-11-02) are listed there. *Toy Story 3* for `toy storee 3` is first since the [number change](#numbers-abbreviations-and-famous-titles-2026-11-03).
+The validation suite still has false positives: one negative query on Compact and three on Standard/Expanded return results. Remaining gaps from the [Stremio spot check](#compared-with-stremios-default-search-2026-11-02) are listed there. *Toy Story 3* for `toy storee 3` is first since the [number change](#numbers-abbreviations-and-famous-titles-2026-11-03), and *Phone Booth* for `fone booth` since the [sound-alike change](#sound-alikes-nicknames-and-split-words-2026-11-04).
 
 Regional cases cover five languages, with Japanese the only non-Latin script tested. Cyrillic, Korean and other scripts still need real-data evaluation. A title outside a catalogue's coverage is not a ranking failure; changing size or enabling alternatives can change which answers are available.
 
 ## The cases
 
-[`testdata/quality/cases.json`](../testdata/quality/cases.json) holds 368
+[`testdata/quality/cases.json`](../testdata/quality/cases.json) holds 377
 curated queries in 18 categories:
 
 <details>
@@ -211,13 +210,60 @@ Still weak in Smart Search, from the same run:
   With that change Smart Search also lists `toy story three` and `too fast
   too furious` first, so on the stored Stremio answers for these 38 queries
   it is first alone on 13 and Stremio on none.
-- **Sound-alikes of a misspelled famous title** still rank an exact obscure
-  title first: "euforia" (*Eufòria*) and "kasablanka" (*Kasablanka*) give the
-  famous title second.
-- Some **acronyms** ("b99", "jjk", "fmab") miss unless English alternative
-  titles are on.
-- **Joined words with a typo** ("brkingbad") and **split sound-alikes**
-  ("gost busters", "wun peace") still find nothing.
+- **Sound-alikes of a misspelled famous title** ("euforia", "kasablanka"),
+  **fan nicknames** ("b99", "jjk", "fmab") and **split sound-alikes** ("gost
+  busters") are fixed on main since; see
+  [sound-alikes, nicknames and split words](#sound-alikes-nicknames-and-split-words-2026-11-04).
+- **Joined words with a typo** ("brkingbad") and a three-letter sound-alike
+  in a split title ("wun peace") still find nothing useful.
+
+## Sound-alikes, nicknames and split words, 2026-11-04
+
+**On main, not yet in a release.** Fixes the remaining gaps from the
+[Stremio spot check](#compared-with-stremios-default-search-2026-11-02) in
+sound-alikes, acronyms and split words.
+
+- **Famous titles respelled the way they sound.** "euforia" used to list the
+  Catalan series *Eufòria* (a few hundred votes) before *Euphoria*, and
+  "kasablanka" a 2019 *Kasablanka* before *Casablanca*, because an exact name
+  always won and a sound-alike is not nearly exact. A famous title now joins
+  the exact band when the query is its whole name word for word with at least
+  one word respelled as it is said: "ph" as F, a hard C, CK or Q as K, a soft
+  C as S, and the silent letters the sound-alike fallback already ignores. The
+  same vote rule as other promoted titles applies: at least 10,000 votes and
+  20 times those of every exact match, so the exact title comes second. The
+  rule is deliberately narrow: vowels, doubled letters and S/Z are not merged,
+  so "holy" stays *Holy*, not *Holly*. It also applies with no exact match at
+  all, which puts *Phone Booth* first for "fone booth". The two curated cases
+  that expected the obscure exact title first, `kasablanka` and `sherlok`, now
+  expect *Casablanca* and *Sherlock*.
+- **Split sound-alikes.** Two query words that, joined, sound like one indexed
+  word (same sound code, and spelled within one edit, or two from ten letters)
+  are read as that word, like a one-letter typo: "gost busters" and "goast
+  busters" find *Ghostbusters*. It is tried only where two words joined already
+  were (the query as typed matches no title exactly), and costs one or two
+  sound-code lookups.
+- **Fan nicknames.** A short built-in list, `internal/search/nicknames.go`,
+  adds nicknames that no acronym rule produces for a few very popular
+  titles: `b99`, `jjk`, `fma`, `fmab`, `jjba` and `svu`. They are indexed like
+  acronyms, keyed by normalized name or the part before a colon, so they rank
+  in the acronym band where popularity decides.
+
+Results on the real 2026-11-01 snapshots, alternative titles off:
+
+| Check | Before | After |
+| --- | ---: | ---: |
+| `cases.json` (377 cases, 9 new), top-1 Compact / Standard / Expanded | 309 / 304 / 302 | 318 / 315 / 315 |
+| Showcase file (294 queries), top-1 Standard / Expanded | 258 / 257 | 264 / 263 |
+| Phonetic holdout and validation, top-1 | unchanged | unchanged |
+
+No case got worse in `cases.json` or the two phonetic files on any of the 11
+snapshots (Compact, Standard, Expanded, five Standard and two other
+alternative-title catalogues), and no showcase query got worse. On the Spanish catalogues two holdout
+queries never used for tuning also moved to first ("fenomenon",
+"filadelfia"). Still missed:
+"brkingbad" (joined and misspelled) and "wun peace" (a three-letter
+sound-alike).
 
 ## Numbers, abbreviations and famous titles, 2026-11-03
 
@@ -272,8 +318,9 @@ now lists *Cube* (265,000 votes) before *The Cube* (421), and "running man"
 *Shocking Dark*, released in Spain as *Terminator 2*, before *Terminator 2:
 Judgment Day*.
 
-Not fixed: sound-alikes of a famous title behind an exact obscure one
-("euforia", "kasablanka"), since a sound-alike is not nearly exact.
+Not fixed here: sound-alikes of a famous title behind an exact obscure one
+("euforia", "kasablanka"), since a sound-alike is not nearly exact. They are
+fixed by the [next change](#sound-alikes-nicknames-and-split-words-2026-11-04).
 
 Speed: `sss-bench ab` against main on the cloud VM gave exit 0 on both the
 Standard fixture and the real Standard snapshot: no significant change on any

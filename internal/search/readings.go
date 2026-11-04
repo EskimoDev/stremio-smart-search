@@ -290,6 +290,11 @@ func (e *Engine) matchWords(ctx context.Context, parts []string, typos bool, wan
 		if w := e.word(a.text + b.text); w >= 0 {
 			return newGroup([]termMatch{{w, 1}}, 1)
 		}
+		// Joined, they sound like one indexed word: "gost busters" for
+		// Ghostbusters.
+		if w := e.joinedSound(a.text + b.text); w >= 0 {
+			return newGroup([]termMatch{{w, joinedSoundWeight}}, 1)
+		}
 		return -1
 	}
 	// When the query as typed reads fine nothing else is tried, which keeps
@@ -549,4 +554,40 @@ func (e *Engine) wordTerms(ctx context.Context, work *scratch, word string, typo
 		terms = e.terms(ctx, work, word, typos, alone)
 	}
 	return e.withEquivalents(terms, word)
+}
+
+const (
+	// joinedSoundWeight is a joined pair's weight when the joined form sounds
+	// like an indexed word and is spelled within an edit or two of it: as
+	// good as a one-letter typo.
+	joinedSoundWeight = .76
+	// minJoinedSound is the shortest joined form given a sound-alike: shorter
+	// pairs join into too many accidental words.
+	minJoinedSound = 8
+)
+
+// joinedSound returns the most used indexed word that sounds like joined and
+// is spelled within one edit of it, or two from ten letters, or -1. It costs
+// one or two code lookups.
+func (e *Engine) joinedSound(joined string) int32 {
+	if len(joined) < minJoinedSound || !speakable(joined) {
+		return -1
+	}
+	limit := 1
+	if len(joined) >= 10 {
+		limit = 2
+	}
+	codes, n := soundCodes(new(metaphone), joined)
+	best, count := int32(-1), 0
+	for _, code := range codes[:n] {
+		for _, w := range e.sounds.lookup(code) {
+			if abs(int(e.runeLengths[w])-len(joined)) > limit || w == best {
+				continue
+			}
+			if c := e.titleCount(w); c > count && soundDistance(joined, e.vocabulary[w], limit) <= limit {
+				best, count = w, c
+			}
+		}
+	}
+	return best
 }
