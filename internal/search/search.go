@@ -134,7 +134,21 @@ func (w *wordTable) number(word string) int32 {
 	return n
 }
 
-func New(titles []catalog.Title) *Engine {
+// New builds the index for titles, which it only reads.
+func New(titles []catalog.Title) *Engine { return build(titles, false) }
+
+// Build builds the index for c's titles and takes them from c: c.Titles is
+// nil afterwards, and each title's strings are dropped once indexed. The
+// parsed catalogue is as large as the index, so letting the garbage collector
+// reclaim it during the build, not after it, lowers the memory peak of every
+// load. The index is the same as New's.
+func Build(c *catalog.Catalog) *Engine {
+	titles := c.Titles
+	c.Titles = nil
+	return build(titles, true)
+}
+
+func build(titles []catalog.Title, release bool) *Engine {
 	// Most-voted first, then by ID, keeping input order for exact ties. Sorting
 	// positions avoids moving whole Title structs around.
 	order := make([]int32, len(titles))
@@ -178,6 +192,11 @@ func New(titles []catalog.Title) *Engine {
 	for first := 0; first < len(order); first += prepareBlock {
 		part := order[first:min(len(order), first+prepareBlock)]
 		e.prepareBlock(titles, part, block, first)
+		if release {
+			for _, i := range part {
+				titles[i] = catalog.Title{} // its name is in displayNames now
+			}
+		}
 		for i := range part {
 			p := &block[i]
 			id := int32(first + i)
@@ -201,6 +220,7 @@ func New(titles []catalog.Title) *Engine {
 			e.alternateCount += p.alternateCount
 		}
 	}
+	titles, block = nil, nil // nothing reads them from here on
 	// The exact-name indexes and the word indexes share nothing from here
 	// on, so they are built side by side.
 	var wg sync.WaitGroup
@@ -211,8 +231,8 @@ func New(titles []catalog.Title) *Engine {
 			build()
 		}()
 	}
-	parallel(func() { e.names = newKeyIndex(namePairs) })
-	parallel(func() { e.alternate = newKeyIndex(alternatePairs) })
+	parallel(func() { e.names = newKeyIndex(namePairs); packStrings(e.names.keys) })
+	parallel(func() { e.alternate = newKeyIndex(alternatePairs); packStrings(e.alternate.keys) })
 	parallel(func() { e.acronyms = newShortIndex(shortPairs) })
 
 	// Number words in sorted order so prefix scans and candidate ties are
@@ -232,6 +252,7 @@ func New(titles []catalog.Title) *Engine {
 		e.runeLengths[position] = uint8(min(255, utf8.RuneCountInString(word)))
 	}
 	table = wordTable{}
+	packStrings(e.vocabulary)
 	e.starts = newStarts(e.vocabulary)
 	e.filter = newWordFilter(e.vocabulary)
 	for i := range wordKeys {
@@ -280,6 +301,7 @@ func New(titles []catalog.Title) *Engine {
 		gramKeys[i] = gramFinal[gramKeys[i]]
 	}
 	e.grams = sortedGrams
+	packStrings(e.grams)
 	e.gramWords = buildPostings(gramKeys, gramWords, len(e.grams))
 	wg.Wait()
 	return e

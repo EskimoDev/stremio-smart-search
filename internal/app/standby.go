@@ -112,14 +112,16 @@ func (a *App) Wake() {
 	// If the snapshot cannot be read, the next search tries again.
 	var engine *search.Engine
 	path := a.catalogPath()
+	restoreLimit := lowerMemoryLimitForLoad()
 	c, err := catalog.Load(path)
 	if err != nil {
 		c, err = catalog.Load(path + ".previous")
 	}
 	if err == nil {
-		engine = search.New(c.Titles)
+		engine = search.Build(c)
 		c = nil
 	}
+	restoreLimit()
 
 	a.mu.Lock()
 	a.standby.waking = nil

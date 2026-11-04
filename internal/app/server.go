@@ -167,8 +167,19 @@ func (a *App) Status() Status {
 	status.Updates = a.updateStatusLocked()
 	return status
 }
+
+// setCatalog indexes c and makes it the one searched. It takes c's titles
+// (see search.Build), so c.Titles is nil afterwards.
 func (a *App) setCatalog(c *catalog.Catalog) {
-	engine := search.New(c.Titles)
+	movies, series := 0, 0
+	for _, t := range c.Titles {
+		if t.Type == "movie" {
+			movies++
+		} else {
+			series++
+		}
+	}
+	engine := search.Build(c)
 	a.engine.Store(engine)
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -187,17 +198,11 @@ func (a *App) setCatalog(c *catalog.Catalog) {
 	a.status.Bytes = 0
 	a.status.BuiltAt = c.BuiltAt
 	a.status.Error = ""
-	a.status.Movies = 0
-	a.status.Series = 0
-	for _, t := range c.Titles {
-		if t.Type == "movie" {
-			a.status.Movies++
-		} else {
-			a.status.Series++
-		}
-	}
+	a.status.Movies = movies
+	a.status.Series = series
 }
 func (a *App) Load(path string) error {
+	defer lowerMemoryLimitForLoad()()
 	c, err := catalog.Load(path)
 	if err != nil {
 		return err
