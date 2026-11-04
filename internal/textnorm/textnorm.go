@@ -24,8 +24,10 @@ var fold = func() map[rune]string {
 	return m
 }()
 
-// Normalize lowercases, removes accents and apostrophes, and collapses every
-// other non-letter, non-digit run into one space. Non-Latin letters are kept.
+// Normalize lowercases, removes accents and apostrophes, folds full-width
+// ASCII and decimal digits, and collapses separators into one space.
+// Superscript digits and Roman numeral characters become separate words.
+// Non-Latin letters are kept.
 // ASCII, by far the most common input, takes a fast path with no table lookups.
 func Normalize(text string) string {
 	out := make([]byte, 0, len(text))
@@ -37,6 +39,11 @@ func Normalize(text string) string {
 		space = false
 	}
 	for _, r := range text {
+		// Full-width Latin letters, digits and punctuation use the same rules
+		// as their ASCII forms, including apostrophes and case folding.
+		if r >= '！' && r <= '～' {
+			r -= 0xFEE0
+		}
 		if r < utf8.RuneSelf {
 			switch {
 			case r >= 'a' && r <= 'z', r >= '0' && r <= '9':
@@ -63,19 +70,60 @@ func Normalize(text string) string {
 			space = true
 			continue
 		}
+		if numeral := romanNumeral(r); numeral != "" {
+			space = true
+			word()
+			out = append(out, numeral...)
+			space = true
+			continue
+		}
 		if replacement, ok := fold[r]; ok {
 			word()
 			out = append(out, replacement...)
 			continue
 		}
-		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+		if unicode.IsLetter(r) {
 			word()
 			out = utf8.AppendRune(out, r)
+		} else if unicode.IsDigit(r) {
+			word()
+			out = append(out, decimalDigit(r))
 		} else {
 			space = true
 		}
 	}
 	return string(out)
+}
+
+// Decimal-digit ranges consist of runs of 0–9 in order. Some ranges group
+// several such alphabets, including mathematical digits, hence the modulo.
+// Called only after unicode.IsDigit, so a matching range is guaranteed.
+func decimalDigit(r rune) byte {
+	if r <= 0xFFFF {
+		for _, block := range unicode.Digit.R16 {
+			if c := uint16(r); c >= block.Lo && c <= block.Hi && (c-block.Lo)%block.Stride == 0 {
+				return '0' + byte((c-block.Lo)/block.Stride%10)
+			}
+		}
+	} else {
+		for _, block := range unicode.Digit.R32 {
+			if c := uint32(r); c >= block.Lo && c <= block.Hi && (c-block.Lo)%block.Stride == 0 {
+				return '0' + byte((c-block.Lo)/block.Stride%10)
+			}
+		}
+	}
+	return 0
+}
+
+var romanLetters = [...]string{"i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "l", "c", "d", "m"}
+
+// r has already been lowercased; compatibility numerals are separate tokens
+// so a sequel suffix such as RockyⅡ is treated as "rocky ii".
+func romanNumeral(r rune) string {
+	if r >= 'ⅰ' && r <= 'ⅿ' {
+		return romanLetters[r-'ⅰ']
+	}
+	return ""
 }
 
 // Meaningful reports whether a normalized alternative title is distinctive
