@@ -13,6 +13,7 @@ All notable changes to Stremio Smart Search are recorded here. The format follow
 ### Changed
 
 - Store display names together in the search index, reducing steady memory use without changing catalogue files, result metadata or ranking. On the Windows test PC with Expanded, idle working set fell from 96.0 to 82.5 MiB; peak memory did not improve. See [measurements and limits](docs/PERFORMANCE.md#resource-follow-up-main-only).
+- Lower the memory peak of loading the search index, at startup and when standby wakes. The parsed catalogue is released while the index is built, the index keeps its words and names packed together, and loading runs under a 200 MiB memory limit instead of 256 MiB. In a cloud A/B with a real Expanded catalogue with French titles, peak memory fell from 251 to 197 MiB and idle memory from 84.1 to 75.8 MiB, with startup time unchanged and identical search results.
 
 ### Fixed
 

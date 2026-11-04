@@ -306,3 +306,36 @@ func (s shortIndex) lookup(key string) []int32 {
 	}
 	return s.ids[start:end]
 }
+
+// packStrings makes list's strings share one backing string, and equal
+// neighbours (a name several titles share) share their bytes too. The index
+// keeps every normalized name, alternative title, word and trigram. Built, each
+// is a small allocation of its own, scattered among the parsed catalogue and
+// the build's temporaries, and the scattered survivors pin partly empty pages
+// once those are collected (vocabulary words, as substrings, also pinned whole
+// names). Packed, they take only their bytes. The strings are equal to before;
+// only where their bytes live changes.
+func packStrings(list []string) {
+	size := 0
+	for i, s := range list {
+		if i == 0 || s != list[i-1] {
+			size += len(s)
+		}
+	}
+	var b strings.Builder
+	b.Grow(size)
+	for i, s := range list {
+		if i == 0 || s != list[i-1] {
+			b.WriteString(s)
+		}
+	}
+	all, at := b.String(), 0
+	for i, s := range list {
+		if i > 0 && s == list[i-1] {
+			list[i] = list[i-1]
+			continue
+		}
+		list[i] = all[at : at+len(s)]
+		at += len(s)
+	}
+}
