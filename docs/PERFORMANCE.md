@@ -6,7 +6,7 @@ until you rebuild.
 
 **Current figures are for preview.6 on Windows**, measured on 2026-11-03. Older preview.3 and preview.4 tables are kept below for history; they used different workloads and catalogues, so do not read the differences between sections as speed-ups. For accuracy checks, see [Search quality](SEARCH-QUALITY.md#latest-results).
 
-[Windows preview.6](#preview6-on-windows) · [Windows preview.4](#preview4-on-windows) · [Linux preview.4](#preview4-on-a-linux-cloud-vm) · [Download sizes](#download-and-disk) · [Updates](#automatic-updates) · [Reproduce](#reproduce)
+[Resource follow-up, main only](#resource-follow-up-main-only) · [Windows preview.6](#preview6-on-windows) · [Windows preview.4](#preview4-on-windows) · [Linux preview.4](#preview4-on-a-linux-cloud-vm) · [Download sizes](#download-and-disk) · [Updates](#automatic-updates) · [Reproduce](#reproduce)
 
 Four sets of real-data measurements are on this page. Each is labelled with the
 machine it ran on, and they should not be mixed:
@@ -48,6 +48,54 @@ the cloud VM with synthetic catalogues of the real sizes.
 Timings are end to end through PowerShell or curl, not the warm-request figures
 below. While a Stremio app is open and the index is loaded, the scan runs every
 30 seconds instead. In the default **Always** mode there is no scan at all.
+
+## Resource follow-up (main only)
+
+**Unreleased; not in preview.6.** Measured 2026-11-03 on the Windows PC above.
+The index stores display names in one immutable buffer with 32-bit offsets,
+reducing each title's metadata entry from 32 to 16 bytes. Catalogue files, IDs,
+display text, rating precision and ranking are unchanged.
+
+`sss-bench ab --profile standard --catalog` compared `00e2093` (main after #54)
+with `bc1fb63`. Both used the same cached Expanded catalogue: **390,449 titles,
+alternative titles off**. Eight fresh processes per side ran in interleaved
+order, each with two warmup passes and ten measured passes over 369 queries,
+throughput at 1, 2 and 4 clients, and ten seconds of sustained searching. Go
+1.27.0, two Go execution threads and the 256 MiB soft target were the same.
+
+| Measure | Baseline | Candidate | Assessment |
+| --- | ---: | ---: | --- |
+| Idle working set | 96.0 MiB | 82.5 MiB | −14.1%, improved |
+| Working set after sustained searching | 178.8 MiB | 157.5 MiB | −11.9%, improved |
+| Live Go heap after indexing | 61.6 MiB | 55.5 MiB | −10.0%, improved |
+| Peak working set | 256.8 MiB | 263.1 MiB | No significant change |
+| Startup to ready | 1.223 s | 1.240 s | No significant change |
+| HTTP request, 95th percentile | 0.539 ms | 0.529 ms | No significant change |
+| Throughput at two clients | 6,417 req/s | 6,484 req/s | No significant change |
+
+The comparison found three improved primary metrics and no primary regressions,
+using the harness's corrected significance tests and practical floors. This is
+a steady-memory improvement: **peak memory was not reduced**. Construction
+temporarily holds the parsed names and their packed copy together. The secondary
+startup-overhead metric (peak minus settled memory) grew from 159.5 to 180.4 MiB;
+the lower settled baseline contributes to that difference.
+
+Another helper was listening on the default port and was left untouched; the
+benchmark used isolated ports and data folders. Background CPU medians were
+8.9% and 7.3%. These results cover one Windows PC, not native Linux, macOS or ARM.
+[Aggregate record →](benchmarks/resources-2026-11-03.json)
+
+Separately, all nine curated/phonetic reports were identical across cached
+Compact, Standard and Expanded catalogues. Another **32,694 generated queries**
+returned identical ordered top-20 IDs. These real snapshots had alternative
+titles off; Unicode, original-title and alias fixtures also passed the Go tests.
+
+The update fix covers a race: if standby begins during an automatic metadata
+check, its late response must not start a download or reload the index. Local
+HTTP tests reproduced two unwanted dataset downloads before the fix and none
+afterwards. Manual refresh still works, and the deferred update remains due on
+the next tick after waking. **This does not reduce a legitimate update's size or
+change the user's frequency.** No live IMDb download was used for these checks.
 
 ## Preview.6 on Windows
 

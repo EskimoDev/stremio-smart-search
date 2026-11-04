@@ -19,6 +19,10 @@ type Engine struct {
 	titles []entry
 	wide   map[int32]wide // the few titles whose number or rating an entry cannot hold
 	kinds  []uint8        // kindMovie or kindSeries per title, kept apart for cache-friendly filtering
+	// Display names share one immutable backing string. The catalogue bounds
+	// them to 500,000 names of at most 1,000 bytes, so 32-bit offsets suffice.
+	displayNames string
+	nameStarts   []uint32
 	// names holds every normalized canonical name (primary and original). It
 	// answers exact queries and, through its joined order, queries typed
 	// without spaces.
@@ -148,6 +152,19 @@ func New(titles []catalog.Title) *Engine {
 		return cmp.Compare(i, j)
 	})
 	e := &Engine{titles: make([]entry, len(titles)), kinds: make([]uint8, len(titles))}
+	nameBytes := 0
+	for _, i := range order {
+		nameBytes += len(titles[i].Name)
+	}
+	var names strings.Builder
+	names.Grow(nameBytes)
+	e.nameStarts = make([]uint32, len(order)+1)
+	for position, i := range order {
+		e.nameStarts[position] = uint32(names.Len())
+		names.WriteString(titles[i].Name)
+	}
+	e.nameStarts[len(order)] = uint32(names.Len())
+	e.displayNames = names.String()
 	var namePairs, alternatePairs []posting
 	var shortPairs []shortPosting
 	table := wordTable{numbers: make(map[string]int32, len(titles)/2)}
@@ -1221,7 +1238,7 @@ func (e *Engine) Search(ctx context.Context, query, kind string, limit int) []ca
 	result := make([]catalog.Title, 0, len(hits))
 	for _, h := range hits {
 		t := &e.titles[h.id]
-		result = append(result, catalog.Title{ID: e.id(h.id), Name: t.name, Type: kind, Year: int(t.year), Votes: int(t.votes), Rating: e.ratingOf(h.id)})
+		result = append(result, catalog.Title{ID: e.id(h.id), Name: e.nameOf(h.id), Type: kind, Year: int(t.year), Votes: int(t.votes), Rating: e.ratingOf(h.id)})
 	}
 	return result
 }

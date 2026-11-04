@@ -231,7 +231,7 @@ func (a *App) startBuild(profile catalog.Profile, aliases catalog.AliasOptions) 
 // titles from the current snapshot instead of downloading title.akas.
 func (a *App) startBuildMode(profile catalog.Profile, aliases catalog.AliasOptions, automatic, carryAliases bool) bool {
 	a.mu.Lock()
-	if a.status.Building || a.moving {
+	if a.status.Building || a.moving || (automatic && a.standby.asleep) {
 		a.mu.Unlock()
 		return false
 	}

@@ -32,15 +32,15 @@ func kindOf(kind string) uint8 {
 	return 0
 }
 
-// entry is what a result needs from a catalogue title, in 32 bytes: the
+// entry is what a result needs from a catalogue title, in 16 bytes: the
 // index holds one per title, so every byte here is about 0.4 MB on Expanded.
+// Display names live separately in Engine.displayNames with 32-bit offsets.
 // The identifier is kept as a number plus its digit count ("tt0816692" is
 // 816692 and 7), which reproduces the original text exactly without storing a
 // string per title, and the rating in tenths, which is how IMDb gives it. A
 // title whose number or rating does not fit (none in IMDb's data) is marked
 // wide and keeps both exactly in Engine.wide.
 type entry struct {
-	name   string
 	number uint32
 	votes  int32
 	year   int32
@@ -63,7 +63,7 @@ type wide struct {
 // not fit it.
 func newEntry(t catalog.Title) (entry, *wide) {
 	number, _ := strconv.ParseUint(t.ID[2:], 10, 64) // Validate guarantees 1–18 digits
-	e := entry{name: t.Name, votes: clamp32(t.Votes), year: clamp32(t.Year), digits: uint8(len(t.ID) - 2)}
+	e := entry{votes: clamp32(t.Votes), year: clamp32(t.Year), digits: uint8(len(t.ID) - 2)}
 	tenths := math.Round(t.Rating * 10)
 	if number > math.MaxUint32 || !(tenths >= 0 && tenths <= math.MaxUint16 && tenths/10 == t.Rating) || math.Signbit(t.Rating) {
 		e.digits |= wideEntry
@@ -71,6 +71,10 @@ func newEntry(t catalog.Title) (entry, *wide) {
 	}
 	e.number, e.rating = uint32(number), uint16(tenths)
 	return e, nil
+}
+
+func (e *Engine) nameOf(i int32) string {
+	return e.displayNames[e.nameStarts[i]:e.nameStarts[i+1]]
 }
 
 // numberOf and ratingOf read title i's identifier number and rating.

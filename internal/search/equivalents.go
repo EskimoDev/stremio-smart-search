@@ -246,7 +246,7 @@ func (e *Engine) promoteFamous(hits []hit, parts []string) {
 	need := max(int64(famousVotes), famousRatio*int64(best))
 	for i := range hits {
 		t := &e.titles[hits[i].id]
-		if s := hits[i].score; s >= famousScore && s < scoreAcronym && int64(t.votes) >= need && namesTitle(parts, t.name) {
+		if s := hits[i].score; s >= famousScore && s < scoreAcronym && int64(t.votes) >= need && namesTitle(parts, e.nameOf(hits[i].id)) {
 			hits[i].score += famousOffset
 		}
 	}

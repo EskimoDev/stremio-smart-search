@@ -466,10 +466,10 @@ func (a *App) UpdateTick(ctx context.Context) {
 	u.checking = false
 	u.network = network
 	now = a.now()
-	if network == "metered" || ctx.Err() != nil || a.status.Building || !u.state.LastSuccess.Equal(since) ||
+	if network == "metered" || ctx.Err() != nil || a.status.Building || a.standby.asleep || !u.state.LastSuccess.Equal(since) ||
 		!u.settings.Auto || now.Before(a.nextUpdateLocked(now)) {
 		// Metered, shutting down, a manual refresh started or finished,
-		// or the user switched updates off or chose a longer interval
+		// the helper entered standby, or the user changed the update settings
 		// while the check was in flight: its answer no longer matters.
 		a.mu.Unlock()
 		return
